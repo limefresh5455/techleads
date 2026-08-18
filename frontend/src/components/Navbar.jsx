@@ -128,10 +128,10 @@ export default function Navbar() {
             </Link>
           )}
           <Link
-            to="/signup"
+            to={user ? '/dashboard' : '/signup'}
             className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
           >
-            {content.nav_cta_label}
+            {user ? 'Dashboard' : content.nav_cta_label}
           </Link>
         </div>
 
@@ -174,8 +174,11 @@ export default function Navbar() {
                 {content.login_label}
               </Link>
             )}
-            <Link to="/signup" className="mt-2 rounded-lg bg-brand px-4 py-2.5 text-center text-sm font-semibold text-white">
-              {content.nav_cta_label}
+            <Link
+              to={user ? '/dashboard' : '/signup'}
+              className="mt-2 rounded-lg bg-brand px-4 py-2.5 text-center text-sm font-semibold text-white"
+            >
+              {user ? 'Dashboard' : content.nav_cta_label}
             </Link>
           </div>
         </div>

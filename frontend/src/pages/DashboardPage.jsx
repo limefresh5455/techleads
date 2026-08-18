@@ -6,8 +6,9 @@ import {
   Filter,
   Search,
 } from 'lucide-react'
-import { fetchDashboardSearch } from '../api'
+import { fetchDashboardSearch, fetchWebsiteDetail } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
+import SiteDetailsPanel from '../components/SiteDetailsPanel'
 
 function TechBadge({ tech }) {
   return (
@@ -35,6 +36,9 @@ export default function DashboardPage() {
   const [results, setResults] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [selectedId, setSelectedId] = useState(null)
+  const [siteDetail, setSiteDetail] = useState(null)
+  const [detailLoading, setDetailLoading] = useState(false)
 
   const categoryOptions = useMemo(() => {
     const seen = new Set()
@@ -84,6 +88,28 @@ export default function DashboardPage() {
     loadResults()
   }, [loadResults])
 
+  useEffect(() => {
+    if (!selectedId) {
+      setSiteDetail(null)
+      return
+    }
+    let cancelled = false
+    setDetailLoading(true)
+    fetchWebsiteDetail(selectedId)
+      .then((data) => {
+        if (!cancelled) setSiteDetail(data)
+      })
+      .catch(() => {
+        if (!cancelled) setSiteDetail(null)
+      })
+      .finally(() => {
+        if (!cancelled) setDetailLoading(false)
+      })
+    return () => {
+      cancelled = true
+    }
+  }, [selectedId])
+
   function toggleTech(slug) {
     setPage(1)
     setSelectedTechs((prev) =>
@@ -95,6 +121,20 @@ export default function DashboardPage() {
     e.preventDefault()
     setPage(1)
     loadResults()
+  }
+
+  function handleView(row) {
+    if (selectedId === row.id) {
+      setSelectedId(null)
+      setSiteDetail(null)
+      return
+    }
+    setSelectedId(row.id)
+  }
+
+  function closeDetails() {
+    setSelectedId(null)
+    setSiteDetail(null)
   }
 
   function exportCsv() {
@@ -274,7 +314,12 @@ export default function DashboardPage() {
                     )}
                     {!loading &&
                       results?.items?.map((row) => (
-                        <tr key={row.id} className="border-b border-border/70 last:border-0">
+                        <tr
+                          key={row.id}
+                          className={`border-b border-border/70 last:border-0 ${
+                            selectedId === row.id ? 'bg-brand/5' : ''
+                          }`}
+                        >
                           <td className="px-4 py-3">
                             <div className="flex items-center gap-2">
                               <span className="grid h-7 w-7 place-items-center rounded-full bg-surface text-xs font-bold text-muted">
@@ -303,9 +348,10 @@ export default function DashboardPage() {
                           <td className="px-4 py-3">
                             <button
                               type="button"
+                              onClick={() => handleView(row)}
                               className="font-semibold text-brand hover:underline"
                             >
-                              View
+                              {selectedId === row.id ? 'Close' : 'View'}
                             </button>
                           </td>
                         </tr>
@@ -344,56 +390,66 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Summary */}
+        {/* Right panel: Site Details or Summary */}
         <aside className="space-y-4">
-          <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-            <h3 className="text-sm font-semibold text-ink">Summary</h3>
-            <dl className="mt-4 space-y-4 text-sm">
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  Total results
-                </dt>
-                <dd className="mt-1 text-2xl font-extrabold text-ink">
-                  {results?.items?.length?.toLocaleString() ?? '—'}
-                </dd>
+          {selectedId ? (
+            <SiteDetailsPanel
+              site={siteDetail}
+              loading={detailLoading}
+              onClose={closeDetails}
+            />
+          ) : (
+            <>
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+                <h3 className="text-sm font-semibold text-ink">Summary</h3>
+                <dl className="mt-4 space-y-4 text-sm">
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      Total results
+                    </dt>
+                    <dd className="mt-1 text-2xl font-extrabold text-ink">
+                      {results?.items?.length?.toLocaleString() ?? '—'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      Actual total
+                    </dt>
+                    <dd className="mt-1 text-lg font-bold text-amber-600">
+                      {results ? `${results.total_actual.toLocaleString()} (limited)` : '—'}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      Filters applied
+                    </dt>
+                    <dd className="mt-1 text-2xl font-extrabold text-ink">
+                      {results?.filters_applied ?? 0}
+                    </dd>
+                  </div>
+                </dl>
               </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  Actual total
-                </dt>
-                <dd className="mt-1 text-lg font-bold text-amber-600">
-                  {results ? `${results.total_actual.toLocaleString()} (limited)` : '—'}
-                </dd>
-              </div>
-              <div>
-                <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
-                  Filters applied
-                </dt>
-                <dd className="mt-1 text-2xl font-extrabold text-ink">
-                  {results?.filters_applied ?? 0}
-                </dd>
-              </div>
-            </dl>
-          </div>
 
-          <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-            <p className="text-sm text-muted">
-              Free users: {results?.export_limit ?? 10} sites max.{' '}
-              <Link to="/pricing" className="font-semibold text-brand hover:underline">
-                Upgrade
-              </Link>{' '}
-              for all {results?.total_actual?.toLocaleString() ?? '7,781,930'}.
-            </p>
-            <button
-              type="button"
-              onClick={exportCsv}
-              disabled={!results?.items?.length}
-              className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
-            >
-              <Download className="h-4 w-4" />
-              Export CSV ({results?.items?.length ?? 0})
-            </button>
-          </div>
+              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+                <p className="text-sm text-muted">
+                  Free users: {results?.export_limit ?? 10} sites max.{' '}
+                  <Link to="/pricing" className="font-semibold text-brand hover:underline">
+                    Upgrade
+                  </Link>{' '}
+                  for all {results?.total_actual?.toLocaleString() ?? '7,781,930'}.
+                </p>
+                <button
+                  type="button"
+                  onClick={exportCsv}
+                  disabled={!results?.items?.length}
+                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+                >
+                  <Download className="h-4 w-4" />
+                  Export CSV ({results?.items?.length ?? 0})
+                </button>
+              </div>
+            </>
+          )}
         </aside>
       </div>
     </div>

@@ -365,6 +365,24 @@ class DashboardSearchOut(BaseModel):
     export_limit: int
 
 
+class DashboardWebsiteDetailOut(BaseModel):
+    id: int
+    domain: str
+    title: str
+    description: str
+    category_label: str
+    contact_info: str
+    rank: int
+    technologies: list[DashboardTechOut]
+    all_detected_technologies: list[str]
+    facebook_url: str = ""
+    twitter_url: str = ""
+    linkedin_url: str = ""
+
+    class Config:
+        from_attributes = True
+
+
 class LandingPayload(BaseModel):
     content: SiteContentOut
     nav_items: list[NavItemOut]

@@ -36,6 +36,10 @@ export function fetchDashboardSearch({ q = '', technologies = [], match = 'any',
   return request(`/api/dashboard/search?${params.toString()}`)
 }
 
+export function fetchWebsiteDetail(id) {
+  return request(`/api/dashboard/websites/${id}`)
+}
+
 export function fetchFreeTool(slug) {
   return request(`/api/free-tools/${encodeURIComponent(slug)}`)
 }

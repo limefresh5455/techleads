@@ -1074,8 +1074,28 @@ def _sync_websites(db: Session) -> None:
             db, name, slug, icon, color, categories[cat_slug], order, popular
         )
 
+    website_details = {
+        "commercialspaceflight.org": {
+            "title": "Commercial Space Federation",
+            "description": (
+                "The Commercial Spaceflight Federation is the leading voice for the commercial space "
+                "industry, promoting the development of commercial spaceflight and space exploration."
+            ),
+            "category_label": "Uncategorized",
+            "contact_info": "No contact information available",
+            "extra": "Elementor,AstraTheme,YoastSEO,Beaver Builder,Gravity Forms,Cloudflare CDN",
+            "facebook": "https://facebook.com",
+            "twitter": "https://twitter.com",
+            "linkedin": "https://linkedin.com",
+        },
+    }
+
+    def _title_from_domain(domain: str) -> str:
+        base = domain.split(".")[0].replace("-", " ").title()
+        return base
+
     websites = [
-        ("commercialspaceflight.org", 91, ["wordpress", "google-analytics"]),
+        ("commercialspaceflight.org", 91, ["wordpress", "google-analytics", "woocommerce"]),
         ("baboontothemoon.com", 92, ["shopify", "klaviyo"]),
         ("resurgencey.com", 93, ["wordpress", "woocommerce"]),
         ("deskmat.com", 94, ["shopify", "judge-me"]),
@@ -1103,7 +1123,37 @@ def _sync_websites(db: Session) -> None:
     ]
 
     for i, (domain, rank, tech_slugs) in enumerate(websites):
-        site = Website(domain=domain, rank=rank, sort_order=i)
+        detail = website_details.get(domain, {})
+        primary_tech = tech_slugs[0] if tech_slugs else ""
+        category_label = {
+            "wordpress": "CMS",
+            "shopify": "E-Commerce",
+            "wix": "CMS",
+            "drupal": "CMS",
+            "magento": "E-Commerce",
+            "webflow": "CMS",
+            "squarespace": "CMS",
+        }.get(primary_tech, "Uncategorized")
+
+        site = Website(
+            domain=domain,
+            rank=rank,
+            sort_order=i,
+            title=detail.get("title", _title_from_domain(domain)),
+            description=detail.get(
+                "description",
+                f"Website analysis for {domain}. Technology stack detected by TechLeads.Ai.",
+            ),
+            category_label=detail.get("category_label", category_label),
+            contact_info=detail.get("contact_info", "No contact information available"),
+            facebook_url=detail.get("facebook", ""),
+            twitter_url=detail.get("twitter", ""),
+            linkedin_url=detail.get("linkedin", ""),
+            extra_technologies=detail.get(
+                "extra",
+                "Cloudflare CDN,Google Tag Manager,Open Graph",
+            ),
+        )
         db.add(site)
         db.flush()
         for slug in tech_slugs:

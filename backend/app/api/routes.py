@@ -36,6 +36,7 @@ from app.schemas import (
     DashboardPreviewOut,
     DashboardSearchOut,
     DashboardTechOut,
+    DashboardWebsiteDetailOut,
     DashboardWebsiteOut,
     DetectGroupOut,
     FaqItemOut,
@@ -369,3 +370,52 @@ def dashboard_search(
         filters_applied=filters_applied,
         export_limit=export_limit,
     )
+
+
+def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
+    techs = sorted(
+        [link.technology for link in row.technologies],
+        key=lambda tech: tech.sort_order,
+    )
+    primary = [t.name for t in techs]
+    extra = [t.strip() for t in (row.extra_technologies or "").split(",") if t.strip()]
+    all_detected = primary + [t for t in extra if t not in primary]
+
+    return DashboardWebsiteDetailOut(
+        id=row.id,
+        domain=row.domain,
+        title=row.title or row.domain,
+        description=row.description or "",
+        category_label=row.category_label or "Uncategorized",
+        contact_info=row.contact_info or "No contact information available",
+        rank=row.rank,
+        technologies=[
+            DashboardTechOut(
+                id=tech.id,
+                name=tech.name,
+                slug=tech.slug,
+                icon=tech.icon,
+                icon_color=tech.icon_color,
+            )
+            for tech in techs
+        ],
+        all_detected_technologies=all_detected,
+        facebook_url=row.facebook_url or "",
+        twitter_url=row.twitter_url or "",
+        linkedin_url=row.linkedin_url or "",
+    )
+
+
+@router.get("/dashboard/websites/{website_id}", response_model=DashboardWebsiteDetailOut)
+def get_dashboard_website(website_id: int, db: Session = Depends(get_db)):
+    row = (
+        db.query(Website)
+        .options(
+            joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+        )
+        .filter(Website.id == website_id)
+        .first()
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Website not found")
+    return _website_detail_out(row)

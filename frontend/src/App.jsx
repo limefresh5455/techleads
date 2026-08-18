@@ -1,8 +1,9 @@
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
-import { SiteDataProvider } from './context/SiteDataContext'
+import { SiteDataProvider, useSiteData } from './context/SiteDataContext'
 import MainLayout from './layouts/MainLayout'
 import DashboardLayout from './layouts/DashboardLayout'
 import ProtectedRoute from './components/ProtectedRoute'
+import GuestRoute from './components/GuestRoute'
 import HomePage from './pages/HomePage'
 import DirectoryPage from './pages/DirectoryPage'
 import BlogPage from './pages/BlogPage'
@@ -27,6 +28,11 @@ const DETECTOR_SLUGS = [
 function ToolsRedirect() {
   const { slug } = useParams()
   return <Navigate to={`/${slug}`} replace />
+}
+
+function GetStartedRedirect() {
+  const { user } = useSiteData()
+  return <Navigate to={user ? '/dashboard' : '/signup'} replace />
 }
 
 export default function App() {
@@ -58,10 +64,10 @@ export default function App() {
             <Route path="developers" element={<Navigate to="/api-docs" replace />} />
             <Route path="contact" element={<ContactPage />} />
             <Route path="contact-us" element={<Navigate to="/contact" replace />} />
-            <Route path="login" element={<LoginPage />} />
-            <Route path="signin" element={<LoginPage />} />
-            <Route path="signup" element={<SignupPage />} />
-            <Route path="get-started" element={<Navigate to="/signup" replace />} />
+            <Route path="login" element={<GuestRoute><LoginPage /></GuestRoute>} />
+            <Route path="signin" element={<GuestRoute><LoginPage /></GuestRoute>} />
+            <Route path="signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
+            <Route path="get-started" element={<GetStartedRedirect />} />
             <Route
               path="privacy"
               element={

@@ -41,6 +41,14 @@ class Website(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     domain = Column(String(160), unique=True, nullable=False, index=True)
+    title = Column(String(200), default="")
+    description = Column(Text, default="")
+    category_label = Column(String(120), default="Uncategorized")
+    contact_info = Column(Text, default="No contact information available")
+    facebook_url = Column(String(255), default="")
+    twitter_url = Column(String(255), default="")
+    linkedin_url = Column(String(255), default="")
+    extra_technologies = Column(Text, default="")
     rank = Column(Integer, default=0)
     sort_order = Column(Integer, default=0)
 
