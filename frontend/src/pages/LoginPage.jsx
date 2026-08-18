@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { login } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
@@ -7,6 +7,8 @@ import { useSiteData } from '../context/SiteDataContext'
 export default function LoginPage() {
   const { setAuth } = useSiteData()
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from || '/dashboard'
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
@@ -18,7 +20,7 @@ export default function LoginPage() {
     try {
       const data = await login(form)
       setAuth(data)
-      navigate('/')
+      navigate(from)
     } catch (err) {
       setError(err.message || 'Login failed')
     } finally {

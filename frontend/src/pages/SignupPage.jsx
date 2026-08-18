@@ -18,7 +18,7 @@ export default function SignupPage() {
     try {
       const data = await signup(form)
       setAuth(data)
-      navigate('/')
+      navigate('/dashboard')
     } catch (err) {
       setError(err.message || 'Signup failed')
     } finally {

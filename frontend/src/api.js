@@ -26,6 +26,16 @@ export function fetchLanding() {
   return request('/api/landing')
 }
 
+export function fetchDashboardSearch({ q = '', technologies = [], match = 'any', page = 1, pageSize = 10 }) {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  if (technologies.length) params.set('technologies', technologies.join(','))
+  params.set('match', match)
+  params.set('page', String(page))
+  params.set('page_size', String(pageSize))
+  return request(`/api/dashboard/search?${params.toString()}`)
+}
+
 export function fetchFreeTool(slug) {
   return request(`/api/free-tools/${encodeURIComponent(slug)}`)
 }

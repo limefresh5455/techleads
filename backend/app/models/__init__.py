@@ -33,6 +33,31 @@ class Technology(Base):
     sort_order = Column(Integer, default=0)
 
     category = relationship("Category", back_populates="technologies")
+    websites = relationship("WebsiteTechnology", back_populates="technology")
+
+
+class Website(Base):
+    __tablename__ = "websites"
+
+    id = Column(Integer, primary_key=True, index=True)
+    domain = Column(String(160), unique=True, nullable=False, index=True)
+    rank = Column(Integer, default=0)
+    sort_order = Column(Integer, default=0)
+
+    technologies = relationship(
+        "WebsiteTechnology", back_populates="website", cascade="all, delete-orphan"
+    )
+
+
+class WebsiteTechnology(Base):
+    __tablename__ = "website_technologies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    website_id = Column(Integer, ForeignKey("websites.id"), nullable=False)
+    technology_id = Column(Integer, ForeignKey("technologies.id"), nullable=False)
+
+    website = relationship("Website", back_populates="technologies")
+    technology = relationship("Technology", back_populates="websites")
 
 
 class PricingPlan(Base):

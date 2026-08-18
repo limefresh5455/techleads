@@ -1,6 +1,8 @@
 import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { SiteDataProvider } from './context/SiteDataContext'
 import MainLayout from './layouts/MainLayout'
+import DashboardLayout from './layouts/DashboardLayout'
+import ProtectedRoute from './components/ProtectedRoute'
 import HomePage from './pages/HomePage'
 import DirectoryPage from './pages/DirectoryPage'
 import BlogPage from './pages/BlogPage'
@@ -12,6 +14,7 @@ import ApiDocsPage from './pages/ApiDocsPage'
 import ContactPage from './pages/ContactPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import DashboardPage from './pages/DashboardPage'
 import LegalPage from './pages/LegalPage'
 
 const DETECTOR_SLUGS = [
@@ -31,6 +34,15 @@ export default function App() {
     <BrowserRouter>
       <SiteDataProvider>
         <Routes>
+          <Route
+            element={
+              <ProtectedRoute>
+                <DashboardLayout />
+              </ProtectedRoute>
+            }
+          >
+            <Route path="dashboard" element={<DashboardPage />} />
+          </Route>
           <Route element={<MainLayout />}>
             <Route index element={<HomePage />} />
             <Route path="directory" element={<DirectoryPage />} />

@@ -107,6 +107,12 @@ export default function Navbar() {
         <div className="hidden items-center gap-3 lg:flex">
           {user ? (
             <>
+              <Link
+                to="/dashboard"
+                className="text-sm font-semibold text-ink hover:text-brand"
+              >
+                Dashboard
+              </Link>
               <span className="text-sm text-muted">Hi, {user.name.split(' ')[0]}</span>
               <button
                 type="button"
@@ -155,9 +161,14 @@ export default function Navbar() {
               </div>
             ))}
             {user ? (
-              <button type="button" onClick={logout} className="py-2 text-left text-sm font-semibold">
-                Log out
-              </button>
+              <>
+                <Link to="/dashboard" className="py-2 text-sm font-semibold text-brand">
+                  Dashboard
+                </Link>
+                <button type="button" onClick={logout} className="py-2 text-left text-sm font-semibold">
+                  Log out
+                </button>
+              </>
             ) : (
               <Link to="/login" className="py-2 text-sm font-semibold">
                 {content.login_label}

@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.database import get_db
@@ -22,6 +23,8 @@ from app.models import (
     Technology,
     TrustLogo,
     User,
+    Website,
+    WebsiteTechnology,
 )
 from app.schemas import (
     AuthResponse,
@@ -31,6 +34,9 @@ from app.schemas import (
     ContactOut,
     CustomDataBlockOut,
     DashboardPreviewOut,
+    DashboardSearchOut,
+    DashboardTechOut,
+    DashboardWebsiteOut,
     DetectGroupOut,
     FaqItemOut,
     FeatureHighlightOut,
@@ -269,3 +275,97 @@ def search_technologies(q: str = "", db: Session = Depends(get_db)):
     if q.strip():
         query = query.filter(Technology.name.ilike(f"%{q.strip()}%"))
     return query.order_by(Technology.website_count.desc()).limit(20).all()
+
+
+@router.get("/categories", response_model=list[CategoryOut])
+def list_categories(db: Session = Depends(get_db)):
+    return db.query(Category).order_by(Category.sort_order).all()
+
+
+@router.get("/dashboard/search", response_model=DashboardSearchOut)
+def dashboard_search(
+    q: str = "",
+    technologies: str = "",
+    match: str = Query(default="any", pattern="^(any|all)$"),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=10, ge=1, le=50),
+    db: Session = Depends(get_db),
+):
+    tech_slugs = [slug.strip() for slug in technologies.split(",") if slug.strip()]
+    filters_applied = len(tech_slugs) + (1 if q.strip() else 0)
+
+    query = db.query(Website)
+    if q.strip():
+        query = query.filter(Website.domain.ilike(f"%{q.strip()}%"))
+
+    if tech_slugs:
+        tech_rows = db.query(Technology).filter(Technology.slug.in_(tech_slugs)).all()
+        tech_ids = [row.id for row in tech_rows]
+        if tech_ids:
+            if match == "all":
+                query = (
+                    query.join(WebsiteTechnology)
+                    .filter(WebsiteTechnology.technology_id.in_(tech_ids))
+                    .group_by(Website.id)
+                    .having(
+                        func.count(WebsiteTechnology.technology_id.distinct()) == len(tech_ids)
+                    )
+                )
+            else:
+                query = query.filter(
+                    Website.id.in_(
+                        db.query(WebsiteTechnology.website_id).filter(
+                            WebsiteTechnology.technology_id.in_(tech_ids)
+                        )
+                    )
+                )
+        else:
+            query = query.filter(Website.id == -1)
+
+    total_filtered = query.count()
+    total_actual = 7_781_930
+    export_limit = 10
+
+    rows = (
+        query.options(
+            joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+        )
+        .order_by(Website.rank.asc(), Website.sort_order.asc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .all()
+    )
+
+    items = []
+    for row in rows:
+        techs = sorted(
+            [link.technology for link in row.technologies],
+            key=lambda tech: tech.sort_order,
+        )
+        items.append(
+            DashboardWebsiteOut(
+                id=row.id,
+                domain=row.domain,
+                rank=row.rank,
+                technologies=[
+                    DashboardTechOut(
+                        id=tech.id,
+                        name=tech.name,
+                        slug=tech.slug,
+                        icon=tech.icon,
+                        icon_color=tech.icon_color,
+                    )
+                    for tech in techs
+                ],
+            )
+        )
+
+    return DashboardSearchOut(
+        items=items,
+        page=page,
+        page_size=page_size,
+        total_filtered=total_filtered,
+        total_actual=total_actual,
+        filters_applied=filters_applied,
+        export_limit=export_limit,
+    )

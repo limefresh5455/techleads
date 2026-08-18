@@ -334,6 +334,37 @@ class ContactOut(BaseModel):
         from_attributes = True
 
 
+class DashboardTechOut(BaseModel):
+    id: int
+    name: str
+    slug: str
+    icon: str
+    icon_color: str
+
+    class Config:
+        from_attributes = True
+
+
+class DashboardWebsiteOut(BaseModel):
+    id: int
+    domain: str
+    rank: int
+    technologies: list[DashboardTechOut]
+
+    class Config:
+        from_attributes = True
+
+
+class DashboardSearchOut(BaseModel):
+    items: list[DashboardWebsiteOut]
+    page: int
+    page_size: int
+    total_filtered: int
+    total_actual: int
+    filters_applied: int
+    export_limit: int
+
+
 class LandingPayload(BaseModel):
     content: SiteContentOut
     nav_items: list[NavItemOut]

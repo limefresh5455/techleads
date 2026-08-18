@@ -22,10 +22,19 @@ app.include_router(router)
 
 @app.on_event("startup")
 def on_startup():
-    # Recreate free-tool tables when schema expands (seeded on every boot).
-    from app.models import FreeTool, ToolFaq, ToolFeature, ToolPopularItem
+    # Recreate tables that are fully reseeded on every boot.
+    from app.models import (
+        FreeTool,
+        ToolFaq,
+        ToolFeature,
+        ToolPopularItem,
+        Website,
+        WebsiteTechnology,
+    )
 
     for table in (
+        WebsiteTechnology.__table__,
+        Website.__table__,
         ToolFaq.__table__,
         ToolFeature.__table__,
         ToolPopularItem.__table__,

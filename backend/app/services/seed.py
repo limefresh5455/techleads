@@ -21,6 +21,8 @@ from app.models import (
     ToolFeature,
     ToolPopularItem,
     TrustLogo,
+    Website,
+    WebsiteTechnology,
 )
 
 
@@ -38,6 +40,7 @@ def seed_database(db: Session) -> None:
     _sync_faqs(db)
     _sync_custom_data_blocks(db)
     _sync_pricing(db)
+    _sync_websites(db)
     db.commit()
 
 
@@ -977,3 +980,133 @@ def _seed_dashboard(db: Session) -> None:
                 sort_order=i,
             )
         )
+
+
+def _upsert_category(db: Session, name: str, slug: str, icon: str, order: int) -> Category:
+    row = db.query(Category).filter(Category.slug == slug).first()
+    if row:
+        return row
+    row = Category(name=name, slug=slug, icon=icon, item_count=0, sort_order=order)
+    db.add(row)
+    db.flush()
+    return row
+
+
+def _upsert_technology(
+    db: Session,
+    name: str,
+    slug: str,
+    icon: str,
+    color: str,
+    category: Category,
+    order: int,
+    popular: bool = False,
+) -> Technology:
+    row = db.query(Technology).filter(Technology.slug == slug).first()
+    if row:
+        return row
+    row = Technology(
+        name=name,
+        slug=slug,
+        icon=icon,
+        icon_color=color,
+        website_count=0,
+        growth_percent=0.0,
+        category_id=category.id,
+        is_featured=True,
+        is_popular=popular,
+        sort_order=order,
+    )
+    db.add(row)
+    db.flush()
+    return row
+
+
+def _sync_websites(db: Session) -> None:
+    db.query(WebsiteTechnology).delete()
+    db.query(Website).delete()
+    db.flush()
+
+    categories = {
+        slug: _upsert_category(db, name, slug, icon, order)
+        for name, slug, icon, order in [
+            ("CMS", "cms", "layout", 0),
+            ("Framework", "frameworks", "code", 1),
+            ("E-Commerce", "ecommerce", "shopping-bag", 2),
+            ("Analytics", "analytics", "bar-chart-3", 3),
+            ("Marketing", "marketing", "megaphone", 4),
+            ("Payment", "payment", "credit-card", 5),
+            ("Hosting", "hosting", "server", 6),
+            ("Chat", "chat", "message-circle", 7),
+            ("WP Plugin", "wp-plugin", "puzzle", 8),
+            ("Review", "review", "star", 9),
+            ("Booking", "booking", "calendar", 10),
+            ("Business", "business", "briefcase", 11),
+            ("Other", "other", "folder", 12),
+        ]
+    }
+
+    tech_defs = [
+        ("WordPress", "wordpress", "layout", "#21759B", "cms", 0, True),
+        ("Shopify", "shopify", "shopping-bag", "#96BF48", "ecommerce", 1, True),
+        ("Wix", "wix", "layout", "#0C6EFC", "cms", 2, True),
+        ("React", "react", "code", "#61DAFB", "frameworks", 3, True),
+        ("WooCommerce", "woocommerce", "shopping-cart", "#96588A", "ecommerce", 4, False),
+        ("Google Analytics", "google-analytics", "bar-chart-3", "#F9AB00", "analytics", 5, True),
+        ("Next.js", "nextjs", "code", "#000000", "frameworks", 6, False),
+        ("Stripe", "stripe", "credit-card", "#635BFF", "payment", 7, False),
+        ("HubSpot", "hubspot", "users", "#FF7A59", "marketing", 8, False),
+        ("Hotjar", "hotjar", "bar-chart-3", "#FD3A64", "analytics", 9, False),
+        ("Drupal", "drupal", "layout", "#0678BE", "cms", 10, False),
+        ("Magento", "magento", "store", "#F26322", "ecommerce", 11, False),
+        ("Klaviyo", "klaviyo", "mail", "#1A1A1A", "marketing", 12, False),
+        ("Intercom", "intercom", "message-circle", "#286EFA", "chat", 13, False),
+        ("Cloudflare", "cloudflare", "cloud", "#F38020", "hosting", 14, False),
+        ("Judge.me", "judge-me", "star", "#2D9CDB", "review", 15, False),
+        ("Mailchimp", "mailchimp", "mail", "#FFE01B", "marketing", 16, False),
+        ("Squarespace", "squarespace", "layout", "#000000", "cms", 17, False),
+        ("Webflow", "webflow", "layout", "#4353FF", "cms", 18, False),
+        ("Vue.js", "vuejs", "code", "#42B883", "frameworks", 19, False),
+    ]
+    tech_map: dict[str, Technology] = {}
+    for name, slug, icon, color, cat_slug, order, popular in tech_defs:
+        tech_map[slug] = _upsert_technology(
+            db, name, slug, icon, color, categories[cat_slug], order, popular
+        )
+
+    websites = [
+        ("commercialspaceflight.org", 91, ["wordpress", "google-analytics"]),
+        ("baboontothemoon.com", 92, ["shopify", "klaviyo"]),
+        ("resurgencey.com", 93, ["wordpress", "woocommerce"]),
+        ("deskmat.com", 94, ["shopify", "judge-me"]),
+        ("philnickphillips.com", 95, ["wordpress", "google-analytics"]),
+        ("beadsinbulk.com", 96, ["shopify", "stripe"]),
+        ("hrecuisine.com", 97, ["wordpress", "hotjar"]),
+        ("healthcheckcommercial.com", 98, ["wordpress", "hubspot"]),
+        ("missionrockresidential.com", 99, ["wordpress", "google-analytics"]),
+        ("getdesignedoutdoors.com", 100, ["shopify", "klaviyo", "judge-me"]),
+        ("stripe.com", 88, ["react", "stripe", "cloudflare"]),
+        ("shopify.com", 89, ["shopify", "react"]),
+        ("hubspot.com", 90, ["hubspot", "react", "google-analytics"]),
+        ("notion.so", 101, ["react", "cloudflare"]),
+        ("vercel.com", 102, ["nextjs", "react"]),
+        ("allbirds.com", 103, ["shopify", "klaviyo", "google-analytics"]),
+        ("gymshark.com", 104, ["shopify", "hotjar"]),
+        ("brooklinen.com", 105, ["shopify", "stripe", "judge-me"]),
+        ("casper.com", 106, ["shopify", "google-analytics", "mailchimp"]),
+        ("warbyparker.com", 107, ["shopify", "react"]),
+        ("wixsite-demo.com", 108, ["wix", "google-analytics"]),
+        ("drupal-portal.org", 109, ["drupal", "cloudflare"]),
+        ("magento-store.net", 110, ["magento", "stripe", "hotjar"]),
+        ("webflow-agency.io", 111, ["webflow", "google-analytics", "intercom"]),
+        ("squarespace-blog.com", 112, ["squarespace", "mailchimp"]),
+    ]
+
+    for i, (domain, rank, tech_slugs) in enumerate(websites):
+        site = Website(domain=domain, rank=rank, sort_order=i)
+        db.add(site)
+        db.flush()
+        for slug in tech_slugs:
+            tech = tech_map.get(slug)
+            if tech:
+                db.add(WebsiteTechnology(website_id=site.id, technology_id=tech.id))
