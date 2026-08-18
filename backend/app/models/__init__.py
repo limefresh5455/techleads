@@ -1,0 +1,278 @@
+from sqlalchemy import Boolean, Column, DateTime, Float, ForeignKey, Integer, String, Text, func
+from sqlalchemy.orm import relationship
+
+from app.core.database import Base
+
+
+class Category(Base):
+    __tablename__ = "categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(120), unique=True, nullable=False)
+    slug = Column(String(140), unique=True, nullable=False)
+    icon = Column(String(80), default="folder")
+    item_count = Column(Integer, default=0)
+    sort_order = Column(Integer, default=0)
+
+    technologies = relationship("Technology", back_populates="category")
+
+
+class Technology(Base):
+    __tablename__ = "technologies"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(160), unique=True, nullable=False)
+    slug = Column(String(180), unique=True, nullable=False)
+    icon = Column(String(80), default="globe")
+    icon_color = Column(String(40), default="#FF6B35")
+    website_count = Column(Integer, default=0)
+    growth_percent = Column(Float, default=0.0)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
+    is_featured = Column(Boolean, default=True)
+    is_popular = Column(Boolean, default=False)
+    sort_order = Column(Integer, default=0)
+
+    category = relationship("Category", back_populates="technologies")
+
+
+class PricingPlan(Base):
+    __tablename__ = "pricing_plans"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(80), unique=True, nullable=False)
+    slug = Column(String(100), unique=True, nullable=False)
+    description = Column(Text, default="")
+    monthly_price = Column(Integer, default=0)
+    yearly_price = Column(Integer, default=0)
+    credits = Column(Integer, default=0)
+    is_popular = Column(Boolean, default=False)
+    cta_label = Column(String(80), default="Get Started")
+    sort_order = Column(Integer, default=0)
+
+    features = relationship("PlanFeature", back_populates="plan", cascade="all, delete-orphan")
+
+
+class PlanFeature(Base):
+    __tablename__ = "plan_features"
+
+    id = Column(Integer, primary_key=True, index=True)
+    plan_id = Column(Integer, ForeignKey("pricing_plans.id"), nullable=False)
+    label = Column(String(255), nullable=False)
+    included = Column(Boolean, default=True)
+    sort_order = Column(Integer, default=0)
+
+    plan = relationship("PricingPlan", back_populates="features")
+
+
+class FeatureHighlight(Base):
+    __tablename__ = "feature_highlights"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(160), nullable=False)
+    description = Column(Text, nullable=False)
+    icon = Column(String(80), default="sparkles")
+    link_label = Column(String(80), default="Learn more")
+    variant = Column(String(40), default="card")  # hero | card | banner
+    tags = Column(String(255), default="")  # comma-separated
+    sort_order = Column(Integer, default=0)
+
+
+class ContactMessage(Base):
+    __tablename__ = "contact_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(160), nullable=False)
+    email = Column(String(255), nullable=False)
+    company_website = Column(String(255), default="")
+    message = Column(Text, nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class NavItem(Base):
+    __tablename__ = "nav_items"
+
+    id = Column(Integer, primary_key=True, index=True)
+    label = Column(String(80), nullable=False)
+    href = Column(String(160), nullable=False)
+    has_dropdown = Column(Boolean, default=False)
+    parent_id = Column(Integer, ForeignKey("nav_items.id"), nullable=True)
+    sort_order = Column(Integer, default=0)
+
+    children = relationship(
+        "NavItem",
+        back_populates="parent",
+        cascade="all, delete-orphan",
+    )
+    parent = relationship("NavItem", back_populates="children", remote_side=[id])
+
+
+class SiteContent(Base):
+    __tablename__ = "site_content"
+
+    id = Column(Integer, primary_key=True, index=True)
+    brand_name = Column(String(80), default="TechLeads")
+    brand_suffix = Column(String(20), default=".Ai")
+    logo_text = Column(String(10), default="Ai")
+    login_label = Column(String(40), default="Log in")
+    nav_cta_label = Column(String(40), default="Start for free")
+
+    hero_title = Column(String(255), default="Website Technology Checker for Sales & Agencies")
+    hero_subtitle = Column(Text, default="")
+    hero_search_placeholder = Column(String(255), default="e.g., website.com")
+    hero_search_cta = Column(String(80), default="Analyze")
+    hero_secondary_cta = Column(String(80), default="Generate Lead List")
+
+    popular_eyebrow = Column(String(80), default="POPULAR TECHNOLOGIES")
+    popular_title = Column(String(160), default="Popular Technologies")
+
+    features_eyebrow = Column(String(80), default="WHY CHOOSE TECHLEADS")
+    features_title = Column(String(200), default="Everything you need to understand the web")
+
+    detect_eyebrow = Column(String(80), default="THE POWER OF DISCOVERY")
+    detect_title = Column(String(160), default="What we detect")
+
+    enrich_eyebrow = Column(String(80), default="DATA ENRICHMENT")
+    enrich_title = Column(String(200), default="Enrich your entire prospect list in seconds")
+    enrich_subtitle = Column(Text, default="")
+    enrich_cta = Column(String(80), default="Try Data Enrichment")
+
+    api_eyebrow = Column(String(80), default="DEVELOPER-READY")
+    api_title = Column(String(200), default="Integrate TechLeads.Ai Into Your Own Stack")
+    api_subtitle = Column(Text, default="")
+    api_cta = Column(String(80), default="View API Documentation")
+    api_sample = Column(Text, default="")
+
+    final_cta_title = Column(String(255), default="")
+    final_cta_primary = Column(String(80), default="Get Started")
+    final_cta_secondary = Column(String(80), default="View Pricing")
+
+    pricing_title = Column(String(160), default="Simple, transparent pricing")
+    pricing_subtitle = Column(Text, default="")
+    pricing_yearly_badge = Column(String(40), default="Save 20%")
+    calculator_title = Column(String(160), default="How much data do you need?")
+    calculator_subtitle = Column(Text, default="")
+    calculator_default_leads = Column(Integer, default=10000)
+
+    contact_title = Column(String(120), default="Get In Touch")
+    contact_subtitle = Column(Text, default="")
+    contact_button_label = Column(String(80), default="Send Message")
+
+    footer_about = Column(Text, default="")
+    footer_copyright = Column(String(160), default="TechLeads.Ai. All rights reserved.")
+    chat_label = Column(String(80), default="Chat with us")
+
+
+class DashboardPreview(Base):
+    __tablename__ = "dashboard_previews"
+
+    id = Column(Integer, primary_key=True, index=True)
+    domain = Column(String(160), nullable=False)
+    categories = Column(String(160), default="")
+    technologies = Column(String(160), default="")
+    country = Column(String(80), default="")
+    traffic = Column(String(40), nullable=False)
+    ads = Column(String(40), default="")
+    sort_order = Column(Integer, default=0)
+
+
+class DetectGroup(Base):
+    __tablename__ = "detect_groups"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(120), nullable=False)
+    theme = Column(String(40), default="orange")  # orange | peach | mint
+    sort_order = Column(Integer, default=0)
+
+    tags = relationship("DetectTag", back_populates="group", cascade="all, delete-orphan")
+
+
+class DetectTag(Base):
+    __tablename__ = "detect_tags"
+
+    id = Column(Integer, primary_key=True, index=True)
+    group_id = Column(Integer, ForeignKey("detect_groups.id"), nullable=False)
+    label = Column(String(80), nullable=False)
+    sort_order = Column(Integer, default=0)
+
+    group = relationship("DetectGroup", back_populates="tags")
+
+
+class TrustLogo(Base):
+    __tablename__ = "trust_logos"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(80), nullable=False)
+    sort_order = Column(Integer, default=0)
+
+
+class FooterColumn(Base):
+    __tablename__ = "footer_columns"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(80), nullable=False)
+    sort_order = Column(Integer, default=0)
+
+    links = relationship("FooterLink", back_populates="column", cascade="all, delete-orphan")
+
+
+class FooterLink(Base):
+    __tablename__ = "footer_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    column_id = Column(Integer, ForeignKey("footer_columns.id"), nullable=False)
+    label = Column(String(120), nullable=False)
+    href = Column(String(160), default="/")
+    sort_order = Column(Integer, default=0)
+
+    column = relationship("FooterColumn", back_populates="links")
+
+
+class SocialLink(Base):
+    __tablename__ = "social_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    label = Column(String(80), nullable=False)
+    href = Column(String(160), default="/")
+    icon_key = Column(String(40), nullable=False)
+    sort_order = Column(Integer, default=0)
+
+
+class LegalLink(Base):
+    __tablename__ = "legal_links"
+
+    id = Column(Integer, primary_key=True, index=True)
+    label = Column(String(80), nullable=False)
+    href = Column(String(160), default="/")
+    sort_order = Column(Integer, default=0)
+
+
+class FreeTool(Base):
+    __tablename__ = "free_tools"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(120), nullable=False)
+    slug = Column(String(140), unique=True, nullable=False)
+    description = Column(Text, default="")
+    href = Column(String(160), nullable=False)
+    sort_order = Column(Integer, default=0)
+
+
+class BlogPost(Base):
+    __tablename__ = "blog_posts"
+
+    id = Column(Integer, primary_key=True, index=True)
+    title = Column(String(200), nullable=False)
+    slug = Column(String(220), unique=True, nullable=False)
+    summary = Column(Text, default="")
+    category = Column(String(80), default="Guides")
+    sort_order = Column(Integer, default=0)
+
+
+class User(Base):
+    __tablename__ = "users"
+
+    id = Column(Integer, primary_key=True, index=True)
+    name = Column(String(160), nullable=False)
+    email = Column(String(255), unique=True, nullable=False, index=True)
+    password_hash = Column(String(255), nullable=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

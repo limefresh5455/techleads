@@ -1,0 +1,19 @@
+[project]
+name = "techleads-api"
+version = "1.0.0"
+description = "TechLeads.ai FastAPI backend"
+requires-python = ">=3.11"
+dependencies = [
+  "fastapi>=0.115.0",
+  "uvicorn[standard]>=0.32.0",
+  "sqlalchemy>=2.0.36",
+  "psycopg2-binary>=2.9.10",
+  "pydantic>=2.10.0",
+  "pydantic-settings>=2.6.0",
+  "python-dotenv>=1.0.1",
+  "email-validator>=2.2.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
