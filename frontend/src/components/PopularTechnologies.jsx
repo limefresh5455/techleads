@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { Icon } from './icons'
+import { Icon, formatCount } from './icons'
 
 export default function PopularTechnologies({ content, technologies = [] }) {
   if (!content) return null
@@ -12,6 +12,7 @@ export default function PopularTechnologies({ content, technologies = [] }) {
           <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
             {content.popular_title}
           </h2>
+          <p className="mt-2 text-muted">Browse websites by the technologies they use</p>
         </div>
 
         <div className="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
@@ -19,7 +20,7 @@ export default function PopularTechnologies({ content, technologies = [] }) {
             <Link
               key={tech.id}
               to="/directory"
-              className="flex items-center gap-3 rounded-xl border border-border bg-white px-4 py-4 transition hover:border-brand/40 hover:shadow-sm"
+              className="rounded-xl border border-border bg-white px-4 py-4 transition hover:border-brand/40 hover:shadow-sm"
             >
               <span
                 className="grid h-10 w-10 place-items-center rounded-lg"
@@ -27,7 +28,8 @@ export default function PopularTechnologies({ content, technologies = [] }) {
               >
                 <Icon name={tech.icon} className="h-5 w-5" style={{ color: tech.icon_color }} />
               </span>
-              <span className="text-sm font-semibold text-ink">{tech.name}</span>
+              <p className="mt-3 text-sm font-semibold text-ink">{tech.name}</p>
+              <p className="mt-1 text-xs text-muted">{formatCount(tech.website_count)}+ sites</p>
             </Link>
           ))}
         </div>

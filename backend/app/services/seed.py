@@ -17,6 +17,9 @@ from app.models import (
     SiteContent,
     SocialLink,
     Technology,
+    ToolFaq,
+    ToolFeature,
+    ToolPopularItem,
     TrustLogo,
 )
 
@@ -30,8 +33,25 @@ def seed_database(db: Session) -> None:
     _sync_footer(db)
     _sync_free_tools(db)
     _sync_blog_posts(db)
+    _sync_features(db)
+    _sync_detect_groups(db)
+    _sync_faqs(db)
+    _sync_custom_data_blocks(db)
+    _sync_pricing(db)
     db.commit()
 
+
+def _sync_features(db: Session) -> None:
+    db.query(FeatureHighlight).delete()
+    db.flush()
+    _seed_features(db)
+
+
+def _sync_detect_groups(db: Session) -> None:
+    db.query(DetectTag).delete()
+    db.query(DetectGroup).delete()
+    db.flush()
+    _seed_detect_groups(db)
 
 def _sync_nav(db: Session) -> None:
     db.query(NavItem).filter(NavItem.parent_id.isnot(None)).delete()
@@ -43,10 +63,10 @@ def _sync_nav(db: Session) -> None:
     db.flush()
     for i, (label, href) in enumerate(
         [
-            ("Shopify Theme Detector", "/tools/shopify-theme-detector"),
-            ("WordPress Theme Detector", "/tools/wordpress-theme-detector"),
-            ("CMS Detector", "/tools/cms-detector"),
-            ("Shopify App Detector", "/tools/shopify-app-detector"),
+            ("Shopify Theme Detector", "/shopify-theme-detector"),
+            ("WordPress Theme Detector", "/wordpress-theme-detector"),
+            ("CMS Detector", "/cms-detector"),
+            ("Shopify App Detector", "/shopify-app-detector"),
         ]
     ):
         db.add(
@@ -63,8 +83,7 @@ def _sync_nav(db: Session) -> None:
         [
             ("Blog", "/blog"),
             ("Pricing", "/pricing"),
-            ("API Docs", "/api-docs"),
-            ("Contact sales", "/contact"),
+            ("Custom Data", "/custom-data"),
         ],
         start=1,
     ):
@@ -128,8 +147,12 @@ def _sync_branding(db: Session) -> None:
         "and generate high-intent leads."
     )
     content.footer_copyright = "TechLeads.Ai"
-    content.pricing_title = "Simple, transparent pricing"
-    content.pricing_subtitle = "Start free, then scale as your lead volume grows."
+    content.pricing_title = "Plans & pricing"
+    content.pricing_subtitle = (
+        "Choose a plan that gives you technology lists, lead generation tools, and website insights. "
+        "All plans include access to our technology detection database."
+    )
+    content.pricing_yearly_badge = "Save ~17%"
     content.contact_title = "Contact sales"
     content.contact_subtitle = "Talk to our team about custom data, API access, or enterprise plans."
 
@@ -160,17 +183,17 @@ def _sync_footer(db: Session) -> None:
         "Products": [
             ("Home", "/"),
             ("Pricing", "/pricing"),
-            ("API Access", "/api-docs"),
+            ("Custom Data", "/custom-data"),
             ("API Docs", "/api-docs"),
             ("Blog", "/blog"),
             ("Sign Up", "/signup"),
         ],
         "Our Tools": [
             ("Website Technology Checker", "/"),
-            ("CMS Detector", "/tools/cms-detector"),
-            ("Shopify Theme Detector", "/tools/shopify-theme-detector"),
-            ("WordPress Theme Detector", "/tools/wordpress-theme-detector"),
-            ("Shopify App Detector", "/tools/shopify-app-detector"),
+            ("CMS Detector", "/cms-detector"),
+            ("Shopify Theme Detector", "/shopify-theme-detector"),
+            ("WordPress Theme Detector", "/wordpress-theme-detector"),
+            ("Shopify App Detector", "/shopify-app-detector"),
         ],
         "Resources": [
             ("Browse by Technology", "/directory"),
@@ -181,7 +204,7 @@ def _sync_footer(db: Session) -> None:
         ],
         "Connect With Us": [
             ("Contact", "/contact"),
-            ("Sign In", "/login"),
+            ("Sign In", "/signin"),
             ("Start Free Trial", "/signup"),
         ],
     }
@@ -201,38 +224,537 @@ def _sync_footer(db: Session) -> None:
 
 
 def _sync_free_tools(db: Session) -> None:
+    db.query(ToolFaq).delete()
+    db.query(ToolFeature).delete()
+    db.query(ToolPopularItem).delete()
     db.query(FreeTool).delete()
     db.flush()
+
     tools = [
-        ("Shopify Theme Detector", "shopify-theme-detector", "Detect the Shopify theme used by any store.", "/tools/shopify-theme-detector"),
-        ("WordPress Theme Detector", "wordpress-theme-detector", "Identify WordPress themes on any site.", "/tools/wordpress-theme-detector"),
-        ("CMS Detector", "cms-detector", "Find which CMS powers any website.", "/tools/cms-detector"),
-        ("Shopify App Detector", "shopify-app-detector", "See apps installed on Shopify stores.", "/tools/shopify-app-detector"),
+        {
+            "name": "Shopify Theme Detector",
+            "slug": "shopify-theme-detector",
+            "description": "Analyze any Shopify store to discover its theme, features, and installed applications",
+            "href": "/shopify-theme-detector",
+            "cta_label": "Detect Theme",
+            "popular_title": "Popular Shopify Themes",
+            "popular_subtitle": "Explore the most popular themes powering successful Shopify stores",
+            "features_title": "Powerful Features",
+            "features_subtitle": "Everything you need to analyze and understand any Shopify store's technology stack",
+            "faq_title": "Frequently Asked Questions",
+            "faq_subtitle": "Everything you need to know about our Shopify Theme Detector",
+            "final_cta_title": "Discover Your Website's Full Technology Stack",
+            "final_cta_subtitle": "Analyze themes, apps, widgets, and more with our complete tech scanner",
+            "final_cta_label": "Scan Your Website Now",
+            "popular": [
+                (
+                    "Dawn",
+                    "Shopify's default theme, optimized for speed and modern commerce. Perfect for large catalogs and multimedia-rich stores.",
+                ),
+                (
+                    "Debut",
+                    "Classic, versatile theme with powerful customization options. Ideal for both small and large product catalogs.",
+                ),
+                (
+                    "Expanse",
+                    "Modern, minimalist design with focus on visual storytelling. Great for fashion, beauty, and lifestyle brands.",
+                ),
+                (
+                    "Motion",
+                    "Premium theme with advanced animations and transitions. Perfect for creating engaging shopping experiences.",
+                ),
+                (
+                    "Sense",
+                    "Elegant theme with advanced product filtering and search capabilities. Ideal for large inventories and multi-category stores.",
+                ),
+                (
+                    "Headless",
+                    "Custom headless Shopify implementations using modern frameworks like Next.js, offering maximum flexibility and performance.",
+                ),
+            ],
+            "features": [
+                (
+                    "Theme Detection",
+                    "Identify themes, including custom and premium ones with high accuracy",
+                ),
+                (
+                    "Feature Detection",
+                    "Analyze key features and functionality in real-time",
+                ),
+                (
+                    "Real-time Results",
+                    "Get instant analysis with detailed breakdown reports",
+                ),
+            ],
+            "faqs": [
+                (
+                    "What is a Shopify Theme Detector?",
+                    "A Shopify Theme Detector is a tool that analyzes Shopify stores to identify their theme, installed applications, and key features. It helps developers, marketers, and store owners understand the technology stack behind any Shopify store.",
+                ),
+                (
+                    "How accurate is the theme detection?",
+                    "Our tool uses advanced pattern matching and signature detection to identify themes with high accuracy. However, custom themes or heavily modified default themes may be reported as 'Custom Theme'.",
+                ),
+                (
+                    "What features can be detected?",
+                    "We can detect various features including product reviews, wishlist functionality, newsletter popups, currency converters, search autocomplete, and live chat implementations.",
+                ),
+                (
+                    "Is it free to use?",
+                    "Yes, the Shopify Theme Detector is completely free to use. You can analyze any number of Shopify stores without any cost.",
+                ),
+            ],
+        },
+        {
+            "name": "WordPress Theme Detector",
+            "slug": "wordpress-theme-detector",
+            "description": "Analyze any WordPress website to discover its theme, plugins, and customizations",
+            "href": "/wordpress-theme-detector",
+            "cta_label": "Analyze Site",
+            "popular_title": "Popular WordPress Themes",
+            "popular_subtitle": "Discover the most widely-used WordPress themes and their features",
+            "features_title": "Key Features",
+            "features_subtitle": "Everything you need to analyze and understand WordPress websites",
+            "faq_title": "Frequently Asked Questions",
+            "faq_subtitle": "Common questions about our WordPress Theme Detector",
+            "final_cta_title": "Reveal the Hidden Technology Stack Powering Any Site",
+            "final_cta_subtitle": "Detect WordPress themes, plugins, features and more with our complete tech scanner",
+            "final_cta_label": "Find out what powers your site",
+            "popular": [
+                (
+                    "Divi",
+                    "A versatile theme with a powerful visual builder, perfect for creating custom designs without coding.",
+                ),
+                (
+                    "Astra",
+                    "Lightweight and fast-loading theme with extensive customization options and starter templates.",
+                ),
+                (
+                    "GeneratePress",
+                    "Performance focused theme with clean code and excellent compatibility with page builders and plugins.",
+                ),
+                (
+                    "OceanWP",
+                    "Feature-rich theme with deep WooCommerce integration and extensive customization options.",
+                ),
+                (
+                    "Kadence",
+                    "Modern theme with advanced header builder and performance optimization features.",
+                ),
+                (
+                    "Blocksy",
+                    "Next-generation theme built for the WordPress block editor with extensive customization options.",
+                ),
+            ],
+            "features": [
+                (
+                    "Theme Detection",
+                    "Identify WordPress themes and child themes with high accuracy",
+                ),
+                (
+                    "Plugin Analysis",
+                    "Discover active plugins and their versions",
+                ),
+                (
+                    "Feature Detection",
+                    "Identify key WordPress features and customizations",
+                ),
+                (
+                    "Security Check",
+                    "Detect security plugins and common protection measures",
+                ),
+            ],
+            "faqs": [
+                (
+                    "What is a WordPress Theme Detector?",
+                    "A WordPress Theme Detector is a tool that analyzes WordPress websites to identify their themes, active plugins, and customizations. It helps developers and site owners understand the technology behind any WordPress website.",
+                ),
+                (
+                    "Can it detect custom themes?",
+                    "Yes, our tool can detect custom themes and will provide information about their structure and features. However, for heavily customized themes, some details may be limited.",
+                ),
+                (
+                    "What information can be detected?",
+                    "Our tool can detect theme names, versions, active plugins, custom post types, widgets, and various WordPress features including security measures and optimization tools.",
+                ),
+                (
+                    "Is it free to use?",
+                    "Yes, the WordPress Theme Detector is completely free to use. You can analyze any number of WordPress websites without any cost.",
+                ),
+            ],
+        },
+        {
+            "name": "CMS Detector",
+            "slug": "cms-detector",
+            "description": "Instantly discover any website's CMS platform, plugins, themes, and integrations",
+            "href": "/cms-detector",
+            "cta_label": "Detect CMS",
+            "popular_title": "Popular CMS Platforms",
+            "popular_subtitle": "Discover the different types of Content Management Systems",
+            "features_title": "Key Features",
+            "features_subtitle": "Everything you need to analyze and understand any website's CMS platform",
+            "faq_title": "Frequently Asked Questions",
+            "faq_subtitle": "Common questions about our CMS Detection tool",
+            "final_cta_title": "Discover Your Website's Full Technology Stack",
+            "final_cta_subtitle": "Check and analyze CMS platforms, plugins, integrations and more with our complete tech detector & scanner",
+            "final_cta_label": "Scan Your Website Now",
+            "popular": [
+                (
+                    "WordPress",
+                    "The world's most popular CMS, perfect for blogs, business sites, and portfolios. Known for its extensive plugin ecosystem.",
+                ),
+                (
+                    "Shopify",
+                    "Popular ecommerce platform designed for businesses of all sizes. Easily build, customize, and manage your online store with powerful tools and integrations.",
+                ),
+                (
+                    "Drupal",
+                    "Highly flexible and secure CMS favored by large organizations and government websites. Excellent for complex content structures.",
+                ),
+                (
+                    "Wix",
+                    "A website builder for creating beautiful websites quickly. Ideal for small businesses, portfolios, and personal projects with drag-and-drop simplicity.",
+                ),
+                (
+                    "Ghost",
+                    "Modern publishing platform built for professional bloggers and content creators. Features a clean, minimalist interface.",
+                ),
+                (
+                    "Headless CMS",
+                    "Modern content management systems that separate content from presentation, ideal for multi-platform content delivery.",
+                ),
+            ],
+            "features": [
+                (
+                    "CMS Detection",
+                    "Identify content management systems with high accuracy",
+                ),
+                (
+                    "Feature Analysis",
+                    "Discover installed plugins and core features",
+                ),
+                (
+                    "Theme Detection",
+                    "Identify themes and templates being used",
+                ),
+                (
+                    "Real-time Analysis",
+                    "Get instant results with detailed breakdown",
+                ),
+            ],
+            "faqs": [
+                (
+                    "What is a CMS Detector & Checker?",
+                    "A CMS Detector & Checker is a tool that analyzes and checks websites to identify their content management system, installed plugins, and key features.",
+                ),
+                (
+                    "Which CMS platforms can be detected?",
+                    "Our tool can detect major CMS platforms including WordPress, Drupal, Joomla, Ghost, and Magento, along with their associated features and plugins.",
+                ),
+                (
+                    "How accurate is our CMS checker?",
+                    "Our tool uses advanced pattern matching and signature detection to check and identify CMS platforms with high accuracy. However, heavily customized installations may affect detection accuracy.",
+                ),
+                (
+                    "Is it free to use?",
+                    "Yes, the CMS Detector is completely free to use.",
+                ),
+            ],
+        },
+        {
+            "name": "Shopify App Detector",
+            "slug": "shopify-app-detector",
+            "description": "Analyze any Shopify store to discover installed apps, widgets, and ecommerce integrations",
+            "href": "/shopify-app-detector",
+            "cta_label": "Detect Apps",
+            "popular_title": "Popular Shopify Apps",
+            "popular_subtitle": "Explore apps commonly found on high-performing Shopify stores",
+            "features_title": "Powerful Features",
+            "features_subtitle": "Everything you need to uncover a Shopify store's app stack",
+            "faq_title": "Frequently Asked Questions",
+            "faq_subtitle": "Everything you need to know about our Shopify App Detector",
+            "final_cta_title": "Uncover Every App Powering a Shopify Store",
+            "final_cta_subtitle": "Detect themes, apps, widgets, and more with our complete tech scanner",
+            "final_cta_label": "Scan Your Website Now",
+            "popular": [
+                (
+                    "Klaviyo",
+                    "Email and SMS marketing platform used by ecommerce brands for automated flows and campaigns.",
+                ),
+                (
+                    "Judge.me",
+                    "Product reviews app that helps stores collect social proof and display ratings on product pages.",
+                ),
+                (
+                    "Recharge",
+                    "Subscription management app for recurring products and membership-style shopping experiences.",
+                ),
+                (
+                    "Gorgias",
+                    "Helpdesk and live chat platform built for Shopify support teams.",
+                ),
+                (
+                    "Privy",
+                    "Popups, banners, and email capture tools for converting visitors into customers.",
+                ),
+                (
+                    "Shopify Flow",
+                    "Automation toolkit for streamlining store operations without custom code.",
+                ),
+            ],
+            "features": [
+                (
+                    "App Detection",
+                    "Identify installed Shopify apps and common third-party widgets",
+                ),
+                (
+                    "Integration Analysis",
+                    "Spot marketing, reviews, chat, and subscription tools in use",
+                ),
+                (
+                    "Real-time Results",
+                    "Get instant analysis with a clear breakdown of detected apps",
+                ),
+            ],
+            "faqs": [
+                (
+                    "What is a Shopify App Detector?",
+                    "A Shopify App Detector analyzes Shopify stores to identify installed applications, widgets, and common ecommerce integrations.",
+                ),
+                (
+                    "How accurate is app detection?",
+                    "We use signature and pattern matching across scripts, markup, and known app footprints. Heavily customized or privately hosted apps may be harder to detect.",
+                ),
+                (
+                    "Is it free to use?",
+                    "Yes, the Shopify App Detector is free to use for website analysis.",
+                ),
+            ],
+        },
     ]
-    for i, (name, slug, description, href) in enumerate(tools):
-        db.add(FreeTool(name=name, slug=slug, description=description, href=href, sort_order=i))
+
+    for i, tool in enumerate(tools):
+        row = FreeTool(
+            name=tool["name"],
+            slug=tool["slug"],
+            description=tool["description"],
+            href=tool["href"],
+            cta_label=tool["cta_label"],
+            popular_title=tool["popular_title"],
+            popular_subtitle=tool["popular_subtitle"],
+            features_title=tool["features_title"],
+            features_subtitle=tool["features_subtitle"],
+            faq_title=tool["faq_title"],
+            faq_subtitle=tool["faq_subtitle"],
+            final_cta_title=tool["final_cta_title"],
+            final_cta_subtitle=tool["final_cta_subtitle"],
+            final_cta_label=tool["final_cta_label"],
+            sort_order=i,
+        )
+        db.add(row)
+        db.flush()
+        for j, (title, description) in enumerate(tool["popular"]):
+            db.add(
+                ToolPopularItem(
+                    tool_id=row.id, title=title, description=description, sort_order=j
+                )
+            )
+        for j, (title, description) in enumerate(tool["features"]):
+            db.add(
+                ToolFeature(
+                    tool_id=row.id, title=title, description=description, sort_order=j
+                )
+            )
+        for j, (question, answer) in enumerate(tool["faqs"]):
+            db.add(
+                ToolFaq(tool_id=row.id, question=question, answer=answer, sort_order=j)
+            )
 
 
 def _sync_blog_posts(db: Session) -> None:
-    if db.query(BlogPost).first():
-        return
+    db.query(BlogPost).delete()
+    db.flush()
     posts = [
-        ("How to find WhatsApp Business websites", "whatsapp-business-websites", "Use technology signals to build high-intent outreach lists.", "Guides"),
-        ("Shopify lead generation playbook", "shopify-lead-generation", "Target growing ecommerce brands with the right tech stack filters.", "Playbooks"),
-        ("Why tech intelligence beats firmographics alone", "tech-intelligence", "Combine installed tools with company data for better conversion.", "Insights"),
-        ("BuiltWith alternative for sales teams", "builtwith-alternative", "How TechLeads.Ai helps agencies move faster than legacy lookalike tools.", "Comparisons"),
+        (
+            "Best Technographic Data Providers in 2026: A Complete Comparison",
+            "technographic-data-providers-2026",
+            "Compare the top technographic data providers — TechLeads.Ai, BuiltWith, Wappalyzer, Datanyze, ZoomInfo, and Apollo — across detection accuracy, lead gen, API access, and GTM fit.",
+            "Comparison",
+        ),
+        (
+            "Best Website Technology Checker Tools (2026)",
+            "best-website-technology-checker-tools-2026",
+            "Explore the most accurate and reliable website technology checker tools. Compare TechLeads.Ai, Wappalyzer, BuiltWith, and WhatRuns for CMS detection, lead generation, and market research.",
+            "Guide",
+        ),
+        (
+            "Top 6 Wappalyzer Alternatives (2026)",
+            "wappalyzer-alternatives-2026",
+            "Discover the best Wappalyzer alternatives in 2026. Compare TechLeads.Ai, BuiltWith, WhatRuns, SimilarTech & more to find your ideal tech stack tool.",
+            "Comparison",
+        ),
+        (
+            "Best StoreLeads Alternative (2026)",
+            "storeleads-alternative-2026",
+            "Looking for a StoreLeads alternative? TechLeads.Ai offers affordable ecommerce lead generation, Shopify store discovery, and technology detection starting free.",
+            "Comparison",
+        ),
+        (
+            "BuiltWith Alternatives: 6 Best Tools",
+            "builtwith-alternatives",
+            "Discover the top 6 BuiltWith alternatives including TechLeads.Ai, Wappalyzer, WebTechSurvey, Bloomberry, Snov.io, and Web Reveal for website tech detection.",
+            "Comparison",
+        ),
     ]
     for i, (title, slug, summary, category) in enumerate(posts):
         db.add(BlogPost(title=title, slug=slug, summary=summary, category=category, sort_order=i))
 
 
+def _sync_faqs(db: Session) -> None:
+    from app.models import FaqItem
+
+    db.query(FaqItem).delete()
+    db.flush()
+    faqs = [
+        (
+            "What’s included in the data exports?",
+            "Our data exports provide detailed technology insights based on what we can detect from each website. This typically includes frameworks, CMS platforms, analytics tools, and other technologies in use.",
+        ),
+        (
+            "Can I filter data by specific technologies?",
+            "Absolutely! All plans allow filtering by technology type.",
+        ),
+        (
+            "Can I upgrade or downgrade my plan?",
+            "Yes, you can change your plan at any time. Upgrades take effect immediately, while downgrades will be applied at the start of your next billing cycle.",
+        ),
+        (
+            "Do you offer custom data solutions?",
+            "Yes, our Enterprise plan can be customized to meet your specific needs. Contact our sales team to discuss custom data fields, integration options, or specialized industry coverage.",
+        ),
+    ]
+    for i, (q, a) in enumerate(faqs):
+        db.add(FaqItem(question=q, answer=a, sort_order=i))
+
+
+def _sync_custom_data_blocks(db: Session) -> None:
+    from app.models import CustomDataBlock
+
+    db.query(CustomDataBlock).delete()
+    db.flush()
+    blocks = [
+        (
+            "Enterprise Technology Intelligence",
+            "Full-market visibility across millions of websites. Get technology adoption data, market share reports, and competitive signals for any industry or region.",
+        ),
+        (
+            "Custom Technology Datasets",
+            "Datasets filtered by technology stack and category — delivered as CSV, JSON, or synced directly to your data warehouse.",
+        ),
+        (
+            "Lead Generation Campaigns",
+            "Prospect lists built from technology signals. Target companies using specific tools, competitors' customers, or recent tech adopters — enriched with contact data.",
+        ),
+        (
+            "Custom Technology Detection",
+            "Detection rules for proprietary or niche technologies not in the standard library. Private categories, high-frequency crawls, and re-crawls.",
+        ),
+        (
+            "API & Data Integrations",
+            "Real-time detection API, bulk enrichment endpoint, and webhooks. Integrate with HubSpot, Salesforce, Clay, and n8n.",
+        ),
+        (
+            "White Label & Reseller Access",
+            "Full white-label API under your own domain and branding. Reseller pricing, embeddable widgets, and a dedicated account manager.",
+        ),
+    ]
+    for i, (title, description) in enumerate(blocks):
+        db.add(CustomDataBlock(title=title, description=description, sort_order=i))
+
+
+def _sync_pricing(db: Session) -> None:
+    db.query(PlanFeature).delete()
+    db.query(PricingPlan).delete()
+    db.flush()
+    plans = [
+        {
+            "name": "Starter",
+            "slug": "starter",
+            "description": "Perfect for individuals and small teams",
+            "monthly_price": 99,
+            "yearly_price": 980,
+            "credits": 0,
+            "is_popular": False,
+            "cta_label": "Get started",
+            "features": [
+                "Unlimited technology lists",
+                "Unlimited keyword searches",
+                "Unlimited leads per export",
+                "1 team member access",
+                "Advanced filtering",
+                "Priority email support",
+            ],
+        },
+        {
+            "name": "Business",
+            "slug": "business",
+            "description": "Ideal for growing businesses and marketing teams",
+            "monthly_price": 149,
+            "yearly_price": 1480,
+            "credits": 25000,
+            "is_popular": True,
+            "cta_label": "Get started",
+            "features": [
+                "Unlimited technology lists",
+                "Unlimited keyword searches",
+                "Unlimited leads per export",
+                "1 team member access",
+                "Advanced filtering",
+                "Bulk lookup",
+                "API access (25k requests/mo)",
+                "Priority email support",
+            ],
+        },
+        {
+            "name": "Enterprise",
+            "slug": "enterprise",
+            "description": "For teams and organizations with advanced needs",
+            "monthly_price": 0,
+            "yearly_price": 0,
+            "credits": 0,
+            "is_popular": False,
+            "cta_label": "Contact Sales",
+            "features": [
+                "Unlimited technology lists",
+                "Unlimited keyword searches",
+                "Bulk data purchase",
+                "Multiple team members access",
+                "Advanced filtering",
+                "API access",
+                "Dedicated account manager",
+            ],
+        },
+    ]
+    for i, plan in enumerate(plans):
+        row = PricingPlan(
+            name=plan["name"],
+            slug=plan["slug"],
+            description=plan["description"],
+            monthly_price=plan["monthly_price"],
+            yearly_price=plan["yearly_price"],
+            credits=plan["credits"],
+            is_popular=plan["is_popular"],
+            cta_label=plan["cta_label"],
+            sort_order=i,
+        )
+        db.add(row)
+        db.flush()
+        for j, label in enumerate(plan["features"]):
+            db.add(PlanFeature(plan_id=row.id, label=label, included=True, sort_order=j))
+
+
 def _seed_core(db: Session) -> None:
     if db.query(Technology).first():
-        if not db.query(DetectGroup).first():
-            _seed_detect_groups(db)
-        if db.query(FeatureHighlight).count() < 4:
-            db.query(FeatureHighlight).delete()
-            _seed_features(db)
         return
 
     categories_data = [
@@ -282,72 +804,6 @@ def _seed_core(db: Session) -> None:
             )
         )
 
-    plans = [
-        {
-            "name": "Free",
-            "slug": "free",
-            "description": "Try TechLeads.Ai with limited lookups.",
-            "monthly_price": 0,
-            "yearly_price": 0,
-            "credits": 50,
-            "is_popular": False,
-            "cta_label": "Start Free",
-            "features": ["50 lookups / month", "Free tools access", "CSV export (limited)", "Email support"],
-        },
-        {
-            "name": "Pro",
-            "slug": "pro",
-            "description": "For growing sales and agency teams.",
-            "monthly_price": 59,
-            "yearly_price": 588,
-            "credits": 10000,
-            "is_popular": True,
-            "cta_label": "Start Trial",
-            "features": [
-                "10,000 lookups / month",
-                "Bulk CSV enrichment",
-                "Lead lists & filters",
-                "Chrome extension",
-                "Priority support",
-            ],
-        },
-        {
-            "name": "Enterprise",
-            "slug": "enterprise",
-            "description": "Custom data, API volume, and dedicated support.",
-            "monthly_price": 149,
-            "yearly_price": 1428,
-            "credits": 100000,
-            "is_popular": False,
-            "cta_label": "Contact Sales",
-            "features": [
-                "100,000+ lookups / month",
-                "API access",
-                "Custom datasets",
-                "Team seats",
-                "SSO & audit logs",
-            ],
-        },
-    ]
-    for i, plan in enumerate(plans):
-        row = PricingPlan(
-            name=plan["name"],
-            slug=plan["slug"],
-            description=plan["description"],
-            monthly_price=plan["monthly_price"],
-            yearly_price=plan["yearly_price"],
-            credits=plan["credits"],
-            is_popular=plan["is_popular"],
-            cta_label=plan["cta_label"],
-            sort_order=i,
-        )
-        db.add(row)
-        db.flush()
-        for j, label in enumerate(plan["features"]):
-            db.add(PlanFeature(plan_id=row.id, label=label, included=True, sort_order=j))
-
-    _seed_features(db)
-    _seed_detect_groups(db)
     for i, name in enumerate(["G2", "Capterra", "Trustpilot", "Product Hunt"]):
         db.add(TrustLogo(name=name, sort_order=i))
 

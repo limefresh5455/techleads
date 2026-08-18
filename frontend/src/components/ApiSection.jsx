@@ -13,7 +13,7 @@ export default function ApiSection({ content }) {
           </h2>
           <p className="mt-4 text-muted">{content.api_subtitle}</p>
           <Link
-            to="/developers"
+            to="/api-docs"
             className="mt-8 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             {content.api_cta}

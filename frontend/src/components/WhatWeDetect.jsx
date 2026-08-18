@@ -15,6 +15,7 @@ export default function WhatWeDetect({ content, groups = [] }) {
           <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
             {content.detect_title}
           </h2>
+          <p className="mt-2 text-muted">350+ technologies across every layer of the modern web stack.</p>
         </div>
 
         <div className="mt-10 grid gap-4 md:grid-cols-3">

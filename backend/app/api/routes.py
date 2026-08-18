@@ -7,8 +7,10 @@ from app.models import (
     BlogPost,
     Category,
     ContactMessage,
+    CustomDataBlock,
     DashboardPreview,
     DetectGroup,
+    FaqItem,
     FeatureHighlight,
     FooterColumn,
     FreeTool,
@@ -23,16 +25,18 @@ from app.models import (
 )
 from app.schemas import (
     AuthResponse,
-    AuthUserOut,
     BlogPostOut,
     CategoryOut,
     ContactCreate,
     ContactOut,
+    CustomDataBlockOut,
     DashboardPreviewOut,
     DetectGroupOut,
+    FaqItemOut,
     FeatureHighlightOut,
     FooterColumnOut,
     FreeToolOut,
+    FreeToolDetailOut,
     LandingPayload,
     LegalLinkOut,
     LoginRequest,
@@ -148,6 +152,8 @@ def get_landing(db: Session = Depends(get_db)):
         legal_links=db.query(LegalLink).order_by(LegalLink.sort_order).all(),
         free_tools=db.query(FreeTool).order_by(FreeTool.sort_order).all(),
         blog_posts=db.query(BlogPost).order_by(BlogPost.sort_order).all(),
+        faqs=db.query(FaqItem).order_by(FaqItem.sort_order).all(),
+        custom_data_blocks=db.query(CustomDataBlock).order_by(CustomDataBlock.sort_order).all(),
     )
 
 
@@ -189,6 +195,26 @@ def list_technologies(db: Session = Depends(get_db)):
 @router.get("/free-tools", response_model=list[FreeToolOut])
 def list_free_tools(db: Session = Depends(get_db)):
     return db.query(FreeTool).order_by(FreeTool.sort_order).all()
+
+
+@router.get("/free-tools/{slug}", response_model=FreeToolDetailOut)
+def get_free_tool(slug: str, db: Session = Depends(get_db)):
+    tool = (
+        db.query(FreeTool)
+        .options(
+            joinedload(FreeTool.popular_items),
+            joinedload(FreeTool.features),
+            joinedload(FreeTool.faqs),
+        )
+        .filter(FreeTool.slug == slug)
+        .first()
+    )
+    if not tool:
+        raise HTTPException(status_code=404, detail="Tool not found")
+    tool.popular_items.sort(key=lambda x: x.sort_order)
+    tool.features.sort(key=lambda x: x.sort_order)
+    tool.faqs.sort(key=lambda x: x.sort_order)
+    return tool
 
 
 @router.get("/blog", response_model=list[BlogPostOut])

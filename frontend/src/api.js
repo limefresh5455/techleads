@@ -9,14 +9,25 @@ async function request(path, options = {}) {
     ...options,
   })
   if (!res.ok) {
-    const text = await res.text()
-    throw new Error(text || `Request failed: ${res.status}`)
+    let message = `Request failed: ${res.status}`
+    try {
+      const data = await res.json()
+      message = data.detail || JSON.stringify(data)
+    } catch {
+      const text = await res.text()
+      if (text) message = text
+    }
+    throw new Error(typeof message === 'string' ? message : 'Request failed')
   }
   return res.json()
 }
 
 export function fetchLanding() {
   return request('/api/landing')
+}
+
+export function fetchFreeTool(slug) {
+  return request(`/api/free-tools/${encodeURIComponent(slug)}`)
 }
 
 export function searchTechnologies(q) {
@@ -26,6 +37,20 @@ export function searchTechnologies(q) {
 
 export function submitContact(payload) {
   return request('/api/contact', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function signup(payload) {
+  return request('/api/auth/signup', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function login(payload) {
+  return request('/api/auth/login', {
     method: 'POST',
     body: JSON.stringify(payload),
   })

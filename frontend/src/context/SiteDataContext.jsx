@@ -17,6 +17,8 @@ const empty = {
   legal_links: [],
   free_tools: [],
   blog_posts: [],
+  faqs: [],
+  custom_data_blocks: [],
 }
 
 const SiteDataContext = createContext({

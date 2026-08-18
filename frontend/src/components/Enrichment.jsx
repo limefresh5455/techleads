@@ -1,6 +1,14 @@
 import { Link } from 'react-router-dom'
 
-export default function Enrichment({ content, rows = [] }) {
+const DEMO_ROWS = [
+  { domain: 'stripe.com', tech: 'React, Stripe', email: 'press@stripe.com' },
+  { domain: 'shopify.com', tech: 'Shopify, Ruby', email: 'press@shopify.com' },
+  { domain: 'hubspot.com', tech: 'HubSpot, React', email: 'media@hubspot.com' },
+  { domain: 'vercel.com', tech: 'Next.js, React', email: 'press@vercel.com' },
+  { domain: 'notion.so', tech: 'React, Cloudflare', email: 'press@notion.so' },
+]
+
+export default function Enrichment({ content }) {
   if (!content) return null
 
   return (
@@ -14,38 +22,42 @@ export default function Enrichment({ content, rows = [] }) {
           <p className="mt-3 text-muted">{content.enrich_subtitle}</p>
         </div>
 
-        <div className="mx-auto mt-10 max-w-5xl overflow-hidden rounded-2xl border border-border bg-white shadow-lg">
-          <div className="flex items-center justify-between border-b border-border px-4 py-3">
-            <p className="text-sm font-semibold text-ink">Prospect enrichment</p>
-            <span className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white">+ Create List</span>
+        <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-2xl border border-border bg-white shadow-lg">
+          <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
+            <div>
+              <p className="text-sm font-semibold text-ink">prospects.csv</p>
+              <p className="text-xs text-muted">5 rows · Column: domain</p>
+            </div>
+            <button type="button" className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-white">
+              Enrich 5 rows
+            </button>
           </div>
           <div className="overflow-x-auto">
             <table className="min-w-full text-left text-sm">
               <thead className="bg-surface text-xs uppercase tracking-wide text-muted">
                 <tr>
-                  <th className="px-4 py-3">Website</th>
+                  <th className="px-4 py-3">Domain</th>
                   <th className="px-4 py-3">Technologies</th>
-                  <th className="px-4 py-3">Country</th>
-                  <th className="px-4 py-3">Traffic</th>
+                  <th className="px-4 py-3">Email</th>
                 </tr>
               </thead>
               <tbody>
-                {rows.slice(0, 4).map((row) => (
-                  <tr key={row.id} className="border-t border-border/70">
+                {DEMO_ROWS.map((row) => (
+                  <tr key={row.domain} className="border-t border-border/70">
                     <td className="px-4 py-3 font-medium text-ink">{row.domain}</td>
-                    <td className="px-4 py-3 text-muted">{row.technologies}</td>
-                    <td className="px-4 py-3 text-muted">{row.country}</td>
-                    <td className="px-4 py-3 text-emerald-600">{row.traffic}</td>
+                    <td className="px-4 py-3 text-muted">{row.tech}</td>
+                    <td className="px-4 py-3 text-muted">{row.email}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
+          <div className="border-t border-border px-4 py-3 text-xs text-muted">0 / 5 enriched · Download CSV</div>
         </div>
 
         <div className="mt-8 text-center">
           <Link
-            to="/get-started"
+            to="/signup"
             className="inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             {content.enrich_cta}

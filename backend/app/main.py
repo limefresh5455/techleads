@@ -22,6 +22,17 @@ app.include_router(router)
 
 @app.on_event("startup")
 def on_startup():
+    # Recreate free-tool tables when schema expands (seeded on every boot).
+    from app.models import FreeTool, ToolFaq, ToolFeature, ToolPopularItem
+
+    for table in (
+        ToolFaq.__table__,
+        ToolFeature.__table__,
+        ToolPopularItem.__table__,
+        FreeTool.__table__,
+    ):
+        table.drop(bind=engine, checkfirst=True)
+
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
     try:

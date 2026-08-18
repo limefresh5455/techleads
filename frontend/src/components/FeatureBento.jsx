@@ -16,6 +16,10 @@ export default function FeatureBento({ content, features = [] }) {
           <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
             {content.features_title}
           </h2>
+          <p className="mx-auto mt-3 max-w-2xl text-muted">
+            From a single URL lookup to bulk enrichment of thousands of domains — one platform for all your tech
+            intelligence.
+          </p>
         </div>
 
         <div className="mt-10 grid gap-4 lg:grid-cols-3">

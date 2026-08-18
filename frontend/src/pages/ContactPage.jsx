@@ -7,9 +7,10 @@ export default function ContactPage() {
   return (
     <>
       <PageHero
-        title={data.content?.contact_title || 'Contact Us'}
+        title={data.content?.contact_title || 'Contact sales'}
         subtitle={data.content?.contact_subtitle}
-        ctaTo="/get-started"
+        ctaLabel="Start free trial"
+        ctaTo="/signup"
       />
       <Contact content={data.content} trustLogos={data.trust_logos} showHeader={false} />
     </>

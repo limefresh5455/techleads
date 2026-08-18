@@ -7,10 +7,6 @@ export default function Hero({ content, dashboardPreviews = [] }) {
 
   if (!content) return null
 
-  function onAnalyze(e) {
-    e.preventDefault()
-  }
-
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#fff7f2] via-white to-white pb-12 pt-12 md:pt-16">
       <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,107,53,0.14),_transparent_55%)]" />
@@ -21,7 +17,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
         <p className="mx-auto mt-5 max-w-2xl text-base text-muted md:text-lg">{content.hero_subtitle}</p>
 
         <form
-          onSubmit={onAnalyze}
+          onSubmit={(e) => e.preventDefault()}
           className="mx-auto mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center"
         >
           <div className="flex flex-1 items-center rounded-xl border border-border bg-white px-4 shadow-sm">
@@ -33,10 +29,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
               className="w-full bg-transparent px-3 py-3.5 text-sm outline-none"
             />
           </div>
-          <button
-            type="submit"
-            className="rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-dark"
-          >
+          <button type="submit" className="rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-dark">
             {content.hero_search_cta}
           </button>
         </form>
@@ -45,7 +38,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
       <div className="relative mx-auto mt-12 max-w-6xl px-4 lg:px-6">
         <div className="overflow-hidden rounded-2xl border border-border bg-white shadow-xl shadow-brand/10">
           <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
-            <p className="text-sm font-semibold text-ink">Lead directory preview</p>
+            <p className="text-sm font-semibold text-ink">TechLeads.Ai Dashboard</p>
             <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">Live</span>
           </div>
           <div className="overflow-x-auto">
@@ -57,7 +50,6 @@ export default function Hero({ content, dashboardPreviews = [] }) {
                   <th className="px-4 py-3 font-semibold">Technologies</th>
                   <th className="px-4 py-3 font-semibold">Country</th>
                   <th className="px-4 py-3 font-semibold">Traffic</th>
-                  <th className="px-4 py-3 font-semibold">Ads</th>
                 </tr>
               </thead>
               <tbody>
@@ -68,7 +60,6 @@ export default function Hero({ content, dashboardPreviews = [] }) {
                     <td className="px-4 py-3 text-muted">{row.technologies}</td>
                     <td className="px-4 py-3 text-muted">{row.country}</td>
                     <td className="px-4 py-3 text-emerald-600">{row.traffic}</td>
-                    <td className="px-4 py-3 text-muted">{row.ads}</td>
                   </tr>
                 ))}
               </tbody>
@@ -76,13 +67,19 @@ export default function Hero({ content, dashboardPreviews = [] }) {
           </div>
         </div>
 
-        <div className="mt-8 text-center">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
-            to="/directory"
+            to="/signup"
             className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
           >
             {content.hero_secondary_cta}
             <ArrowRight className="h-4 w-4" />
+          </Link>
+          <Link
+            to="/directory"
+            className="inline-flex rounded-xl border border-border bg-white px-6 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
+          >
+            Explore Our Database
           </Link>
         </div>
       </div>

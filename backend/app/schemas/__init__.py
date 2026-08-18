@@ -159,6 +159,58 @@ class FreeToolOut(BaseModel):
     slug: str
     description: str
     href: str
+    cta_label: str = "Analyze"
+
+    class Config:
+        from_attributes = True
+
+
+class ToolPopularItemOut(BaseModel):
+    id: int
+    title: str
+    description: str
+
+    class Config:
+        from_attributes = True
+
+
+class ToolFeatureOut(BaseModel):
+    id: int
+    title: str
+    description: str
+
+    class Config:
+        from_attributes = True
+
+
+class ToolFaqOut(BaseModel):
+    id: int
+    question: str
+    answer: str
+
+    class Config:
+        from_attributes = True
+
+
+class FreeToolDetailOut(BaseModel):
+    id: int
+    name: str
+    slug: str
+    description: str
+    href: str
+    cta_label: str
+    popular_title: str
+    popular_subtitle: str
+    features_title: str
+    features_subtitle: str
+    faq_title: str
+    faq_subtitle: str
+    final_cta_title: str
+    final_cta_subtitle: str
+    final_cta_label: str
+    popular_items: list[ToolPopularItemOut] = []
+    features: list[ToolFeatureOut] = []
+    faqs: list[ToolFaqOut] = []
 
     class Config:
         from_attributes = True
@@ -170,6 +222,24 @@ class BlogPostOut(BaseModel):
     slug: str
     summary: str
     category: str
+
+    class Config:
+        from_attributes = True
+
+
+class FaqItemOut(BaseModel):
+    id: int
+    question: str
+    answer: str
+
+    class Config:
+        from_attributes = True
+
+
+class CustomDataBlockOut(BaseModel):
+    id: int
+    title: str
+    description: str
 
     class Config:
         from_attributes = True
@@ -280,3 +350,5 @@ class LandingPayload(BaseModel):
     legal_links: list[LegalLinkOut]
     free_tools: list[FreeToolOut]
     blog_posts: list[BlogPostOut]
+    faqs: list[FaqItemOut] = []
+    custom_data_blocks: list[CustomDataBlockOut] = []

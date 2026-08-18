@@ -13,13 +13,10 @@ export default function HomePage() {
   return (
     <>
       <Hero content={data.content} dashboardPreviews={data.dashboard_previews} />
-      <PopularTechnologies
-        content={data.content}
-        technologies={data.popular_technologies}
-      />
+      <PopularTechnologies content={data.content} technologies={data.popular_technologies} />
       <FeatureBento content={data.content} features={data.feature_highlights} />
       <WhatWeDetect content={data.content} groups={data.detect_groups} />
-      <Enrichment content={data.content} rows={data.dashboard_previews} />
+      <Enrichment content={data.content} />
       <ApiSection content={data.content} />
       <FinalCta content={data.content} />
     </>

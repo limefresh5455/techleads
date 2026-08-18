@@ -12,7 +12,7 @@ export default function FinalCta({ content }) {
           </h2>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
             <Link
-              to="/get-started"
+              to="/signup"
               className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-white/90"
             >
               {content.final_cta_primary}
