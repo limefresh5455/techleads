@@ -1,9 +1,15 @@
 const API_BASE = import.meta.env.VITE_API_URL || ''
 
+function authHeaders() {
+  const token = localStorage.getItem('tl_token')
+  return token ? { Authorization: `Bearer ${token}` } : {}
+}
+
 async function request(path, options = {}) {
   const res = await fetch(`${API_BASE}${path}`, {
     headers: {
       'Content-Type': 'application/json',
+      ...authHeaders(),
       ...(options.headers || {}),
     },
     ...options,
@@ -26,6 +32,10 @@ export function fetchLanding() {
   return request('/api/landing')
 }
 
+export function fetchMe() {
+  return request('/api/me')
+}
+
 export function fetchDashboardSearch({ q = '', technologies = [], match = 'any', page = 1, pageSize = 10 }) {
   const params = new URLSearchParams()
   if (q) params.set('q', q)
@@ -36,8 +46,31 @@ export function fetchDashboardSearch({ q = '', technologies = [], match = 'any',
   return request(`/api/dashboard/search?${params.toString()}`)
 }
 
+export function exportDashboard({ q = '', technologies = [], match = 'any', limit = 10 }) {
+  const params = new URLSearchParams()
+  if (q) params.set('q', q)
+  if (technologies.length) params.set('technologies', technologies.join(','))
+  params.set('match', match)
+  params.set('limit', String(limit))
+  return request(`/api/dashboard/export?${params.toString()}`, { method: 'POST' })
+}
+
 export function fetchWebsiteDetail(id) {
   return request(`/api/dashboard/websites/${id}`)
+}
+
+export function detectUrl(url) {
+  return request('/api/v1/detect', {
+    method: 'POST',
+    body: JSON.stringify({ url }),
+  })
+}
+
+export function enrichUrls(urls) {
+  return request('/api/v1/enrich', {
+    method: 'POST',
+    body: JSON.stringify({ urls }),
+  })
 }
 
 export function fetchFreeTool(slug) {

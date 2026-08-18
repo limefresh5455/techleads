@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useSearchParams } from 'react-router-dom'
 import {
-  Download,
   ExternalLink,
   Filter,
+  Loader2,
   Search,
 } from 'lucide-react'
-import { fetchDashboardSearch, fetchWebsiteDetail } from '../api'
+import { detectUrl, exportDashboard, fetchDashboardSearch, fetchWebsiteDetail } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
 import SiteDetailsPanel from '../components/SiteDetailsPanel'
+import CreditsPanel from '../components/CreditsPanel'
 
 function TechBadge({ tech }) {
   return (
@@ -23,7 +24,8 @@ function TechBadge({ tech }) {
 }
 
 export default function DashboardPage() {
-  const { data } = useSiteData()
+  const { data, updateUserCredits } = useSiteData()
+  const [searchParams, setSearchParams] = useSearchParams()
   const technologies = data.technologies || []
   const categories = data.categories || []
 
@@ -39,6 +41,9 @@ export default function DashboardPage() {
   const [selectedId, setSelectedId] = useState(null)
   const [siteDetail, setSiteDetail] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [analyzeUrl, setAnalyzeUrl] = useState('')
+  const [analyzing, setAnalyzing] = useState(false)
+  const [exporting, setExporting] = useState(false)
 
   const categoryOptions = useMemo(() => {
     const seen = new Set()
@@ -76,13 +81,16 @@ export default function DashboardPage() {
         page,
       })
       setResults(payload)
+      if (typeof payload.user_credits === 'number') {
+        updateUserCredits(payload.user_credits)
+      }
     } catch (err) {
       setError(err.message || 'Failed to load results')
       setResults(null)
     } finally {
       setLoading(false)
     }
-  }, [domainQuery, selectedTechs, matchMode, page])
+  }, [domainQuery, selectedTechs, matchMode, page, updateUserCredits])
 
   useEffect(() => {
     loadResults()
@@ -109,6 +117,30 @@ export default function DashboardPage() {
       cancelled = true
     }
   }, [selectedId])
+
+  useEffect(() => {
+    const siteParam = searchParams.get('site')
+    if (siteParam) {
+      setSelectedId(Number(siteParam))
+    }
+  }, [searchParams])
+
+  async function onAnalyzeUrl(e) {
+    e.preventDefault()
+    if (!analyzeUrl.trim()) return
+    setAnalyzing(true)
+    setError('')
+    try {
+      const result = await detectUrl(analyzeUrl.trim())
+      setSelectedId(result.website.id)
+      setSearchParams({ site: String(result.website.id) })
+      await loadResults()
+    } catch (err) {
+      setError(err.message || 'Analysis failed')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   function toggleTech(slug) {
     setPage(1)
@@ -137,30 +169,66 @@ export default function DashboardPage() {
     setSiteDetail(null)
   }
 
-  function exportCsv() {
+  async function exportCsv() {
     if (!results?.items?.length) return
-    const header = ['Domain', 'Rank', 'Technologies']
-    const rows = results.items.map((row) => [
-      row.domain,
-      row.rank,
-      row.technologies.map((t) => t.name).join('; '),
-    ])
-    const csv = [header, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
-    const blob = new Blob([csv], { type: 'text/csv' })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement('a')
-    a.href = url
-    a.download = 'techleads-export.csv'
-    a.click()
-    URL.revokeObjectURL(url)
+    setExporting(true)
+    setError('')
+    try {
+      const freeLimit = results.free_limit ?? 10
+      const limit = Math.min(results.items.length, freeLimit)
+      const payload = await exportDashboard({
+        q: domainQuery,
+        technologies: selectedTechs,
+        match: matchMode,
+        limit,
+      })
+      const header = ['Domain', 'Rank', 'Technologies']
+      const rows = payload.rows.map((row) => [
+        row.domain,
+        row.rank,
+        row.technologies.map((t) => t.name).join('; '),
+      ])
+      const csv = [header, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
+      const blob = new Blob([csv], { type: 'text/csv' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'techleads-export.csv'
+      a.click()
+      URL.revokeObjectURL(url)
+      setResults((prev) => (prev ? { ...prev, user_credits: payload.user_credits } : prev))
+      updateUserCredits(payload.user_credits)
+    } catch (err) {
+      setError(err.message || 'Export failed')
+    } finally {
+      setExporting(false)
+    }
   }
 
-  const totalPages = results ? Math.max(1, Math.ceil(results.total_filtered / results.page_size)) : 1
+  const maxPage = results?.max_page ?? 1
+  const totalPages = maxPage
   const start = results ? (results.page - 1) * results.page_size + 1 : 0
   const end = results ? Math.min(results.page * results.page_size, results.total_filtered) : 0
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-6">
+      <form onSubmit={onAnalyzeUrl} className="mb-6 flex max-w-2xl gap-2">
+        <input
+          className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+          placeholder="Analyze any website URL…"
+          value={analyzeUrl}
+          onChange={(e) => setAnalyzeUrl(e.target.value)}
+        />
+        <button
+          type="submit"
+          disabled={analyzing}
+          className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+        >
+          {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+          {analyzing ? 'Analyzing…' : 'Detect'}
+        </button>
+      </form>
+
       <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_260px]">
         {/* Filters */}
         <aside className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -364,6 +432,9 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
               <span className="text-sm text-muted">
                 Page {results?.page || 1} of {totalPages}
+                {results && results.total_filtered > (results.free_limit ?? 10) && (
+                  <span className="ml-1 text-xs">· {results.total_filtered.toLocaleString()} total</span>
+                )}
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -382,6 +453,11 @@ export default function DashboardPage() {
                   disabled={page >= totalPages || loading}
                   onClick={() => setPage((p) => p + 1)}
                   className="rounded-lg border border-border px-3 py-1.5 text-sm disabled:opacity-50"
+                  title={
+                    page >= totalPages && results?.user_credits === 0
+                      ? 'Add credits to view more results'
+                      : undefined
+                  }
                 >
                   Next
                 </button>
@@ -390,8 +466,10 @@ export default function DashboardPage() {
           </div>
         </section>
 
-        {/* Right panel: Site Details or Summary */}
+        {/* Right panel */}
         <aside className="space-y-4">
+          <CreditsPanel results={results} onExport={exportCsv} exporting={exporting} />
+
           {selectedId ? (
             <SiteDetailsPanel
               site={siteDetail}
@@ -399,56 +477,43 @@ export default function DashboardPage() {
               onClose={closeDetails}
             />
           ) : (
-            <>
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <h3 className="text-sm font-semibold text-ink">Summary</h3>
-                <dl className="mt-4 space-y-4 text-sm">
-                  <div>
-                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      Total results
-                    </dt>
-                    <dd className="mt-1 text-2xl font-extrabold text-ink">
-                      {results?.items?.length?.toLocaleString() ?? '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      Actual total
-                    </dt>
-                    <dd className="mt-1 text-lg font-bold text-amber-600">
-                      {results ? `${results.total_actual.toLocaleString()} (limited)` : '—'}
-                    </dd>
-                  </div>
-                  <div>
-                    <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
-                      Filters applied
-                    </dt>
-                    <dd className="mt-1 text-2xl font-extrabold text-ink">
-                      {results?.filters_applied ?? 0}
-                    </dd>
-                  </div>
-                </dl>
-              </div>
-
-              <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-                <p className="text-sm text-muted">
-                  Free users: {results?.export_limit ?? 10} sites max.{' '}
-                  <Link to="/pricing" className="font-semibold text-brand hover:underline">
-                    Upgrade
-                  </Link>{' '}
-                  for all {results?.total_actual?.toLocaleString() ?? '7,781,930'}.
-                </p>
-                <button
-                  type="button"
-                  onClick={exportCsv}
-                  disabled={!results?.items?.length}
-                  className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
-                >
-                  <Download className="h-4 w-4" />
-                  Export CSV ({results?.items?.length ?? 0})
-                </button>
-              </div>
-            </>
+            <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+              <h3 className="text-sm font-semibold text-ink">Summary</h3>
+              <dl className="mt-4 space-y-4 text-sm">
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    Showing now
+                  </dt>
+                  <dd className="mt-1 text-2xl font-extrabold text-ink">
+                    {results?.items?.length?.toLocaleString() ?? '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    Total matches
+                  </dt>
+                  <dd className="mt-1 text-lg font-bold text-amber-600">
+                    {results ? results.total_filtered.toLocaleString() : '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    Database total
+                  </dt>
+                  <dd className="mt-1 text-sm font-medium text-muted">
+                    {results ? `${results.total_actual.toLocaleString()} (limited)` : '—'}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
+                    Filters applied
+                  </dt>
+                  <dd className="mt-1 text-2xl font-extrabold text-ink">
+                    {results?.filters_applied ?? 0}
+                  </dd>
+                </div>
+              </dl>
+            </div>
           )}
         </aside>
       </div>

@@ -1023,8 +1023,10 @@ def _upsert_technology(
 
 
 def _sync_websites(db: Session) -> None:
+    if db.query(Website).first():
+        return
+
     db.query(WebsiteTechnology).delete()
-    db.query(Website).delete()
     db.flush()
 
     categories = {

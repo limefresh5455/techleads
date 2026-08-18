@@ -49,6 +49,10 @@ class Website(Base):
     twitter_url = Column(String(255), default="")
     linkedin_url = Column(String(255), default="")
     extra_technologies = Column(Text, default="")
+    source_url = Column(String(255), default="")
+    signals_json = Column(Text, default="")
+    enriched_json = Column(Text, default="")
+    last_crawled_at = Column(DateTime(timezone=True), nullable=True)
     rank = Column(Integer, default=0)
     sort_order = Column(Integer, default=0)
 
@@ -360,6 +364,15 @@ class User(Base):
     name = Column(String(160), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
     password_hash = Column(String(255), nullable=False)
+    credits = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+
+
+class UserToken(Base):
+    __tablename__ = "user_tokens"
+
+    token = Column(String(255), primary_key=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 

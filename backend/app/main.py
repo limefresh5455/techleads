@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routes import router
 from app.core.config import settings
 from app.core.database import Base, SessionLocal, engine
+from app.services.migrate import migrate_user_columns, migrate_website_columns
 from app.services.seed import seed_database
 import app.models  # noqa: F401 — register all SQLAlchemy models
 
@@ -22,19 +23,10 @@ app.include_router(router)
 
 @app.on_event("startup")
 def on_startup():
-    # Recreate tables that are fully reseeded on every boot.
-    from app.models import (
-        FreeTool,
-        ToolFaq,
-        ToolFeature,
-        ToolPopularItem,
-        Website,
-        WebsiteTechnology,
-    )
+    # Recreate marketing tool tables that are fully reseeded on every boot.
+    from app.models import FreeTool, ToolFaq, ToolFeature, ToolPopularItem
 
     for table in (
-        WebsiteTechnology.__table__,
-        Website.__table__,
         ToolFaq.__table__,
         ToolFeature.__table__,
         ToolPopularItem.__table__,
@@ -43,6 +35,8 @@ def on_startup():
         table.drop(bind=engine, checkfirst=True)
 
     Base.metadata.create_all(bind=engine)
+    migrate_website_columns()
+    migrate_user_columns()
     db = SessionLocal()
     try:
         seed_database(db)

@@ -2,6 +2,12 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy import func
 from sqlalchemy.orm import Session, joinedload
 
+from app.core.auth import (
+    CREDITS_PER_PAGE,
+    FREE_RECORD_LIMIT,
+    get_current_user,
+    store_user_token,
+)
 from app.core.database import get_db
 from app.core.security import hash_password, make_token, verify_password
 from app.models import (
@@ -28,17 +34,22 @@ from app.models import (
 )
 from app.schemas import (
     AuthResponse,
+    AuthUserOut,
     BlogPostOut,
     CategoryOut,
     ContactCreate,
     ContactOut,
     CustomDataBlockOut,
     DashboardPreviewOut,
+    DashboardExportOut,
     DashboardSearchOut,
     DashboardTechOut,
     DashboardWebsiteDetailOut,
     DashboardWebsiteOut,
     DetectGroupOut,
+    DetectRequest,
+    DetectResponse,
+    EnrichRequest,
     FaqItemOut,
     FeatureHighlightOut,
     FooterColumnOut,
@@ -55,6 +66,7 @@ from app.schemas import (
     TechnologyOut,
     TrustLogoOut,
 )
+from app.services.detect_service import detect_and_store
 
 router = APIRouter(prefix="/api")
 
@@ -173,11 +185,15 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
         name=payload.name.strip(),
         email=email,
         password_hash=hash_password(payload.password),
+        credits=0,
     )
     db.add(user)
     db.commit()
     db.refresh(user)
-    return AuthResponse(token=make_token(), user=user)
+    token = make_token()
+    store_user_token(db, user.id, token)
+    db.commit()
+    return AuthResponse(token=token, user=user)
 
 
 @router.post("/auth/login", response_model=AuthResponse)
@@ -186,7 +202,16 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.email == email).first()
     if not user or not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
-    return AuthResponse(token=make_token(), user=user)
+    token = make_token()
+    store_user_token(db, user.id, token)
+    db.commit()
+    db.refresh(user)
+    return AuthResponse(token=token, user=user)
+
+
+@router.get("/me", response_model=AuthUserOut)
+def get_me(user: User = Depends(get_current_user)):
+    return user
 
 
 @router.get("/content", response_model=SiteContentOut)
@@ -291,6 +316,7 @@ def dashboard_search(
     page: int = Query(default=1, ge=1),
     page_size: int = Query(default=10, ge=1, le=50),
     db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
 ):
     tech_slugs = [slug.strip() for slug in technologies.split(",") if slug.strip()]
     filters_applied = len(tech_slugs) + (1 if q.strip() else 0)
@@ -324,8 +350,29 @@ def dashboard_search(
             query = query.filter(Website.id == -1)
 
     total_filtered = query.count()
-    total_actual = 7_781_930
-    export_limit = 10
+    db_total = db.query(Website).count()
+    total_actual = max(db_total, 7_781_930) if db_total else 7_781_930
+
+    accessible_records = FREE_RECORD_LIMIT + max(user.credits, 0)
+    viewable = min(accessible_records, total_filtered)
+    max_page = max(1, (viewable + page_size - 1) // page_size)
+
+    if page > max_page:
+        needed = CREDITS_PER_PAGE
+        raise HTTPException(
+            status_code=402,
+            detail=f"Need {needed} credits to view more than {FREE_RECORD_LIMIT} results. Buy credits on Pricing.",
+        )
+
+    if page > 1:
+        if user.credits < CREDITS_PER_PAGE:
+            raise HTTPException(
+                status_code=402,
+                detail=f"Need {CREDITS_PER_PAGE} credits to view page {page}.",
+            )
+        user.credits -= CREDITS_PER_PAGE
+        db.commit()
+        db.refresh(user)
 
     rows = (
         query.options(
@@ -337,6 +384,25 @@ def dashboard_search(
         .all()
     )
 
+    items = _website_rows_to_out(rows)
+
+    return DashboardSearchOut(
+        items=items,
+        page=page,
+        page_size=page_size,
+        total_filtered=total_filtered,
+        total_actual=total_actual,
+        filters_applied=filters_applied,
+        export_limit=FREE_RECORD_LIMIT,
+        free_limit=FREE_RECORD_LIMIT,
+        user_credits=user.credits,
+        max_page=max_page,
+        credits_per_page=CREDITS_PER_PAGE,
+        accessible_records=accessible_records,
+    )
+
+
+def _website_rows_to_out(rows: list[Website]) -> list[DashboardWebsiteOut]:
     items = []
     for row in rows:
         techs = sorted(
@@ -360,15 +426,82 @@ def dashboard_search(
                 ],
             )
         )
+    return items
 
-    return DashboardSearchOut(
-        items=items,
-        page=page,
-        page_size=page_size,
-        total_filtered=total_filtered,
-        total_actual=total_actual,
-        filters_applied=filters_applied,
-        export_limit=export_limit,
+
+@router.post("/dashboard/export", response_model=DashboardExportOut)
+def dashboard_export(
+    q: str = "",
+    technologies: str = "",
+    match: str = Query(default="any", pattern="^(any|all)$"),
+    limit: int = Query(default=10, ge=1, le=500),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    tech_slugs = [slug.strip() for slug in technologies.split(",") if slug.strip()]
+
+    query = db.query(Website)
+    if q.strip():
+        query = query.filter(Website.domain.ilike(f"%{q.strip()}%"))
+
+    if tech_slugs:
+        tech_rows = db.query(Technology).filter(Technology.slug.in_(tech_slugs)).all()
+        tech_ids = [row.id for row in tech_rows]
+        if tech_ids:
+            if match == "all":
+                query = (
+                    query.join(WebsiteTechnology)
+                    .filter(WebsiteTechnology.technology_id.in_(tech_ids))
+                    .group_by(Website.id)
+                    .having(
+                        func.count(WebsiteTechnology.technology_id.distinct()) == len(tech_ids)
+                    )
+                )
+            else:
+                query = query.filter(
+                    Website.id.in_(
+                        db.query(WebsiteTechnology.website_id).filter(
+                            WebsiteTechnology.technology_id.in_(tech_ids)
+                        )
+                    )
+                )
+        else:
+            query = query.filter(Website.id == -1)
+
+    max_export = FREE_RECORD_LIMIT + max(user.credits, 0)
+    if limit > max_export:
+        extra = limit - FREE_RECORD_LIMIT
+        raise HTTPException(
+            status_code=402,
+            detail=f"Need {extra} credits to export {limit} records. You have {user.credits} credits.",
+        )
+
+    credits_used = max(0, limit - FREE_RECORD_LIMIT)
+    if credits_used > user.credits:
+        raise HTTPException(
+            status_code=402,
+            detail=f"Need {credits_used} credits to export {limit} records.",
+        )
+
+    user.credits -= credits_used
+    db.commit()
+    db.refresh(user)
+
+    rows = (
+        query.options(
+            joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+        )
+        .order_by(Website.rank.asc(), Website.sort_order.asc())
+        .limit(limit)
+        .all()
+    )
+
+    return DashboardExportOut(
+        rows=_website_rows_to_out(rows),
+        exported_count=len(rows),
+        credits_used=credits_used,
+        user_credits=user.credits,
+        free_limit=FREE_RECORD_LIMIT,
     )
 
 
@@ -403,7 +536,65 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
         facebook_url=row.facebook_url or "",
         twitter_url=row.twitter_url or "",
         linkedin_url=row.linkedin_url or "",
+        last_crawled_at=row.last_crawled_at.isoformat() if row.last_crawled_at else None,
+        source_url=row.source_url or "",
     )
+
+
+def _detect_response(website: Website) -> DetectResponse:
+    import json
+
+    signals = json.loads(website.signals_json or "{}")
+    enriched = json.loads(website.enriched_json or "{}")
+    crawl_ms = getattr(website, "_crawl_ms", 0)
+    return DetectResponse(
+        website=_website_detail_out(website),
+        signals=signals,
+        enriched=enriched,
+        crawl_ms=crawl_ms,
+    )
+
+
+@router.post("/detect", response_model=DetectResponse)
+@router.post("/v1/detect", response_model=DetectResponse)
+def detect_website(payload: DetectRequest, db: Session = Depends(get_db)):
+    try:
+        website = detect_and_store(db, payload.url)
+        website = (
+            db.query(Website)
+            .options(
+                joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+            )
+            .filter(Website.id == website.id)
+            .first()
+        )
+        return _detect_response(website)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Detection failed: {exc}") from exc
+
+
+@router.post("/v1/enrich", response_model=list[DetectResponse])
+def enrich_websites(payload: EnrichRequest, db: Session = Depends(get_db)):
+    results: list[DetectResponse] = []
+    for raw_url in payload.urls[:50]:
+        try:
+            website = detect_and_store(db, raw_url)
+            website = (
+                db.query(Website)
+                .options(
+                    joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+                )
+                .filter(Website.id == website.id)
+                .first()
+            )
+            results.append(_detect_response(website))
+        except Exception:
+            continue
+    if not results:
+        raise HTTPException(status_code=400, detail="No URLs could be enriched")
+    return results
 
 
 @router.get("/dashboard/websites/{website_id}", response_model=DashboardWebsiteDetailOut)

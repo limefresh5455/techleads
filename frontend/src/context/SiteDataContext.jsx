@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useMemo, useState } from 'react'
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 import { fetchLanding } from '../api'
 
 const empty = {
@@ -27,6 +27,7 @@ const SiteDataContext = createContext({
   error: '',
   user: null,
   setAuth: () => {},
+  updateUserCredits: () => {},
   logout: () => {},
 })
 
@@ -58,15 +59,24 @@ export function SiteDataProvider({ children }) {
     setUser(payload.user)
   }
 
-  function logout() {
+  const updateUserCredits = useCallback((credits) => {
+    setUser((prev) => {
+      if (!prev || prev.credits === credits) return prev
+      const next = { ...prev, credits }
+      localStorage.setItem('tl_user', JSON.stringify(next))
+      return next
+    })
+  }, [])
+
+  const logout = useCallback(() => {
     localStorage.removeItem('tl_token')
     localStorage.removeItem('tl_user')
     setUser(null)
-  }
+  }, [])
 
   const value = useMemo(
-    () => ({ data, loading, error, user, setAuth, logout }),
-    [data, loading, error, user],
+    () => ({ data, loading, error, user, setAuth, updateUserCredits, logout }),
+    [data, loading, error, user, updateUserCredits, logout],
   )
 
   return <SiteDataContext.Provider value={value}>{children}</SiteDataContext.Provider>

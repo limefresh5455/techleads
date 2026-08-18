@@ -1,11 +1,36 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { ArrowRight, Search } from 'lucide-react'
+import { Link, useNavigate } from 'react-router-dom'
+import { ArrowRight, Loader2, Search } from 'lucide-react'
+import { detectUrl } from '../api'
+import { useSiteData } from '../context/SiteDataContext'
 
 export default function Hero({ content, dashboardPreviews = [] }) {
   const [query, setQuery] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const navigate = useNavigate()
+  const { user } = useSiteData()
 
   if (!content) return null
+
+  async function onSubmit(e) {
+    e.preventDefault()
+    if (!query.trim()) return
+    setLoading(true)
+    setError('')
+    try {
+      const result = await detectUrl(query.trim())
+      if (user) {
+        navigate(`/dashboard?site=${result.website.id}`)
+      } else {
+        navigate(`/login?redirect=/dashboard&site=${result.website.id}`)
+      }
+    } catch (err) {
+      setError(err.message || 'Analysis failed')
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-[#fff7f2] via-white to-white pb-12 pt-12 md:pt-16">
@@ -17,7 +42,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
         <p className="mx-auto mt-5 max-w-2xl text-base text-muted md:text-lg">{content.hero_subtitle}</p>
 
         <form
-          onSubmit={(e) => e.preventDefault()}
+          onSubmit={onSubmit}
           className="mx-auto mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center"
         >
           <div className="flex flex-1 items-center rounded-xl border border-border bg-white px-4 shadow-sm">
@@ -29,10 +54,16 @@ export default function Hero({ content, dashboardPreviews = [] }) {
               className="w-full bg-transparent px-3 py-3.5 text-sm outline-none"
             />
           </div>
-          <button type="submit" className="rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-dark">
-            {content.hero_search_cta}
+          <button
+            type="submit"
+            disabled={loading}
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+          >
+            {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+            {loading ? 'Analyzing…' : content.hero_search_cta}
           </button>
         </form>
+        {error && <p className="mt-3 text-sm text-red-600">{error}</p>}
       </div>
 
       <div className="relative mx-auto mt-12 max-w-6xl px-4 lg:px-6">

@@ -20,7 +20,10 @@ export default function LoginPage() {
     try {
       const data = await login(form)
       setAuth(data)
-      navigate(from)
+      const params = new URLSearchParams(location.search)
+      const redirect = params.get('redirect') || from
+      const site = params.get('site')
+      navigate(site ? `${redirect}?site=${site}` : redirect)
     } catch (err) {
       setError(err.message || 'Login failed')
     } finally {

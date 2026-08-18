@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
-import { ChevronDown, Search, Sparkles, Shield, Zap } from 'lucide-react'
-import { fetchFreeTool } from '../api'
+import { Link, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { ChevronDown, Loader2, Search, Sparkles, Shield, Zap } from 'lucide-react'
+import { detectUrl, fetchFreeTool } from '../api'
+import { useSiteData } from '../context/SiteDataContext'
 
 const featureIcons = [Search, Sparkles, Zap, Shield]
 
@@ -14,6 +15,10 @@ export default function ToolDetectorPage() {
   const [loading, setLoading] = useState(true)
   const [url, setUrl] = useState('')
   const [openFaq, setOpenFaq] = useState(0)
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzeError, setAnalyzeError] = useState('')
+  const navigate = useNavigate()
+  const { user } = useSiteData()
 
   useEffect(() => {
     let cancelled = false
@@ -37,6 +42,25 @@ export default function ToolDetectorPage() {
       cancelled = true
     }
   }, [slug])
+
+  async function onAnalyze(e) {
+    e.preventDefault()
+    if (!url.trim()) return
+    setAnalyzing(true)
+    setAnalyzeError('')
+    try {
+      const result = await detectUrl(url.trim())
+      if (user) {
+        navigate(`/dashboard?site=${result.website.id}`)
+      } else {
+        navigate(`/login?redirect=/dashboard&site=${result.website.id}`)
+      }
+    } catch (err) {
+      setAnalyzeError(err.message || 'Analysis failed')
+    } finally {
+      setAnalyzing(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -67,7 +91,7 @@ export default function ToolDetectorPage() {
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted md:text-lg">{tool.description}</p>
           <form
             className="mx-auto mt-8 flex max-w-xl flex-col gap-3 sm:flex-row"
-            onSubmit={(e) => e.preventDefault()}
+            onSubmit={onAnalyze}
           >
             <input
               className="w-full flex-1 rounded-xl border border-border bg-white px-4 py-3.5 text-sm outline-none focus:border-brand"
@@ -77,11 +101,14 @@ export default function ToolDetectorPage() {
             />
             <button
               type="submit"
-              className="rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-dark"
+              disabled={analyzing}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
             >
-              {tool.cta_label || 'Analyze'}
+              {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+              {analyzing ? 'Analyzing…' : tool.cta_label || 'Analyze'}
             </button>
           </form>
+          {analyzeError && <p className="mt-3 text-sm text-red-600">{analyzeError}</p>}
         </div>
       </section>
 

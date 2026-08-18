@@ -65,6 +65,9 @@ export default function DashboardNavbar() {
           >
             Upgrade
           </Link>
+          <span className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
+            {user.credits?.toLocaleString?.() ?? user.credits ?? 0} credits
+          </span>
           <div className="relative">
             <button
               type="button"

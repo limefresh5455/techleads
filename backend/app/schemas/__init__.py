@@ -306,6 +306,7 @@ class AuthUserOut(BaseModel):
     id: int
     name: str
     email: EmailStr
+    credits: int = 0
 
     class Config:
         from_attributes = True
@@ -363,6 +364,19 @@ class DashboardSearchOut(BaseModel):
     total_actual: int
     filters_applied: int
     export_limit: int
+    free_limit: int = 10
+    user_credits: int = 0
+    max_page: int = 1
+    credits_per_page: int = 10
+    accessible_records: int = 10
+
+
+class DashboardExportOut(BaseModel):
+    rows: list[DashboardWebsiteOut]
+    exported_count: int
+    credits_used: int
+    user_credits: int
+    free_limit: int = 10
 
 
 class DashboardWebsiteDetailOut(BaseModel):
@@ -378,9 +392,26 @@ class DashboardWebsiteDetailOut(BaseModel):
     facebook_url: str = ""
     twitter_url: str = ""
     linkedin_url: str = ""
+    last_crawled_at: str | None = None
+    source_url: str = ""
 
     class Config:
         from_attributes = True
+
+
+class DetectRequest(BaseModel):
+    url: str = Field(min_length=3, max_length=500)
+
+
+class EnrichRequest(BaseModel):
+    urls: list[str] = Field(min_length=1, max_length=50)
+
+
+class DetectResponse(BaseModel):
+    website: DashboardWebsiteDetailOut
+    signals: dict
+    enriched: dict
+    crawl_ms: int
 
 
 class LandingPayload(BaseModel):
