@@ -5,8 +5,5 @@
 
 [build.environment]
   NODE_VERSION = "20"
-
-[[redirects]]
-  from = "/*"
-  to = "/index.html"
-  status = 200
+  # Set in Netlify UI after deploying the backend (Render, etc.):
+  # API_PROXY_URL = https://your-api.onrender.com

@@ -1,5 +1,6 @@
 from pathlib import Path
 
+from pydantic import field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -18,6 +19,15 @@ class Settings(BaseSettings):
     gemini_model: str = "gemini-2.0-flash"
     crawl_timeout_seconds: int = 15
     crawl_user_agent: str = "TechLeadsBot/1.0 (+https://techleads.ai)"
+
+    @field_validator("database_url", mode="before")
+    @classmethod
+    def normalize_database_url(cls, value: str) -> str:
+        if value.startswith("postgres://"):
+            return f"postgresql+psycopg2://{value[len('postgres://'):]}"
+        if value.startswith("postgresql://") and "+psycopg2" not in value:
+            return value.replace("postgresql://", "postgresql+psycopg2://", 1)
+        return value
 
     @property
     def cors_origin_list(self) -> list[str]:
