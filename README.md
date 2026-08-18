@@ -6,24 +6,25 @@ React + FastAPI + PostgreSQL landing page matching the TechLeads product design.
 
 - **Frontend:** React (Vite) + Tailwind CSS
 - **Backend:** Python FastAPI + SQLAlchemy
-- **Database:** PostgreSQL 16 (Docker)
+- **Database:** PostgreSQL 14 (local, port 5433)
 
 ## Quick start
 
-### 1. Start PostgreSQL
+### 1. Initialize PostgreSQL 14 database
 
-```bash
-docker compose up -d
+PostgreSQL 14 must be running on **port 5433**.
+
+```powershell
+.\scripts\init-pg14.ps1
 ```
+
+Default superuser password: `postgres`. Override with `$env:POSTGRES_PASSWORD`.
 
 ### 2. Backend
 
-```bash
+```powershell
 cd backend
-python -m venv .venv
-.\.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload --port 8000
+.\run.ps1
 ```
 
 API docs: http://127.0.0.1:8000/docs
