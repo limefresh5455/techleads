@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Check } from 'lucide-react'
 import { signup } from '../api'
+import GoogleAuthButton from '../components/GoogleAuthButton'
 import { useSiteData } from '../context/SiteDataContext'
 
 export default function SignupPage() {
@@ -36,18 +37,7 @@ export default function SignupPage() {
           <h1 className="text-3xl font-extrabold tracking-tight text-ink">Create an account</h1>
           <p className="mt-2 text-muted">Start your free trial and unlock technology insights</p>
 
-          <button
-            type="button"
-            className="mt-8 flex w-full items-center justify-center gap-2 rounded-xl border border-border px-4 py-3 text-sm font-semibold text-ink hover:bg-surface"
-          >
-            <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
-              <path
-                fill="#EA4335"
-                d="M12 10.2v3.6h5.1c-.2 1.2-1.5 3.6-5.1 3.6-3.1 0-5.6-2.5-5.6-5.6S8.9 6.2 12 6.2c1.8 0 2.9.7 3.6 1.4l2.5-2.4C16.7 3.8 14.6 3 12 3 6.9 3 2.8 7.1 2.8 12.2S6.9 21.4 12 21.4c5.2 0 8.6-3.6 8.6-8.7 0-.6-.1-1-.1-1.5H12z"
-              />
-            </svg>
-            Sign up with Google
-          </button>
+          <GoogleAuthButton label="Sign up with Google" redirect="/dashboard" />
 
           <div className="my-6 flex items-center gap-3 text-xs uppercase tracking-wide text-muted">
             <span className="h-px flex-1 bg-border" />

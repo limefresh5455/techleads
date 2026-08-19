@@ -387,7 +387,9 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String(160), nullable=False)
     email = Column(String(255), unique=True, nullable=False, index=True)
-    password_hash = Column(String(255), nullable=False)
+    password_hash = Column(String(255), nullable=False, default="")
+    google_sub = Column(String(255), unique=True, nullable=True, index=True)
+    avatar_url = Column(String(500), default="")
     credits = Column(Integer, default=0)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 

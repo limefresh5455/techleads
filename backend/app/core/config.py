@@ -27,6 +27,10 @@ class Settings(BaseSettings):
     stripe_webhook_secret: str = ""
     stripe_publishable_key: str = ""
     frontend_url: str = "http://localhost:5173"
+    # Google OAuth
+    google_client_id: str = ""
+    google_client_secret: str = ""
+    google_redirect_uri: str = "http://127.0.0.1:8000/api/auth/google/callback"
     crawl_timeout_seconds: int = 15
     crawl_user_agent: str = "TechLeadsBot/1.0 (+https://techleads.ai)"
 

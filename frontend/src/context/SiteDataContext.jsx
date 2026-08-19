@@ -53,11 +53,11 @@ export function SiteDataProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
-  function setAuth(payload) {
+  const setAuth = useCallback((payload) => {
     localStorage.setItem('tl_token', payload.token)
     localStorage.setItem('tl_user', JSON.stringify(payload.user))
     setUser(payload.user)
-  }
+  }, [])
 
   const updateUserCredits = useCallback((credits) => {
     setUser((prev) => {
@@ -76,7 +76,7 @@ export function SiteDataProvider({ children }) {
 
   const value = useMemo(
     () => ({ data, loading, error, user, setAuth, updateUserCredits, logout }),
-    [data, loading, error, user, updateUserCredits, logout],
+    [data, loading, error, user, setAuth, updateUserCredits, logout],
   )
 
   return <SiteDataContext.Provider value={value}>{children}</SiteDataContext.Provider>

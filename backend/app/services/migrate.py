@@ -53,3 +53,12 @@ def migrate_user_columns() -> None:
     with engine.begin() as conn:
         if "credits" not in existing:
             conn.execute(text("ALTER TABLE users ADD COLUMN credits INTEGER DEFAULT 0"))
+        if "google_sub" not in existing:
+            conn.execute(text("ALTER TABLE users ADD COLUMN google_sub VARCHAR(255)"))
+            conn.execute(
+                text(
+                    "CREATE UNIQUE INDEX IF NOT EXISTS ix_users_google_sub ON users (google_sub)"
+                )
+            )
+        if "avatar_url" not in existing:
+            conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) DEFAULT ''"))

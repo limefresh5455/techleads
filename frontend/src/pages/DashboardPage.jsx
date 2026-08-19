@@ -541,14 +541,6 @@ export default function DashboardPage() {
                 </div>
                 <div>
                   <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
-                    Database total
-                  </dt>
-                  <dd className="mt-1 text-sm font-medium text-muted">
-                    {results ? `${results.total_actual.toLocaleString()} (limited)` : '—'}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="text-xs font-semibold uppercase tracking-wide text-muted">
                     Filters applied
                   </dt>
                   <dd className="mt-1 text-2xl font-extrabold text-ink">

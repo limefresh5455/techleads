@@ -15,6 +15,7 @@ import ApiDocsPage from './pages/ApiDocsPage'
 import ContactPage from './pages/ContactPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
+import AuthCallbackPage from './pages/AuthCallbackPage'
 import DashboardPage from './pages/DashboardPage'
 import LegalPage from './pages/LegalPage'
 
@@ -67,6 +68,7 @@ export default function App() {
             <Route path="login" element={<GuestRoute><LoginPage /></GuestRoute>} />
             <Route path="signin" element={<GuestRoute><LoginPage /></GuestRoute>} />
             <Route path="signup" element={<GuestRoute><SignupPage /></GuestRoute>} />
+            <Route path="auth/callback" element={<AuthCallbackPage />} />
             <Route path="get-started" element={<GetStartedRedirect />} />
             <Route
               path="privacy"

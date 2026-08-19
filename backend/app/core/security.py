@@ -9,6 +9,8 @@ def hash_password(password: str) -> str:
 
 
 def verify_password(password: str, password_hash: str) -> bool:
+    if not password_hash or password_hash.startswith("oauth:"):
+        return False
     try:
         salt, stored = password_hash.split(":", 1)
     except ValueError:

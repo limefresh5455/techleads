@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi.responses import RedirectResponse
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
@@ -209,13 +210,96 @@ def signup(payload: SignupRequest, db: Session = Depends(get_db)):
 def login(payload: LoginRequest, db: Session = Depends(get_db)):
     email = str(payload.email).lower().strip()
     user = db.query(User).filter(User.email == email).first()
-    if not user or not verify_password(payload.password, user.password_hash):
+    if not user:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
+    if (user.password_hash or "").startswith("oauth:"):
+        raise HTTPException(
+            status_code=400,
+            detail="This account uses Google sign-in. Please continue with Google.",
+        )
+    if not verify_password(payload.password, user.password_hash):
         raise HTTPException(status_code=401, detail="Invalid email or password")
     token = make_token()
     store_user_token(db, user.id, token)
     db.commit()
     db.refresh(user)
     return AuthResponse(token=token, user=user)
+
+
+@router.get("/auth/google")
+def google_auth_start(redirect: str = Query(default="/dashboard")):
+    from urllib.parse import urlencode
+
+    from app.core.config import settings as app_settings
+    from app.services.google_auth import (
+        build_google_authorize_url,
+        google_oauth_configured,
+        make_oauth_state,
+    )
+
+    if not google_oauth_configured():
+        frontend = app_settings.frontend_url.rstrip("/")
+        qs = urlencode(
+            {
+                "error": "Google sign-in is not configured. Add GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET to backend/.env",
+                "redirect": redirect if redirect.startswith("/") else "/dashboard",
+            }
+        )
+        return RedirectResponse(url=f"{frontend}/auth/callback?{qs}", status_code=302)
+
+    state = make_oauth_state(redirect)
+    url = build_google_authorize_url(state=state)
+    return RedirectResponse(url=url, status_code=302)
+
+
+@router.get("/auth/google/callback")
+def google_auth_callback(
+    code: str = "",
+    state: str = "",
+    error: str = "",
+    db: Session = Depends(get_db),
+):
+    from urllib.parse import urlencode
+
+    from app.services.google_auth import (
+        exchange_code_for_userinfo,
+        parse_oauth_state,
+        upsert_google_user,
+    )
+    from app.core.config import settings as app_settings
+
+    frontend = app_settings.frontend_url.rstrip("/")
+    redirect_path = parse_oauth_state(state)
+
+    if error:
+        qs = urlencode({"error": error, "redirect": redirect_path})
+        return RedirectResponse(url=f"{frontend}/auth/callback?{qs}", status_code=302)
+    if not code:
+        qs = urlencode({"error": "missing_code", "redirect": redirect_path})
+        return RedirectResponse(url=f"{frontend}/auth/callback?{qs}", status_code=302)
+
+    try:
+        profile = exchange_code_for_userinfo(code)
+        user, token = upsert_google_user(db, profile)
+    except HTTPException as exc:
+        detail = exc.detail if isinstance(exc.detail, str) else "google_auth_failed"
+        qs = urlencode({"error": detail, "redirect": redirect_path})
+        return RedirectResponse(url=f"{frontend}/auth/callback?{qs}", status_code=302)
+    except Exception as exc:
+        qs = urlencode({"error": str(exc)[:200], "redirect": redirect_path})
+        return RedirectResponse(url=f"{frontend}/auth/callback?{qs}", status_code=302)
+
+    qs = urlencode(
+        {
+            "token": token,
+            "redirect": redirect_path,
+            "name": user.name,
+            "email": user.email,
+            "credits": str(user.credits or 0),
+            "id": str(user.id),
+        }
+    )
+    return RedirectResponse(url=f"{frontend}/auth/callback?{qs}", status_code=302)
 
 
 @router.get("/me", response_model=AuthUserOut)
