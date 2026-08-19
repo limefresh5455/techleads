@@ -36,21 +36,16 @@ services:
 
   - type: web
     name: techleads-web
-    runtime: static
+    runtime: node
+    plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
-    headers:
-      - path: /index.html
-        name: Cache-Control
-        value: no-cache
-      - path: /assets/*
-        name: Cache-Control
-        value: public, max-age=31536000, immutable
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
+      - key: VITE_API_URL
+        sync: false
 
 databases:
   - name: techleads-db

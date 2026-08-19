@@ -1,10 +1,14 @@
 services:
+  # Use a Node Web Service (not Static Site) so /dashboard refresh works.
+  # serve -s falls back to index.html for all client routes.
   - type: web
-    name: techleads-web
-    runtime: static
+    name: techleads-1
+    runtime: node
+    plan: free
     buildCommand: npm install && npm run build
-    staticPublishPath: dist
-    routes:
-      - type: rewrite
-        source: /*
-        destination: /index.html
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: "20.18.0"
+      - key: VITE_API_URL
+        sync: false

@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/generate-redirects.mjs && vite build",
+    "build": "node scripts/generate-redirects.mjs && vite build && node scripts/spa-fallback.mjs",
+    "start": "node scripts/start.mjs",
     "lint": "oxlint",
     "preview": "vite preview"
   },
@@ -13,7 +14,8 @@
     "lucide-react": "^1.31.0",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
-    "react-router-dom": "^7.18.2"
+    "react-router-dom": "^7.18.2",
+    "serve": "^14.2.4"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
