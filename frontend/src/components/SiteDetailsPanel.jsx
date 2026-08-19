@@ -167,6 +167,12 @@ export default function SiteDetailsPanel({
               <span className="text-muted">Category</span>
               <span className="font-medium text-ink">{site.category_label}</span>
             </div>
+            {site.subcategory ? (
+              <div className="flex items-center gap-2">
+                <span className="text-muted">Subcategory</span>
+                <span className="font-medium text-ink">{site.subcategory}</span>
+              </div>
+            ) : null}
             {site.industry ? (
               <div className="flex items-center gap-2">
                 <span className="text-muted">Industry</span>

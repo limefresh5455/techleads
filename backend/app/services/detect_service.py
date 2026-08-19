@@ -80,6 +80,7 @@ def _apply_enrichment_to_website(
     website.title = str(enriched.get("title") or website.domain)[:200]
     website.description = str(enriched.get("description") or "")
     website.category_label = str(enriched.get("category_label") or "Uncategorized")[:120]
+    website.subcategory = str(enriched.get("subcategory") or "")[:120]
     website.contact_info = str(enriched.get("contact_info") or "No contact information available")
     website.facebook_url = str(enriched.get("facebook_url") or "")[:255]
     website.twitter_url = str(enriched.get("twitter_url") or "")[:255]

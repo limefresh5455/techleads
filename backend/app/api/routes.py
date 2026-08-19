@@ -660,7 +660,7 @@ def dashboard_export(
     )
 
     return DashboardExportOut(
-        rows=_website_rows_to_out(rows),
+        rows=[_website_detail_out(row) for row in rows],
         exported_count=len(rows),
         credits_used=credits_used,
         user_credits=user.credits,
@@ -705,6 +705,7 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
         title=row.title or row.domain,
         description=row.description or enriched.get("description", ""),
         category_label=row.category_label or enriched.get("category_label", "Uncategorized"),
+        subcategory=str(getattr(row, "subcategory", None) or enriched.get("subcategory") or ""),
         contact_info=row.contact_info or enriched.get("contact_info", "No contact information available"),
         rank=row.rank,
         technologies=[

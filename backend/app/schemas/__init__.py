@@ -388,20 +388,13 @@ class DashboardSearchOut(BaseModel):
     accessible_records: int = 10
 
 
-class DashboardExportOut(BaseModel):
-    rows: list[DashboardWebsiteOut]
-    exported_count: int
-    credits_used: int
-    user_credits: int
-    free_limit: int = 10
-
-
 class DashboardWebsiteDetailOut(BaseModel):
     id: int
     domain: str
     title: str
     description: str
     category_label: str
+    subcategory: str = ""
     contact_info: str
     rank: int
     technologies: list[DashboardTechOut]
@@ -437,6 +430,14 @@ class DashboardWebsiteDetailOut(BaseModel):
 
     class Config:
         from_attributes = True
+
+
+class DashboardExportOut(BaseModel):
+    rows: list[DashboardWebsiteDetailOut]
+    exported_count: int
+    credits_used: int
+    user_credits: int
+    free_limit: int = 10
 
 
 class DetectRequest(BaseModel):

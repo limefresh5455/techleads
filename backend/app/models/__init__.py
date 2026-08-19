@@ -59,6 +59,7 @@ class Website(Base):
     sort_order = Column(Integer, default=0)
 
     # AI enrichment detail columns (also mirrored in enriched_json)
+    subcategory = Column(String(120), default="")
     industry = Column(String(120), default="")
     company_type = Column(String(80), default="")
     business_summary = Column(Text, default="")

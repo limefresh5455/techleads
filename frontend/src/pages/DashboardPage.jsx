@@ -211,14 +211,87 @@ export default function DashboardPage() {
         match: matchMode,
         limit,
       })
-      const header = ['Domain', 'Rank', 'Technologies']
+
+      const joinList = (value) => (Array.isArray(value) ? value.filter(Boolean).join('; ') : '')
+      const cell = (value) => {
+        const text = value == null ? '' : String(value)
+        return `"${text.replace(/"/g, '""')}"`
+      }
+
+      const header = [
+        'Domain',
+        'Title',
+        'Rank',
+        'Category',
+        'Subcategory',
+        'Industry',
+        'Company Type',
+        'Traffic Tier',
+        'Confidence',
+        'Business Summary',
+        'Description',
+        'AI Insights',
+        'Primary Technologies',
+        'All Detected Technologies',
+        'CMS',
+        'E-commerce',
+        'Hosting/CDN',
+        'Marketing Stack',
+        'Analytics Tools',
+        'Payment Providers',
+        'Key Features',
+        'Target Audience',
+        'Contact',
+        'Phone',
+        'Address',
+        'Facebook',
+        'Twitter',
+        'LinkedIn',
+        'Instagram',
+        'YouTube',
+        'AI Enriched',
+        'AI Provider',
+        'AI Model',
+      ]
+
       const rows = payload.rows.map((row) => [
         row.domain,
+        row.title,
         row.rank,
-        row.technologies.map((t) => t.name).join('; '),
+        row.category_label,
+        row.subcategory,
+        row.industry,
+        row.company_type,
+        row.estimated_traffic_tier,
+        row.confidence_score,
+        row.business_summary,
+        row.description,
+        joinList(row.llm_insights),
+        joinList(row.technologies?.map((t) => t.name)),
+        joinList(row.all_detected_technologies),
+        row.cms_platform,
+        row.ecommerce_platform,
+        row.hosting_cdn,
+        joinList(row.marketing_stack),
+        joinList(row.analytics_tools),
+        joinList(row.payment_providers),
+        joinList(row.key_features),
+        row.target_audience,
+        row.contact_info,
+        row.phone,
+        row.address,
+        row.facebook_url,
+        row.twitter_url,
+        row.linkedin_url,
+        row.instagram_url,
+        row.youtube_url,
+        row.llm_used ? 'yes' : 'no',
+        row.llm_provider,
+        row.llm_model,
       ])
-      const csv = [header, ...rows].map((r) => r.map((c) => `"${c}"`).join(',')).join('\n')
-      const blob = new Blob([csv], { type: 'text/csv' })
+
+      const csv = [header, ...rows].map((r) => r.map(cell).join(',')).join('\n')
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' })
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url

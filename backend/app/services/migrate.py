@@ -16,6 +16,7 @@ def migrate_website_columns() -> None:
         "last_crawled_at": "TIMESTAMP WITH TIME ZONE",
         "instagram_url": "VARCHAR(255) DEFAULT ''",
         "youtube_url": "VARCHAR(255) DEFAULT ''",
+        "subcategory": "VARCHAR(120) DEFAULT ''",
         "industry": "VARCHAR(120) DEFAULT ''",
         "company_type": "VARCHAR(80) DEFAULT ''",
         "business_summary": "TEXT DEFAULT ''",

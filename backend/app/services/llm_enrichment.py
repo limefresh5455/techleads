@@ -23,7 +23,8 @@ Return ONLY valid JSON with this shape:
 {
   "title": "string",
   "description": "string (2-4 sentences about the business and website)",
-  "category_label": "string (e.g. E-Commerce, SaaS, Agency, Blog)",
+  "category_label": "string (broad category, e.g. E-Commerce, SaaS, Agency, Blog, Media)",
+  "subcategory": "string (specific niche under that category, e.g. Fashion Retail, Marketing Automation, Web Design Agency)",
   "industry": "string",
   "company_type": "string (B2B, B2C, D2C, Marketplace, etc.)",
   "business_summary": "string (what the company does, who they serve)",
@@ -213,10 +214,21 @@ def fallback_enrichment(domain: str, signals: dict[str, Any]) -> dict[str, Any]:
     socials = signals.get("social_links") or {}
 
     category = "Uncategorized"
+    subcategory = ""
     if any(t.lower() in {"shopify", "woocommerce", "magento"} for t in technologies):
         category = "E-Commerce"
+        ecommerce = next(
+            (t for t in technologies if t.lower() in {"shopify", "woocommerce", "magento"}),
+            "Online Store",
+        )
+        subcategory = f"{ecommerce} Store"
     elif any(t.lower() in {"wordpress", "drupal", "wix", "squarespace", "webflow"} for t in technologies):
         category = "CMS"
+        cms = next(
+            (t for t in technologies if t.lower() in {"wordpress", "drupal", "wix", "squarespace", "webflow"}),
+            "Website",
+        )
+        subcategory = f"{cms} Site"
 
     extras = ["Cloudflare CDN", "Open Graph", "Google Tag Manager"]
     marketing = [t for t in technologies if t in {"HubSpot", "Klaviyo", "Mailchimp", "Intercom"}]
@@ -226,6 +238,7 @@ def fallback_enrichment(domain: str, signals: dict[str, Any]) -> dict[str, Any]:
         "title": title,
         "description": description,
         "category_label": category,
+        "subcategory": subcategory,
         "industry": category,
         "company_type": "Unknown",
         "business_summary": description,
@@ -280,6 +293,7 @@ def normalize_enrichment(data: dict[str, Any], domain: str, signals: dict[str, A
         "title": str(data.get("title") or fallback["title"])[:200],
         "description": str(data.get("description") or fallback["description"])[:2000],
         "category_label": str(data.get("category_label") or fallback["category_label"])[:120],
+        "subcategory": str(data.get("subcategory") or fallback.get("subcategory") or "")[:120],
         "industry": str(data.get("industry") or fallback["industry"])[:120],
         "company_type": str(data.get("company_type") or fallback["company_type"])[:80],
         "business_summary": str(data.get("business_summary") or fallback["business_summary"])[:1500],
