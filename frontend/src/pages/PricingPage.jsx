@@ -15,7 +15,7 @@ export default function PricingPage() {
 
   return (
     <div className="bg-white">
-      <section className="border-b border-border bg-gradient-to-b from-[#fff7f2] to-white py-14 md:py-16">
+      <section className="border-b border-border bg-gradient-to-b from-[#fffbeb] to-white py-14 md:py-16">
         <div className="mx-auto max-w-3xl px-4 text-center lg:px-6">
           <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
             {content.pricing_title}
@@ -27,7 +27,7 @@ export default function PricingPage() {
               type="button"
               onClick={() => setYearly(false)}
               className={`rounded-full px-5 py-2 text-sm font-semibold ${
-                !yearly ? 'bg-brand text-white' : 'text-muted'
+                !yearly ? 'bg-brand text-ink' : 'text-muted'
               }`}
             >
               Monthly
@@ -36,7 +36,7 @@ export default function PricingPage() {
               type="button"
               onClick={() => setYearly(true)}
               className={`rounded-full px-5 py-2 text-sm font-semibold ${
-                yearly ? 'bg-brand text-white' : 'text-muted'
+                yearly ? 'bg-brand text-ink' : 'text-muted'
               }`}
             >
               Yearly <span className="opacity-90">{content.pricing_yearly_badge}</span>
@@ -63,7 +63,7 @@ export default function PricingPage() {
                 }`}
               >
                 {plan.is_popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold uppercase tracking-wide text-white">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold uppercase tracking-wide text-ink">
                     Most Popular
                   </span>
                 )}
@@ -100,7 +100,7 @@ export default function PricingPage() {
                   to={isCustom ? '/contact' : '/signup'}
                   className={`mt-8 block rounded-xl px-4 py-3 text-center text-sm font-semibold ${
                     plan.is_popular
-                      ? 'bg-brand text-white hover:bg-brand-dark'
+                      ? 'bg-brand text-ink hover:bg-brand-dark'
                       : 'border border-border text-ink hover:border-brand hover:text-brand'
                   }`}
                 >
@@ -142,21 +142,21 @@ export default function PricingPage() {
 
       <section className="py-14">
         <div className="mx-auto max-w-4xl px-4 text-center lg:px-6">
-          <div className="rounded-3xl bg-brand px-6 py-12 text-white md:px-10">
+          <div className="brand-panel rounded-3xl px-6 py-12 text-ink md:px-10">
             <h2 className="text-2xl font-extrabold md:text-3xl">Ready to Get Started?</h2>
-            <p className="mx-auto mt-3 max-w-xl text-white/85">
+            <p className="mx-auto mt-3 max-w-xl text-ink/75">
               Contact us today to discuss your data needs or choose a plan
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 to="/contact"
-                className="rounded-xl bg-white px-5 py-3 text-sm font-semibold text-brand hover:bg-white/90"
+                className="rounded-xl bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-ink/90"
               >
                 Contact Sales
               </Link>
               <Link
                 to="/signup"
-                className="rounded-xl border border-white/40 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
+                className="rounded-xl border border-ink/25 bg-white/40 px-5 py-3 text-sm font-semibold text-ink backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/70"
               >
                 Choose subscription
               </Link>

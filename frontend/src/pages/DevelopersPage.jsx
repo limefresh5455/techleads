@@ -31,7 +31,7 @@ export default function DevelopersPage() {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/get-started"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
             >
               Get Started
             </Link>

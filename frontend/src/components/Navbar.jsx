@@ -7,7 +7,7 @@ function BrandMark({ content }) {
   return (
     <Link to="/" className="flex items-center gap-2.5 shrink-0">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand shadow-sm shadow-brand/30">
-        <svg viewBox="0 0 32 32" className="h-5 w-5 text-white" aria-hidden="true">
+        <svg viewBox="0 0 32 32" className="h-5 w-5 text-ink" aria-hidden="true">
           <path
             fill="currentColor"
             d="M16 4.5c-1.2 0-2.2.7-2.6 1.8L8.2 22.1c-.2.6.2 1.2.8 1.2h2.3c.4 0 .8-.3.9-.7l1.1-3.4h6.4l1.1 3.4c.1.4.5.7.9.7h2.3c.6 0 1-.6.8-1.2l-5.2-15.8c-.4-1.1-1.4-1.8-2.6-1.8zm0 5.2 2.4 7.2h-4.8L16 9.7z"
@@ -129,7 +129,7 @@ export default function Navbar() {
           )}
           <Link
             to={user ? '/dashboard' : '/signup'}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-ink shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
           >
             {user ? 'Dashboard' : content.nav_cta_label}
           </Link>
@@ -176,7 +176,7 @@ export default function Navbar() {
             )}
             <Link
               to={user ? '/dashboard' : '/signup'}
-              className="mt-2 rounded-lg bg-brand px-4 py-2.5 text-center text-sm font-semibold text-white"
+              className="mt-2 rounded-lg bg-brand px-4 py-2.5 text-center text-sm font-semibold text-ink"
             >
               {user ? 'Dashboard' : content.nav_cta_label}
             </Link>

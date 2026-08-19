@@ -24,22 +24,22 @@ export default function FeatureBento({ content, features = [] }) {
 
         <div className="mt-10 grid gap-4 lg:grid-cols-3">
           {hero && (
-            <div className="rounded-2xl bg-brand p-7 text-white lg:col-span-2 lg:row-span-2">
-              <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/15">
+            <div className="brand-panel card-hover rounded-2xl p-7 text-ink lg:col-span-2 lg:row-span-2">
+              <div className="grid h-12 w-12 place-items-center rounded-xl bg-ink/10">
                 <Icon name={hero.icon} className="h-6 w-6" />
               </div>
               <h3 className="mt-5 text-2xl font-bold">{hero.title}</h3>
-              <p className="mt-3 max-w-xl text-sm leading-relaxed text-white/85">{hero.description}</p>
+              <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink/75">{hero.description}</p>
               <div className="mt-8 flex flex-wrap gap-2">
                 {(hero.tags || []).map((tag) => (
-                  <span key={tag} className="rounded-full bg-white/15 px-3 py-1 text-xs font-medium">
+                  <span key={tag} className="rounded-full bg-ink/10 px-3 py-1 text-xs font-medium">
                     {tag}
                   </span>
                 ))}
               </div>
               <Link
                 to="/directory"
-                className="mt-8 inline-flex rounded-lg bg-white px-4 py-2 text-sm font-semibold text-brand hover:bg-white/90"
+                className="mt-8 inline-flex rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-ink/90"
               >
                 {hero.link_label}
               </Link>
@@ -47,7 +47,7 @@ export default function FeatureBento({ content, features = [] }) {
           )}
 
           {cards.map((card) => (
-            <div key={card.id} className="rounded-2xl border border-border bg-white p-6">
+            <div key={card.id} className="card-hover rounded-2xl border border-border bg-white p-6">
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">
                 <Icon name={card.icon} className="h-5 w-5" />
               </div>
@@ -65,7 +65,7 @@ export default function FeatureBento({ content, features = [] }) {
                 </div>
                 <Link
                   to="/directory"
-                  className="shrink-0 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark"
+                  className="shrink-0 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-ink shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
                 >
                   {banner.link_label}
                 </Link>

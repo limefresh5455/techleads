@@ -25,7 +25,7 @@ export default function Footer({
           <div className="lg:col-span-2">
             <Link to="/" className="flex items-center gap-2.5">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand shadow-sm shadow-brand/30">
-                <svg viewBox="0 0 32 32" className="h-5 w-5 text-white" aria-hidden="true">
+                <svg viewBox="0 0 32 32" className="h-5 w-5 text-ink" aria-hidden="true">
                   <path
                     fill="currentColor"
                     d="M16 4.5c-1.2 0-2.2.7-2.6 1.8L8.2 22.1c-.2.6.2 1.2.8 1.2h2.3c.4 0 .8-.3.9-.7l1.1-3.4h6.4l1.1 3.4c.1.4.5.7.9.7h2.3c.6 0 1-.6.8-1.2l-5.2-15.8c-.4-1.1-1.4-1.8-2.6-1.8zm0 5.2 2.4 7.2h-4.8L16 9.7z"
@@ -89,7 +89,7 @@ export default function Footer({
 
       <Link
         to="/contact-us"
-        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-brand/40 hover:bg-brand-dark"
+        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-ink shadow-lg shadow-brand/40 transition hover:-translate-y-1 hover:bg-brand-dark"
       >
         <MessageCircle className="h-4 w-4" />
         {content.chat_label}

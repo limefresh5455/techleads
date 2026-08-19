@@ -20,7 +20,7 @@ export default function PopularTechnologies({ content, technologies = [] }) {
             <Link
               key={tech.id}
               to="/directory"
-              className="rounded-xl border border-border bg-white px-4 py-4 transition hover:border-brand/40 hover:shadow-sm"
+              className="card-hover rounded-xl border border-border bg-white px-4 py-4"
             >
               <span
                 className="grid h-10 w-10 place-items-center rounded-lg"

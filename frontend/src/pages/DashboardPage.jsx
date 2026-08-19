@@ -153,6 +153,31 @@ export default function DashboardPage() {
     )
   }
 
+  function slugifyTech(value) {
+    return String(value || '')
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 180) || 'unknown'
+  }
+
+  function filterByTechnology(tech) {
+    const name = tech?.name || ''
+    const matched =
+      technologies.find((t) => t.slug === tech?.slug) ||
+      technologies.find((t) => t.name.toLowerCase() === name.toLowerCase())
+    const slug = matched?.slug || tech?.slug || slugifyTech(name)
+    if (!slug) return
+
+    setPage(1)
+    setSelectedCategory('all')
+    setTechSearch(matched?.name || name)
+    setSelectedTechs([slug])
+    setMatchMode('any')
+    // Keep details open; table updates via selectedTechs → loadResults
+  }
+
   function onDomainSearch(e) {
     e.preventDefault()
     setPage(1)
@@ -214,6 +239,15 @@ export default function DashboardPage() {
   const start = results ? (results.page - 1) * results.page_size + 1 : 0
   const end = results ? Math.min(results.page * results.page_size, results.total_filtered) : 0
 
+  const activeTechNames = useMemo(
+    () =>
+      selectedTechs.map((slug) => {
+        const match = technologies.find((t) => t.slug === slug)
+        return match?.name || slug
+      }),
+    [selectedTechs, technologies],
+  )
+
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-6">
       <form onSubmit={onAnalyzeUrl} className="mb-6 flex max-w-2xl gap-2">
@@ -226,7 +260,7 @@ export default function DashboardPage() {
         <button
           type="submit"
           disabled={analyzing}
-          className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
         >
           {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {analyzing ? 'Analyzing…' : 'Detect'}
@@ -250,7 +284,7 @@ export default function DashboardPage() {
             />
             <button
               type="submit"
-              className="rounded-lg bg-brand px-3 py-2 text-white hover:bg-brand-dark"
+              className="rounded-lg bg-brand px-3 py-2 text-ink hover:bg-brand-dark"
               aria-label="Search domains"
             >
               <Search className="h-4 w-4" />
@@ -273,7 +307,7 @@ export default function DashboardPage() {
                   }}
                   className={`rounded-lg border px-3 py-2 text-sm font-medium ${
                     matchMode === mode.id
-                      ? 'border-brand bg-brand text-white'
+                      ? 'border-brand bg-brand text-ink'
                       : 'border-border text-ink hover:bg-surface'
                   }`}
                 >
@@ -304,7 +338,7 @@ export default function DashboardPage() {
                   onClick={() => setSelectedCategory(cat.slug)}
                   className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
                     selectedCategory === cat.slug
-                      ? 'border-brand bg-brand text-white'
+                      ? 'border-brand bg-brand text-ink'
                       : 'border-border text-ink hover:bg-surface'
                   }`}
                 >
@@ -449,7 +483,7 @@ export default function DashboardPage() {
                 >
                   Previous
                 </button>
-                <span className="grid h-8 min-w-8 place-items-center rounded-lg bg-brand px-2 text-sm font-semibold text-white">
+                <span className="grid h-8 min-w-8 place-items-center rounded-lg bg-brand px-2 text-sm font-semibold text-ink">
                   {page}
                 </span>
                 <button
@@ -481,6 +515,9 @@ export default function DashboardPage() {
               enriching={enriching}
               onClose={closeDetails}
               onRefresh={() => selectedId && loadSiteDetail(selectedId, { refresh: true })}
+              onTechnologyClick={filterByTechnology}
+              activeTechSlugs={selectedTechs}
+              activeTechNames={activeTechNames}
             />
           ) : (
             <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">

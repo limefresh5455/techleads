@@ -91,7 +91,7 @@ export default function Pricing({ plans = [], content, showHeader = true }) {
                 }`}
               >
                 {plan.is_popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold text-white">
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold text-ink">
                     Most Popular
                   </span>
                 )}
@@ -126,10 +126,10 @@ export default function Pricing({ plans = [], content, showHeader = true }) {
 
                 <Link
                   to="/get-started"
-                  className={`mt-8 block rounded-xl px-4 py-3 text-center text-sm font-semibold transition ${
+                  className={`mt-8 block rounded-xl px-4 py-3 text-center text-sm font-semibold transition hover:-translate-y-0.5 ${
                     plan.is_popular
-                      ? 'bg-white text-ink hover:bg-white/90'
-                      : 'border border-border bg-white text-ink hover:border-brand hover:text-brand'
+                      ? 'bg-brand text-ink shadow-md shadow-brand/30 hover:bg-brand-dark'
+                      : 'border border-border bg-white text-ink hover:border-brand hover:text-ink'
                   }`}
                 >
                   {plan.cta_label}

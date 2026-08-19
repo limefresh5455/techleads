@@ -1,32 +1,58 @@
 import { BarChart3, Brain, ExternalLink, Globe, Sparkles, Tag, X } from 'lucide-react'
 
-function TechPill({ name, color }) {
+function TechPill({ name, color, active, onClick }) {
   return (
-    <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-ink">
+    <button
+      type="button"
+      onClick={onClick}
+      title={`Show sites using ${name}`}
+      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm ${
+        active
+          ? 'border-brand bg-brand/15 text-ink'
+          : 'border-border bg-white text-ink'
+      }`}
+    >
       <span
-        className="grid h-5 w-5 place-items-center rounded-full text-[9px] font-bold text-white"
-        style={{ backgroundColor: color || '#FF6B35' }}
+        className="grid h-5 w-5 place-items-center rounded-full text-[9px] font-bold text-ink"
+        style={{ backgroundColor: color || '#FFD23F' }}
       >
         {name.slice(0, 1)}
       </span>
       {name}
-    </span>
+    </button>
   )
 }
 
-function ChipList({ items, variant = 'default' }) {
+function ChipList({ items, variant = 'default', activeNames = [], onItemClick }) {
   if (!items?.length) return <p className="mt-2 text-sm text-muted">Not detected</p>
-  const cls =
+  const base =
     variant === 'brand'
-      ? 'rounded-full border border-brand/20 bg-brand/5 px-2.5 py-1 text-xs font-medium text-brand'
-      : 'rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink'
+      ? 'rounded-full border px-2.5 py-1 text-xs font-medium transition hover:-translate-y-0.5'
+      : 'rounded-lg border px-2.5 py-1 text-xs font-medium transition hover:-translate-y-0.5'
   return (
     <div className="mt-2 flex flex-wrap gap-2">
-      {items.map((item) => (
-        <span key={item} className={cls}>
-          {item}
-        </span>
-      ))}
+      {items.map((item) => {
+        const active = activeNames.some((n) => n.toLowerCase() === String(item).toLowerCase())
+        const cls =
+          variant === 'brand'
+            ? active
+              ? `${base} border-brand bg-brand text-ink`
+              : `${base} border-brand/20 bg-brand/5 text-ink hover:border-brand hover:bg-brand/15`
+            : active
+              ? `${base} border-brand bg-brand/15 text-ink`
+              : `${base} border-border bg-surface text-ink hover:border-brand`
+        return (
+          <button
+            key={item}
+            type="button"
+            onClick={() => onItemClick?.(item)}
+            title={`Show sites using ${item}`}
+            className={cls}
+          >
+            {item}
+          </button>
+        )
+      })}
     </div>
   )
 }
@@ -40,7 +66,16 @@ function Section({ title, children }) {
   )
 }
 
-export default function SiteDetailsPanel({ site, loading, enriching, onClose, onRefresh }) {
+export default function SiteDetailsPanel({
+  site,
+  loading,
+  enriching,
+  onClose,
+  onRefresh,
+  onTechnologyClick,
+  activeTechSlugs = [],
+  activeTechNames = [],
+}) {
   if (loading || enriching) {
     return (
       <aside className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -68,9 +103,9 @@ export default function SiteDetailsPanel({ site, loading, enriching, onClose, on
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-ink">Site Details</h3>
           {site.llm_used ? (
-            <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
+            <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-ink">
               <Brain className="h-3 w-3" />
-              AI Enriched
+              {site.llm_provider === 'openrouter' ? 'gpt-oss' : 'AI Enriched'}
             </span>
           ) : (
             <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
@@ -100,6 +135,11 @@ export default function SiteDetailsPanel({ site, loading, enriching, onClose, on
       </div>
 
       <div className="max-h-[calc(100vh-12rem)] overflow-y-auto p-4">
+        {site.llm_used && site.llm_model ? (
+          <p className="mb-3 rounded-lg bg-surface px-3 py-2 text-[11px] text-muted">
+            Model: <span className="font-medium text-ink">{site.llm_model}</span>
+          </p>
+        ) : null}
         <h4 className="text-lg font-bold text-ink">{site.title}</h4>
         <a
           href={`https://${site.domain}`}
@@ -178,38 +218,100 @@ export default function SiteDetailsPanel({ site, loading, enriching, onClose, on
         ) : null}
 
         <Section title="Primary Technologies">
+          <p className="mt-1 text-[11px] text-muted">Click a technology to filter the sites table</p>
           <div className="mt-2 flex flex-wrap gap-2">
-            {site.technologies.map((tech) => (
-              <TechPill key={tech.id} name={tech.name} color={tech.icon_color} />
-            ))}
+            {site.technologies?.length ? (
+              site.technologies.map((tech) => (
+                <TechPill
+                  key={tech.id}
+                  name={tech.name}
+                  color={tech.icon_color}
+                  active={activeTechSlugs.includes(tech.slug)}
+                  onClick={() => onTechnologyClick?.(tech)}
+                />
+              ))
+            ) : (
+              <p className="text-sm text-muted">Not detected</p>
+            )}
           </div>
         </Section>
 
         <Section title="All Detected Technologies">
-          <ChipList items={site.all_detected_technologies} variant="brand" />
+          <p className="mt-1 text-[11px] text-muted">Click a technology to filter the sites table</p>
+          <ChipList
+            items={site.all_detected_technologies}
+            variant="brand"
+            activeNames={activeTechNames}
+            onItemClick={(name) => onTechnologyClick?.({ name })}
+          />
         </Section>
 
-        {(site.cms_platform || site.ecommerce_platform || site.hosting_cdn) ? (
+        {site.cms_platform || site.ecommerce_platform || site.hosting_cdn ? (
           <Section title="Platform Stack">
             <div className="mt-2 space-y-1 text-sm text-ink/80">
-              {site.cms_platform ? <p><span className="text-muted">CMS:</span> {site.cms_platform}</p> : null}
-              {site.ecommerce_platform ? <p><span className="text-muted">E-commerce:</span> {site.ecommerce_platform}</p> : null}
-              {site.hosting_cdn ? <p><span className="text-muted">Hosting/CDN:</span> {site.hosting_cdn}</p> : null}
+              {site.cms_platform ? (
+                <p>
+                  <span className="text-muted">CMS:</span>{' '}
+                  <button
+                    type="button"
+                    className="font-medium text-brand hover:underline"
+                    onClick={() => onTechnologyClick?.({ name: site.cms_platform })}
+                  >
+                    {site.cms_platform}
+                  </button>
+                </p>
+              ) : null}
+              {site.ecommerce_platform ? (
+                <p>
+                  <span className="text-muted">E-commerce:</span>{' '}
+                  <button
+                    type="button"
+                    className="font-medium text-brand hover:underline"
+                    onClick={() => onTechnologyClick?.({ name: site.ecommerce_platform })}
+                  >
+                    {site.ecommerce_platform}
+                  </button>
+                </p>
+              ) : null}
+              {site.hosting_cdn ? (
+                <p>
+                  <span className="text-muted">Hosting/CDN:</span>{' '}
+                  <button
+                    type="button"
+                    className="font-medium text-brand hover:underline"
+                    onClick={() => onTechnologyClick?.({ name: site.hosting_cdn })}
+                  >
+                    {site.hosting_cdn}
+                  </button>
+                </p>
+              ) : null}
             </div>
           </Section>
         ) : null}
 
         <Section title="Marketing Stack">
-          <ChipList items={site.marketing_stack} />
+          <ChipList
+            items={site.marketing_stack}
+            activeNames={activeTechNames}
+            onItemClick={(name) => onTechnologyClick?.({ name })}
+          />
         </Section>
 
         <Section title="Analytics & Tracking">
-          <ChipList items={site.analytics_tools} />
+          <ChipList
+            items={site.analytics_tools}
+            activeNames={activeTechNames}
+            onItemClick={(name) => onTechnologyClick?.({ name })}
+          />
         </Section>
 
         {site.payment_providers?.length > 0 ? (
           <Section title="Payments">
-            <ChipList items={site.payment_providers} />
+            <ChipList
+              items={site.payment_providers}
+              activeNames={activeTechNames}
+              onItemClick={(name) => onTechnologyClick?.({ name })}
+            />
           </Section>
         ) : null}
 

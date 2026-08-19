@@ -7,7 +7,7 @@ export default function BlogPage() {
 
   return (
     <div className="bg-white">
-      <section className="border-b border-border bg-gradient-to-b from-[#fff7f2] to-white py-14 md:py-20">
+      <section className="border-b border-border bg-gradient-to-b from-[#fffbeb] to-white py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4 text-center lg:px-6">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand">Blog</p>
           <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-ink md:text-5xl">

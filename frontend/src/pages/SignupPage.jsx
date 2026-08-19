@@ -30,7 +30,7 @@ export default function SignupPage() {
     'mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand'
 
   return (
-    <section className="bg-gradient-to-b from-[#fff7f2] to-white py-12 md:py-16">
+    <section className="bg-gradient-to-b from-[#fffbeb] to-white py-12 md:py-16">
       <div className="mx-auto grid max-w-6xl items-stretch gap-8 px-4 lg:grid-cols-2 lg:px-6">
         <div className="rounded-3xl border border-border bg-white p-6 shadow-sm md:p-8">
           <h1 className="text-3xl font-extrabold tracking-tight text-ink">Create an account</h1>
@@ -89,7 +89,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
             >
               {loading ? 'Creating account…' : 'Start My Free Trial'}
             </button>
@@ -104,10 +104,10 @@ export default function SignupPage() {
           </p>
         </div>
 
-        <div className="rounded-3xl bg-brand p-8 text-white md:p-10">
-          <p className="text-sm font-semibold uppercase tracking-wider text-white/80">Free Trial</p>
+        <div className="brand-panel rounded-3xl p-8 text-ink md:p-10">
+          <p className="text-sm font-semibold uppercase tracking-wider text-ink/70">Free Trial</p>
           <h2 className="mt-3 text-3xl font-extrabold tracking-tight">Technology Insights</h2>
-          <p className="mt-3 text-white/85">
+          <p className="mt-3 text-ink/75">
             Create your TechLeads.Ai account and start detecting themes, CMS platforms, and apps in
             minutes.
           </p>
@@ -117,8 +117,8 @@ export default function SignupPage() {
               'Lead generation by technology',
               'API access as you grow',
             ].map((item) => (
-              <li key={item} className="flex items-start gap-3 text-sm text-white/95">
-                <span className="mt-0.5 grid h-5 w-5 place-items-center rounded-full bg-white/20">
+              <li key={item} className="flex items-start gap-3 text-sm text-ink/90">
+                <span className="mt-0.5 grid h-5 w-5 place-items-center rounded-full bg-ink/10">
                   <Check className="h-3.5 w-3.5" />
                 </span>
                 {item}

@@ -48,6 +48,8 @@ class Website(Base):
     facebook_url = Column(String(255), default="")
     twitter_url = Column(String(255), default="")
     linkedin_url = Column(String(255), default="")
+    instagram_url = Column(String(255), default="")
+    youtube_url = Column(String(255), default="")
     extra_technologies = Column(Text, default="")
     source_url = Column(String(255), default="")
     signals_json = Column(Text, default="")
@@ -55,6 +57,28 @@ class Website(Base):
     last_crawled_at = Column(DateTime(timezone=True), nullable=True)
     rank = Column(Integer, default=0)
     sort_order = Column(Integer, default=0)
+
+    # AI enrichment detail columns (also mirrored in enriched_json)
+    industry = Column(String(120), default="")
+    company_type = Column(String(80), default="")
+    business_summary = Column(Text, default="")
+    marketing_stack = Column(Text, default="")  # comma-separated
+    analytics_tools = Column(Text, default="")
+    payment_providers = Column(Text, default="")
+    cms_platform = Column(String(120), default="")
+    ecommerce_platform = Column(String(120), default="")
+    hosting_cdn = Column(String(120), default="")
+    key_features = Column(Text, default="")  # newline or | separated
+    target_audience = Column(String(300), default="")
+    phone = Column(String(80), default="")
+    address = Column(String(300), default="")
+    estimated_traffic_tier = Column(String(40), default="")
+    confidence_score = Column(Integer, default=0)
+    llm_insights = Column(Text, default="")  # newline-separated
+    llm_used = Column(Boolean, default=False)
+    llm_error = Column(Text, default="")
+    llm_provider = Column(String(40), default="")
+    llm_model = Column(String(120), default="")
 
     technologies = relationship(
         "WebsiteTechnology", back_populates="website", cascade="all, delete-orphan"

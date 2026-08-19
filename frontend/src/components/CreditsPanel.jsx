@@ -76,7 +76,7 @@ export default function CreditsPanel({ results, onExport, exporting }) {
         type="button"
         onClick={onExport}
         disabled={exporting || !results?.items?.length}
-        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-50"
+        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-50"
       >
         {exporting ? 'Exporting…' : `Export CSV (${Math.min(results?.items?.length ?? 0, freeLimit)} free)`}
       </button>

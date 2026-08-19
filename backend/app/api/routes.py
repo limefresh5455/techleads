@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
 from app.core.auth import (
@@ -67,6 +67,7 @@ from app.schemas import (
     TrustLogoOut,
 )
 from app.services.detect_service import detect_and_store, refresh_website
+from app.services.url_utils import slugify
 
 router = APIRouter(prefix="/api")
 
@@ -318,36 +319,14 @@ def dashboard_search(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    tech_slugs = [slug.strip() for slug in technologies.split(",") if slug.strip()]
-    filters_applied = len(tech_slugs) + (1 if q.strip() else 0)
+    tech_tokens = [slug.strip() for slug in technologies.split(",") if slug.strip()]
+    filters_applied = len(tech_tokens) + (1 if q.strip() else 0)
 
     query = db.query(Website)
     if q.strip():
         query = query.filter(Website.domain.ilike(f"%{q.strip()}%"))
 
-    if tech_slugs:
-        tech_rows = db.query(Technology).filter(Technology.slug.in_(tech_slugs)).all()
-        tech_ids = [row.id for row in tech_rows]
-        if tech_ids:
-            if match == "all":
-                query = (
-                    query.join(WebsiteTechnology)
-                    .filter(WebsiteTechnology.technology_id.in_(tech_ids))
-                    .group_by(Website.id)
-                    .having(
-                        func.count(WebsiteTechnology.technology_id.distinct()) == len(tech_ids)
-                    )
-                )
-            else:
-                query = query.filter(
-                    Website.id.in_(
-                        db.query(WebsiteTechnology.website_id).filter(
-                            WebsiteTechnology.technology_id.in_(tech_ids)
-                        )
-                    )
-                )
-        else:
-            query = query.filter(Website.id == -1)
+    query = _filter_websites_by_technologies(db, query, tech_tokens, match)
 
     total_filtered = query.count()
     db_total = db.query(Website).count()
@@ -402,6 +381,81 @@ def dashboard_search(
     )
 
 
+def _filter_websites_by_technologies(db: Session, query, tech_tokens: list[str], match: str):
+    """Filter by primary WebsiteTechnology links and/or All Detected (extra_technologies)."""
+    if not tech_tokens:
+        return query
+
+    tech_rows = (
+        db.query(Technology)
+        .filter(
+            or_(
+                Technology.slug.in_(tech_tokens),
+                Technology.slug.in_([slugify(t) for t in tech_tokens]),
+                func.lower(Technology.name).in_([t.lower() for t in tech_tokens]),
+            )
+        )
+        .all()
+    )
+
+    id_sets: list[set[int]] = []
+    for token in tech_tokens:
+        matched_ids: set[int] = set()
+        row = next(
+            (
+                r
+                for r in tech_rows
+                if r.slug == token
+                or r.slug == slugify(token)
+                or r.name.lower() == token.lower()
+            ),
+            None,
+        )
+        if row:
+            linked = {
+                wid
+                for (wid,) in db.query(WebsiteTechnology.website_id)
+                .filter(WebsiteTechnology.technology_id == row.id)
+                .all()
+            }
+            matched_ids |= linked
+            name = row.name
+        else:
+            name = token
+
+        # Also match sites where this tech appears in all-detected / extras text
+        text_hits = {
+            wid
+            for (wid,) in db.query(Website.id)
+            .filter(
+                or_(
+                    Website.extra_technologies.ilike(f"%{name}%"),
+                    Website.cms_platform.ilike(f"%{name}%"),
+                    Website.ecommerce_platform.ilike(f"%{name}%"),
+                    Website.hosting_cdn.ilike(f"%{name}%"),
+                    Website.marketing_stack.ilike(f"%{name}%"),
+                    Website.analytics_tools.ilike(f"%{name}%"),
+                    Website.payment_providers.ilike(f"%{name}%"),
+                )
+            )
+            .all()
+        }
+        matched_ids |= text_hits
+        id_sets.append(matched_ids)
+
+    if not id_sets:
+        return query.filter(Website.id == -1)
+
+    if match == "all":
+        final_ids = set.intersection(*id_sets) if id_sets else set()
+    else:
+        final_ids = set.union(*id_sets) if id_sets else set()
+
+    if not final_ids:
+        return query.filter(Website.id == -1)
+    return query.filter(Website.id.in_(final_ids))
+
+
 def _website_rows_to_out(rows: list[Website]) -> list[DashboardWebsiteOut]:
     items = []
     for row in rows:
@@ -438,35 +492,13 @@ def dashboard_export(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    tech_slugs = [slug.strip() for slug in technologies.split(",") if slug.strip()]
+    tech_tokens = [slug.strip() for slug in technologies.split(",") if slug.strip()]
 
     query = db.query(Website)
     if q.strip():
         query = query.filter(Website.domain.ilike(f"%{q.strip()}%"))
 
-    if tech_slugs:
-        tech_rows = db.query(Technology).filter(Technology.slug.in_(tech_slugs)).all()
-        tech_ids = [row.id for row in tech_rows]
-        if tech_ids:
-            if match == "all":
-                query = (
-                    query.join(WebsiteTechnology)
-                    .filter(WebsiteTechnology.technology_id.in_(tech_ids))
-                    .group_by(Website.id)
-                    .having(
-                        func.count(WebsiteTechnology.technology_id.distinct()) == len(tech_ids)
-                    )
-                )
-            else:
-                query = query.filter(
-                    Website.id.in_(
-                        db.query(WebsiteTechnology.website_id).filter(
-                            WebsiteTechnology.technology_id.in_(tech_ids)
-                        )
-                    )
-                )
-        else:
-            query = query.filter(Website.id == -1)
+    query = _filter_websites_by_technologies(db, query, tech_tokens, match)
 
     max_export = FREE_RECORD_LIMIT + max(user.credits, 0)
     if limit > max_export:
@@ -505,6 +537,19 @@ def dashboard_export(
     )
 
 
+def _split_stored_list(value: str | None, *, sep: str | None = None) -> list[str]:
+    raw = (value or "").strip()
+    if not raw:
+        return []
+    if sep:
+        return [part.strip() for part in raw.split(sep) if part.strip()]
+    if "\n" in raw:
+        return [part.strip() for part in raw.split("\n") if part.strip()]
+    if " | " in raw:
+        return [part.strip() for part in raw.split(" | ") if part.strip()]
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
 def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
     import json
 
@@ -515,7 +560,13 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
     primary = [t.name for t in techs]
     extra = [t.strip() for t in (row.extra_technologies or "").split(",") if t.strip()]
     all_detected = primary + [t for t in extra if t not in primary]
-    enriched = json.loads(row.enriched_json or "{}")
+    enriched = json.loads(row.enriched_json or "{}") if row.enriched_json else {}
+
+    marketing = _split_stored_list(row.marketing_stack) or enriched.get("marketing_stack") or []
+    analytics = _split_stored_list(row.analytics_tools) or enriched.get("analytics_tools") or []
+    payments = _split_stored_list(row.payment_providers) or enriched.get("payment_providers") or []
+    features = _split_stored_list(row.key_features, sep=" | ") or enriched.get("key_features") or []
+    insights = _split_stored_list(row.llm_insights, sep="\n") or enriched.get("llm_insights") or []
 
     return DashboardWebsiteDetailOut(
         id=row.id,
@@ -542,26 +593,28 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
         last_crawled_at=row.last_crawled_at.isoformat() if row.last_crawled_at else None,
         source_url=row.source_url or "",
         enriched=enriched,
-        llm_used=bool(enriched.get("llm_used")),
-        llm_error=str(enriched.get("llm_error") or ""),
-        industry=str(enriched.get("industry") or ""),
-        company_type=str(enriched.get("company_type") or ""),
-        business_summary=str(enriched.get("business_summary") or ""),
-        marketing_stack=enriched.get("marketing_stack") or [],
-        analytics_tools=enriched.get("analytics_tools") or [],
-        payment_providers=enriched.get("payment_providers") or [],
-        cms_platform=str(enriched.get("cms_platform") or ""),
-        ecommerce_platform=str(enriched.get("ecommerce_platform") or ""),
-        hosting_cdn=str(enriched.get("hosting_cdn") or ""),
-        key_features=enriched.get("key_features") or [],
-        target_audience=str(enriched.get("target_audience") or ""),
-        phone=str(enriched.get("phone") or ""),
-        address=str(enriched.get("address") or ""),
-        instagram_url=str(enriched.get("instagram_url") or ""),
-        youtube_url=str(enriched.get("youtube_url") or ""),
-        estimated_traffic_tier=str(enriched.get("estimated_traffic_tier") or ""),
-        confidence_score=int(enriched.get("confidence_score") or 0),
-        llm_insights=enriched.get("llm_insights") or [],
+        llm_used=bool(row.llm_used if row.llm_used is not None else enriched.get("llm_used")),
+        llm_error=str(row.llm_error or enriched.get("llm_error") or ""),
+        llm_provider=str(row.llm_provider or enriched.get("llm_provider") or ""),
+        llm_model=str(row.llm_model or enriched.get("llm_model") or ""),
+        industry=str(row.industry or enriched.get("industry") or ""),
+        company_type=str(row.company_type or enriched.get("company_type") or ""),
+        business_summary=str(row.business_summary or enriched.get("business_summary") or ""),
+        marketing_stack=marketing,
+        analytics_tools=analytics,
+        payment_providers=payments,
+        cms_platform=str(row.cms_platform or enriched.get("cms_platform") or ""),
+        ecommerce_platform=str(row.ecommerce_platform or enriched.get("ecommerce_platform") or ""),
+        hosting_cdn=str(row.hosting_cdn or enriched.get("hosting_cdn") or ""),
+        key_features=features,
+        target_audience=str(row.target_audience or enriched.get("target_audience") or ""),
+        phone=str(row.phone or enriched.get("phone") or ""),
+        address=str(row.address or enriched.get("address") or ""),
+        instagram_url=str(row.instagram_url or enriched.get("instagram_url") or ""),
+        youtube_url=str(row.youtube_url or enriched.get("youtube_url") or ""),
+        estimated_traffic_tier=str(row.estimated_traffic_tier or enriched.get("estimated_traffic_tier") or ""),
+        confidence_score=int(row.confidence_score or enriched.get("confidence_score") or 0),
+        llm_insights=insights,
     )
 
 

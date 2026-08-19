@@ -397,6 +397,8 @@ class DashboardWebsiteDetailOut(BaseModel):
     enriched: dict = {}
     llm_used: bool = False
     llm_error: str = ""
+    llm_provider: str = ""
+    llm_model: str = ""
     industry: str = ""
     company_type: str = ""
     business_summary: str = ""

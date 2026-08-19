@@ -36,7 +36,7 @@ export default function GetStartedPage() {
           />
           <button
             type="submit"
-            className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
+            className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
           >
             Create Free Account
           </button>

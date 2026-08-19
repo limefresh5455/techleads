@@ -7,7 +7,7 @@ export default function CustomDataPage() {
 
   return (
     <div className="bg-white">
-      <section className="border-b border-border bg-gradient-to-b from-[#fff7f2] to-white py-14 md:py-20">
+      <section className="border-b border-border bg-gradient-to-b from-[#fffbeb] to-white py-14 md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center lg:px-6">
           <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
             Custom Technology Data Solutions
@@ -19,7 +19,7 @@ export default function CustomDataPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/contact"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
             >
               Contact Sales
             </Link>
@@ -56,7 +56,7 @@ export default function CustomDataPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/contact"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
             >
               Contact Sales
             </Link>

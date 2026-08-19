@@ -84,8 +84,8 @@ export default function ToolDetectorPage() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#fff7f2] via-white to-white">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,107,53,0.12),_transparent_55%)]" />
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#fffbeb] via-white to-white">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,210,63,0.18),_transparent_55%)]" />
         <div className="relative mx-auto max-w-3xl px-4 py-16 text-center lg:px-6 lg:py-20">
           <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">{tool.name}</h1>
           <p className="mx-auto mt-4 max-w-2xl text-base text-muted md:text-lg">{tool.description}</p>
@@ -102,7 +102,7 @@ export default function ToolDetectorPage() {
             <button
               type="submit"
               disabled={analyzing}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
             >
               {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {analyzing ? 'Analyzing…' : tool.cta_label || 'Analyze'}
@@ -181,13 +181,13 @@ export default function ToolDetectorPage() {
         </div>
       </section>
 
-      <section className="bg-brand">
-        <div className="mx-auto max-w-3xl px-4 py-16 text-center text-white lg:px-6">
+      <section className="brand-panel">
+        <div className="mx-auto max-w-3xl px-4 py-16 text-center text-ink lg:px-6">
           <h2 className="text-3xl font-extrabold tracking-tight md:text-4xl">{tool.final_cta_title}</h2>
-          <p className="mx-auto mt-4 max-w-xl text-white/85">{tool.final_cta_subtitle}</p>
+          <p className="mx-auto mt-4 max-w-xl text-ink/75">{tool.final_cta_subtitle}</p>
           <Link
             to="/"
-            className="mt-8 inline-flex rounded-xl bg-white px-6 py-3.5 text-sm font-semibold text-brand hover:bg-white/95"
+            className="mt-8 inline-flex rounded-xl bg-ink px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-ink/90"
           >
             {tool.final_cta_label || 'Scan Your Website Now'}
           </Link>

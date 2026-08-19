@@ -19,7 +19,7 @@ export default function ExtensionsPage() {
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link
               to="/get-started"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-white hover:bg-brand-dark"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
             >
               Download Extension
             </Link>

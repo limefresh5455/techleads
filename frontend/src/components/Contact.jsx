@@ -88,7 +88,7 @@ export default function Contact({ content, trustLogos = [], showHeader = true })
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-white hover:bg-brand-dark disabled:opacity-60"
+              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
             >
               {loading ? 'Sending…' : content.contact_button_label}
             </button>
