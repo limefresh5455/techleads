@@ -86,7 +86,6 @@ def _sync_nav(db: Session) -> None:
         [
             ("Blog", "/blog"),
             ("Pricing", "/pricing"),
-            ("Custom Data", "/custom-data"),
         ],
         start=1,
     ):
@@ -186,7 +185,6 @@ def _sync_footer(db: Session) -> None:
         "Products": [
             ("Home", "/"),
             ("Pricing", "/pricing"),
-            ("Custom Data", "/custom-data"),
             ("API Docs", "/api-docs"),
             ("Blog", "/blog"),
             ("Sign Up", "/signup"),

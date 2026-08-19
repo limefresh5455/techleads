@@ -3,9 +3,9 @@ import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Menu, X } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
 
-function BrandMark({ content }) {
+function BrandMark({ content, to = '/' }) {
   return (
-    <Link to="/" className="flex items-center gap-2.5 shrink-0">
+    <Link to={to} className="flex items-center gap-2.5 shrink-0">
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand shadow-sm shadow-brand/30">
         <svg viewBox="0 0 32 32" className="h-5 w-5 text-ink" aria-hidden="true">
           <path
@@ -26,7 +26,9 @@ function BrandMark({ content }) {
 export default function Navbar() {
   const { data, user, logout } = useSiteData()
   const content = data.content
-  const items = data.nav_items || []
+  const items = (data.nav_items || []).filter(
+    (item) => item.href !== '/custom-data' && item.label?.toLowerCase() !== 'custom data',
+  )
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
@@ -65,7 +67,7 @@ export default function Navbar() {
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
-        <BrandMark content={content} />
+        <BrandMark content={content} to={user ? '/dashboard' : '/'} />
 
         <nav className="hidden items-center gap-6 lg:flex">
           {items.map((item) =>

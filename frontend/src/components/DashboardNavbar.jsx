@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
 
@@ -41,9 +41,6 @@ export default function DashboardNavbar() {
 
   if (!content || !user) return null
 
-  const linkClass = ({ isActive }) =>
-    `text-sm font-medium transition-colors ${isActive ? 'text-brand' : 'text-ink/75 hover:text-brand'}`
-
   const initial = user.name?.trim()?.[0]?.toUpperCase() || 'U'
 
   return (
@@ -51,25 +48,7 @@ export default function DashboardNavbar() {
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 lg:px-6">
         <BrandMark content={content} />
 
-        <nav className="hidden items-center gap-6 lg:flex">
-          <NavLink to="/dashboard" className={linkClass}>
-            Website Lookup
-          </NavLink>
-          <NavLink to="/api-docs" className={linkClass}>
-            API Access
-          </NavLink>
-          <Link to="/custom-data" className="text-sm font-medium text-ink/75 hover:text-brand">
-            Bulk Lookup
-          </Link>
-        </nav>
-
         <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            to="/custom-data"
-            className="rounded-lg border border-border px-4 py-2 text-sm font-semibold text-ink hover:bg-surface"
-          >
-            Custom Solution
-          </Link>
           <Link
             to="/pricing"
             className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-dark"
