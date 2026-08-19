@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
 
@@ -37,6 +37,9 @@ from app.schemas import (
     AuthUserOut,
     BlogPostOut,
     CategoryOut,
+    CheckoutConfirmOut,
+    CheckoutRequest,
+    CheckoutSessionOut,
     ContactCreate,
     ContactOut,
     CustomDataBlockOut,
@@ -67,6 +70,11 @@ from app.schemas import (
     TrustLogoOut,
 )
 from app.services.detect_service import detect_and_store, refresh_website
+from app.services.stripe_billing import (
+    create_checkout_session,
+    fulfill_checkout_session,
+    handle_webhook_event,
+)
 from app.services.url_utils import slugify
 
 router = APIRouter(prefix="/api")
@@ -213,6 +221,45 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=AuthUserOut)
 def get_me(user: User = Depends(get_current_user)):
     return user
+
+
+@router.post("/billing/checkout", response_model=CheckoutSessionOut)
+def billing_checkout(
+    payload: CheckoutRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    return create_checkout_session(db, user=user, plan_slug=payload.plan_slug)
+
+
+@router.get("/billing/confirm", response_model=CheckoutConfirmOut)
+def billing_confirm(
+    session_id: str = Query(..., min_length=10),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    from app.models import CreditPurchase
+
+    purchase = (
+        db.query(CreditPurchase)
+        .filter(CreditPurchase.stripe_session_id == session_id)
+        .first()
+    )
+    if purchase and purchase.user_id != user.id:
+        raise HTTPException(status_code=403, detail="This checkout session belongs to another account")
+
+    result = fulfill_checkout_session(db, session_id)
+    refreshed = db.query(User).filter(User.id == user.id).first()
+    if refreshed:
+        result["user_credits"] = refreshed.credits
+    return result
+
+
+@router.post("/billing/webhook")
+async def billing_webhook(request: Request, db: Session = Depends(get_db)):
+    payload = await request.body()
+    signature = request.headers.get("stripe-signature", "")
+    return handle_webhook_event(db, payload, signature)
 
 
 @router.get("/content", response_model=SiteContentOut)

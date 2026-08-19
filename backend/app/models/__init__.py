@@ -392,6 +392,22 @@ class User(Base):
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
+class CreditPurchase(Base):
+    __tablename__ = "credit_purchases"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    plan_slug = Column(String(100), nullable=False)
+    credits = Column(Integer, nullable=False)
+    amount_cents = Column(Integer, nullable=False)
+    currency = Column(String(10), default="usd")
+    stripe_session_id = Column(String(255), unique=True, nullable=False, index=True)
+    stripe_payment_intent = Column(String(255), default="")
+    status = Column(String(40), default="pending")  # pending | paid | failed
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    paid_at = Column(DateTime(timezone=True), nullable=True)
+
+
 class UserToken(Base):
     __tablename__ = "user_tokens"
 

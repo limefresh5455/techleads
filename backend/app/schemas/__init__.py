@@ -317,6 +317,23 @@ class AuthResponse(BaseModel):
     user: AuthUserOut
 
 
+class CheckoutRequest(BaseModel):
+    plan_slug: str = Field(min_length=2, max_length=100)
+
+
+class CheckoutSessionOut(BaseModel):
+    checkout_url: str
+    session_id: str
+    publishable_key: str = ""
+
+
+class CheckoutConfirmOut(BaseModel):
+    status: str
+    credits_added: int = 0
+    user_credits: int = 0
+    plan_slug: str = ""
+
+
 class ContactCreate(BaseModel):
     name: str = Field(min_length=2, max_length=160)
     email: EmailStr

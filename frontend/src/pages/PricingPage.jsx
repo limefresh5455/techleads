@@ -1,17 +1,94 @@
-import { useState } from 'react'
-import { Link } from 'react-router-dom'
-import { Check, ChevronDown } from 'lucide-react'
+import { useEffect, useRef, useState } from 'react'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Check, ChevronDown, Loader2 } from 'lucide-react'
+import { confirmCheckoutSession, createCheckoutSession } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
 
 export default function PricingPage() {
-  const { data } = useSiteData()
+  const { data, user, updateUserCredits } = useSiteData()
   const content = data.content
   const plans = data.pricing_plans || []
   const faqs = data.faqs || []
-  const [yearly, setYearly] = useState(true)
   const [openFaq, setOpenFaq] = useState(0)
+  const [buyingSlug, setBuyingSlug] = useState('')
+  const [message, setMessage] = useState('')
+  const [error, setError] = useState('')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const navigate = useNavigate()
+  const confirmingRef = useRef('')
+
+  useEffect(() => {
+    const status = searchParams.get('checkout')
+    const sessionId =
+      searchParams.get('session_id') || localStorage.getItem('tl_pending_checkout') || ''
+    if (!status && !sessionId) return
+
+    async function finishCheckout() {
+      if (status === 'cancel') {
+        localStorage.removeItem('tl_pending_checkout')
+        setMessage('Checkout canceled. No credits were charged.')
+        setSearchParams({})
+        return
+      }
+      const shouldConfirm =
+        (status === 'success' || (!status && sessionId)) && sessionId && user
+      if (shouldConfirm) {
+        if (confirmingRef.current === sessionId) return
+        confirmingRef.current = sessionId
+        try {
+          const result = await confirmCheckoutSession(sessionId)
+          updateUserCredits(result.user_credits)
+          localStorage.removeItem('tl_pending_checkout')
+          setMessage(
+            result.credits_added > 0
+              ? `Payment successful! Added ${result.credits_added.toLocaleString()} credits. Balance: ${result.user_credits.toLocaleString()}.`
+              : `Payment already processed. Current balance: ${result.user_credits.toLocaleString()} credits.`,
+          )
+          setError('')
+        } catch (err) {
+          setError(err.message || 'Could not confirm payment')
+          confirmingRef.current = ''
+        }
+        setSearchParams({})
+      } else if (status === 'success' && !user) {
+        setMessage('Payment received. Please log in to see your updated credits.')
+        setSearchParams({})
+      }
+    }
+
+    finishCheckout()
+  }, [searchParams, setSearchParams, user, updateUserCredits])
 
   if (!content) return null
+
+  async function buyPlan(plan) {
+    setError('')
+    setMessage('')
+    if (plan.slug === 'enterprise' || plan.credits <= 0 || plan.monthly_price <= 0) {
+      navigate('/contact')
+      return
+    }
+    if (!user) {
+      navigate('/login?redirect=/pricing')
+      return
+    }
+    setBuyingSlug(plan.slug)
+    try {
+      const session = await createCheckoutSession(plan.slug)
+      if (session.checkout_url) {
+        if (session.session_id) {
+          localStorage.setItem('tl_pending_checkout', session.session_id)
+        }
+        window.location.href = session.checkout_url
+        return
+      }
+      setError('Checkout URL missing from Stripe response')
+    } catch (err) {
+      setError(err.message || 'Unable to start Stripe checkout')
+    } finally {
+      setBuyingSlug('')
+    }
+  }
 
   return (
     <div className="bg-white">
@@ -21,38 +98,30 @@ export default function PricingPage() {
             {content.pricing_title}
           </h1>
           <p className="mt-4 text-muted">{content.pricing_subtitle}</p>
-
-          <div className="mt-8 inline-flex items-center gap-1 rounded-full border border-border bg-white p-1 shadow-sm">
-            <button
-              type="button"
-              onClick={() => setYearly(false)}
-              className={`rounded-full px-5 py-2 text-sm font-semibold ${
-                !yearly ? 'bg-brand text-ink' : 'text-muted'
-              }`}
-            >
-              Monthly
-            </button>
-            <button
-              type="button"
-              onClick={() => setYearly(true)}
-              className={`rounded-full px-5 py-2 text-sm font-semibold ${
-                yearly ? 'bg-brand text-ink' : 'text-muted'
-              }`}
-            >
-              Yearly <span className="opacity-90">{content.pricing_yearly_badge}</span>
-            </button>
-          </div>
+          {user ? (
+            <p className="mt-4 inline-flex rounded-full bg-brand/15 px-4 py-1.5 text-sm font-semibold text-ink">
+              Your balance: {(user.credits || 0).toLocaleString()} credits
+            </p>
+          ) : null}
         </div>
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-14 lg:px-6">
-        <div className="grid gap-5 lg:grid-cols-3">
+        {message ? (
+          <p className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
+            {message}
+          </p>
+        ) : null}
+        {error ? (
+          <p className="mb-6 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+            {error}
+          </p>
+        ) : null}
+
+        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
           {plans.map((plan) => {
-            const isCustom = plan.slug === 'enterprise'
-            const price = yearly ? plan.yearly_price : plan.monthly_price
-            const savings = yearly
-              ? Math.max(0, plan.monthly_price * 12 - plan.yearly_price)
-              : 0
+            const isCustom = plan.slug === 'enterprise' || plan.monthly_price <= 0
+            const buying = buyingSlug === plan.slug
             return (
               <div
                 key={plan.id}
@@ -74,17 +143,13 @@ export default function PricingPage() {
                     <p className="text-4xl font-extrabold text-ink">Custom</p>
                   ) : (
                     <>
-                      <p className="text-4xl font-extrabold text-ink">
-                        ${price}
-                        <span className="text-base font-medium text-muted">
-                          {yearly ? '/yr' : '/mo'}
-                        </span>
+                      <p className="text-4xl font-extrabold text-ink">${plan.monthly_price}</p>
+                      <p className="mt-1 text-sm font-semibold text-brand">
+                        {plan.credits.toLocaleString()} credits · one-time
                       </p>
-                      {yearly && savings > 0 && (
-                        <p className="mt-1 text-sm font-medium text-brand">
-                          Save ${savings} annually (~17% off)
-                        </p>
-                      )}
+                      <p className="mt-1 text-xs text-muted">
+                        ≈ ${(plan.monthly_price / plan.credits).toFixed(3)} per credit
+                      </p>
                     </>
                   )}
                 </div>
@@ -96,24 +161,31 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
-                <Link
-                  to={isCustom ? '/contact' : '/signup'}
-                  className={`mt-8 block rounded-xl px-4 py-3 text-center text-sm font-semibold ${
+                <button
+                  type="button"
+                  disabled={buying}
+                  onClick={() => buyPlan(plan)}
+                  className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-center text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-60 ${
                     plan.is_popular
                       ? 'bg-brand text-ink hover:bg-brand-dark'
-                      : 'border border-border text-ink hover:border-brand hover:text-brand'
+                      : 'border border-border text-ink hover:border-brand'
                   }`}
                 >
-                  {plan.cta_label}
-                </Link>
+                  {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+                  {buying ? 'Redirecting…' : plan.cta_label}
+                </button>
               </div>
             )
           })}
         </div>
 
-        <p className="mt-10 text-center text-sm text-muted">
-          All plans include our core technology detection database with over 300+ technologies
-        </p>
+        <div className="mt-10 rounded-2xl border border-border bg-surface px-5 py-4 text-sm text-muted">
+          <p className="font-semibold text-ink">Credit usage</p>
+          <p className="mt-1">
+            Free: first 10 dashboard results. Then 10 credits / page. Export beyond 10 rows: 1 credit
+            per row. Payments are processed securely by Stripe.
+          </p>
+        </div>
       </section>
 
       <section className="bg-surface py-14">
@@ -143,9 +215,9 @@ export default function PricingPage() {
       <section className="py-14">
         <div className="mx-auto max-w-4xl px-4 text-center lg:px-6">
           <div className="brand-panel rounded-3xl px-6 py-12 text-ink md:px-10">
-            <h2 className="text-2xl font-extrabold md:text-3xl">Ready to Get Started?</h2>
+            <h2 className="text-2xl font-extrabold md:text-3xl">Need a custom credit volume?</h2>
             <p className="mx-auto mt-3 max-w-xl text-ink/75">
-              Contact us today to discuss your data needs or choose a plan
+              Talk to sales for invoicing, team seats, and larger prepaid credit packs.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
@@ -155,10 +227,10 @@ export default function PricingPage() {
                 Contact Sales
               </Link>
               <Link
-                to="/signup"
+                to="/dashboard"
                 className="rounded-xl border border-ink/25 bg-white/40 px-5 py-3 text-sm font-semibold text-ink backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/70"
               >
-                Choose subscription
+                Go to dashboard
               </Link>
             </div>
           </div>

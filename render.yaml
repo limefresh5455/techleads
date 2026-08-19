@@ -19,6 +19,14 @@ services:
         sync: false
       - key: OPENROUTER_MODEL
         value: openai/gpt-oss-120b
+      - key: FRONTEND_URL
+        sync: false
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
 
 databases:
   - name: techleads-db

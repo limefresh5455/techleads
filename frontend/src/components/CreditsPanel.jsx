@@ -69,7 +69,7 @@ export default function CreditsPanel({ results, onExport, exporting }) {
         to="/pricing"
         className="mt-4 flex w-full items-center justify-center rounded-xl border border-brand bg-brand/5 px-4 py-2.5 text-sm font-semibold text-brand hover:bg-brand/10"
       >
-        Get more credits
+        Buy credits with Stripe
       </Link>
 
       <button

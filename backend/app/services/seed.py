@@ -150,12 +150,12 @@ def _sync_branding(db: Session) -> None:
         "and generate high-intent leads."
     )
     content.footer_copyright = "TechLeads.Ai"
-    content.pricing_title = "Plans & pricing"
+    content.pricing_title = "Buy credits. Unlock more leads."
     content.pricing_subtitle = (
-        "Choose a plan that gives you technology lists, lead generation tools, and website insights. "
-        "All plans include access to our technology detection database."
+        "Purchase one-time credit packs with Stripe. "
+        "1 credit = 1 extra exported row; 10 credits unlock each dashboard page after page 1."
     )
-    content.pricing_yearly_badge = "Save ~17%"
+    content.pricing_yearly_badge = "One-time"
     content.contact_title = "Contact sales"
     content.contact_subtitle = "Talk to our team about custom data, API access, or enterprise plans."
 
@@ -620,20 +620,20 @@ def _sync_faqs(db: Session) -> None:
     db.flush()
     faqs = [
         (
-            "What’s included in the data exports?",
-            "Our data exports provide detailed technology insights based on what we can detect from each website. This typically includes frameworks, CMS platforms, analytics tools, and other technologies in use.",
+            "How do credits work?",
+            "Page 1 of dashboard results (10 rows) is free. Each extra page costs 10 credits. Exporting beyond 10 rows costs 1 credit per extra row. Credits never expire.",
         ),
         (
-            "Can I filter data by specific technologies?",
-            "Absolutely! All plans allow filtering by technology type.",
+            "How do I buy credits?",
+            "Choose a credit pack on the Pricing page and checkout securely with Stripe. Credits are added to your account as soon as payment succeeds.",
         ),
         (
-            "Can I upgrade or downgrade my plan?",
-            "Yes, you can change your plan at any time. Upgrades take effect immediately, while downgrades will be applied at the start of your next billing cycle.",
+            "Can I get an invoice?",
+            "Stripe emails a receipt after purchase. For custom invoices, net-30, or large packs, contact sales for Enterprise.",
         ),
         (
             "Do you offer custom data solutions?",
-            "Yes, our Enterprise plan can be customized to meet your specific needs. Contact our sales team to discuss custom data fields, integration options, or specialized industry coverage.",
+            "Yes. Enterprise covers custom credit volume, dedicated support, and specialized data fields. Contact our sales team.",
         ),
     ]
     for i, (q, a) in enumerate(faqs):
@@ -683,58 +683,71 @@ def _sync_pricing(db: Session) -> None:
         {
             "name": "Starter",
             "slug": "starter",
-            "description": "Perfect for individuals and small teams",
-            "monthly_price": 99,
-            "yearly_price": 980,
-            "credits": 0,
+            "description": "Try paid unlocks — enough for light prospecting and CSV exports.",
+            "monthly_price": 19,
+            "yearly_price": 19,
+            "credits": 100,
             "is_popular": False,
-            "cta_label": "Get started",
+            "cta_label": "Buy 100 credits",
             "features": [
-                "Unlimited technology lists",
-                "Unlimited keyword searches",
-                "Unlimited leads per export",
-                "1 team member access",
-                "Advanced filtering",
-                "Priority email support",
+                "100 credits added instantly",
+                "≈ 10 extra dashboard pages",
+                "≈ 100 extra CSV export rows",
+                "Technology detection & AI enrichment",
+                "Secure Stripe checkout",
             ],
         },
         {
-            "name": "Business",
-            "slug": "business",
-            "description": "Ideal for growing businesses and marketing teams",
-            "monthly_price": 149,
-            "yearly_price": 1480,
-            "credits": 25000,
+            "name": "Growth",
+            "slug": "growth",
+            "description": "Best for agencies and sales teams running regular tech-based lead lists.",
+            "monthly_price": 49,
+            "yearly_price": 49,
+            "credits": 500,
             "is_popular": True,
-            "cta_label": "Get started",
+            "cta_label": "Buy 500 credits",
             "features": [
-                "Unlimited technology lists",
-                "Unlimited keyword searches",
-                "Unlimited leads per export",
-                "1 team member access",
-                "Advanced filtering",
-                "Bulk lookup",
-                "API access (25k requests/mo)",
+                "500 credits added instantly",
+                "≈ 50 extra dashboard pages",
+                "≈ 500 extra CSV export rows",
+                "Bulk lookup & advanced filters",
                 "Priority email support",
+                "Secure Stripe checkout",
+            ],
+        },
+        {
+            "name": "Scale",
+            "slug": "scale",
+            "description": "High-volume credit pack for continuous outbound and enrichment workflows.",
+            "monthly_price": 149,
+            "yearly_price": 149,
+            "credits": 2000,
+            "is_popular": False,
+            "cta_label": "Buy 2,000 credits",
+            "features": [
+                "2,000 credits added instantly",
+                "≈ 200 extra dashboard pages",
+                "≈ 2,000 extra CSV export rows",
+                "Best per-credit value",
+                "API-ready account",
+                "Secure Stripe checkout",
             ],
         },
         {
             "name": "Enterprise",
             "slug": "enterprise",
-            "description": "For teams and organizations with advanced needs",
+            "description": "Custom credit volume, invoicing, and dedicated support for large teams.",
             "monthly_price": 0,
             "yearly_price": 0,
             "credits": 0,
             "is_popular": False,
             "cta_label": "Contact Sales",
             "features": [
-                "Unlimited technology lists",
-                "Unlimited keyword searches",
-                "Bulk data purchase",
-                "Multiple team members access",
-                "Advanced filtering",
-                "API access",
+                "Custom credit volume",
+                "Invoice / net-30 billing",
                 "Dedicated account manager",
+                "Custom data fields & SLAs",
+                "SSO & team seats",
             ],
         },
     ]
@@ -940,12 +953,15 @@ def _seed_site_content(db: Session) -> None:
             ),
             final_cta_primary="Get Started",
             final_cta_secondary="View Pricing",
-            pricing_title="Simple, transparent pricing",
-            pricing_subtitle="Start free, then scale as your lead volume grows.",
-            pricing_yearly_badge="Save 20%",
-            calculator_title="How much data do you need?",
-            calculator_subtitle="Drag the slider to estimate pricing for your lead volume.",
-            calculator_default_leads=10000,
+            pricing_title="Buy credits. Unlock more leads.",
+            pricing_subtitle=(
+                "One-time Stripe purchases. 1 credit = 1 extra export row; "
+                "10 credits unlock each dashboard page after page 1."
+            ),
+            pricing_yearly_badge="One-time",
+            calculator_title="How many credits do you need?",
+            calculator_subtitle="Estimate credits from leads you want to unlock beyond the free 10 results.",
+            calculator_default_leads=500,
             contact_title="Contact sales",
             contact_subtitle="Talk to our team about custom data, API access, or enterprise plans.",
             contact_button_label="Send Message",

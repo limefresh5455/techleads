@@ -22,6 +22,11 @@ class Settings(BaseSettings):
     openrouter_timeout_seconds: int = 90
     openrouter_http_referer: str = "https://techleads.ai"
     openrouter_app_title: str = "TechLeads.Ai"
+    # Stripe credit purchases
+    stripe_secret_key: str = ""
+    stripe_webhook_secret: str = ""
+    stripe_publishable_key: str = ""
+    frontend_url: str = "http://localhost:5173"
     crawl_timeout_seconds: int = 15
     crawl_user_agent: str = "TechLeadsBot/1.0 (+https://techleads.ai)"
 

@@ -14,18 +14,32 @@ async function request(path, options = {}) {
     },
     ...options,
   })
+
+  const raw = await res.text()
+  let data = null
+  if (raw) {
+    try {
+      data = JSON.parse(raw)
+    } catch {
+      data = null
+    }
+  }
+
   if (!res.ok) {
     let message = `Request failed: ${res.status}`
-    try {
-      const data = await res.json()
-      message = data.detail || JSON.stringify(data)
-    } catch {
-      const text = await res.text()
-      if (text) message = text
+    if (data?.detail) {
+      message = Array.isArray(data.detail)
+        ? data.detail.map((d) => d.msg || JSON.stringify(d)).join(', ')
+        : String(data.detail)
+    } else if (typeof data === 'string') {
+      message = data
+    } else if (raw) {
+      message = raw.slice(0, 300)
     }
-    throw new Error(typeof message === 'string' ? message : 'Request failed')
+    throw new Error(message)
   }
-  return res.json()
+
+  return data
 }
 
 export function fetchLanding() {
@@ -102,4 +116,16 @@ export function login(payload) {
     method: 'POST',
     body: JSON.stringify(payload),
   })
+}
+
+export function createCheckoutSession(planSlug) {
+  return request('/api/billing/checkout', {
+    method: 'POST',
+    body: JSON.stringify({ plan_slug: planSlug }),
+  })
+}
+
+export function confirmCheckoutSession(sessionId) {
+  const params = new URLSearchParams({ session_id: sessionId })
+  return request(`/api/billing/confirm?${params.toString()}`)
 }
