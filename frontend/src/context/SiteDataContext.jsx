@@ -27,6 +27,7 @@ const SiteDataContext = createContext({
   error: '',
   user: null,
   setAuth: () => {},
+  updateUser: () => {},
   updateUserCredits: () => {},
   logout: () => {},
 })
@@ -68,6 +69,14 @@ export function SiteDataProvider({ children }) {
     })
   }, [])
 
+  const updateUser = useCallback((nextUser) => {
+    setUser((prev) => {
+      const merged = { ...(prev || {}), ...nextUser }
+      localStorage.setItem('tl_user', JSON.stringify(merged))
+      return merged
+    })
+  }, [])
+
   const logout = useCallback(() => {
     localStorage.removeItem('tl_token')
     localStorage.removeItem('tl_user')
@@ -75,8 +84,8 @@ export function SiteDataProvider({ children }) {
   }, [])
 
   const value = useMemo(
-    () => ({ data, loading, error, user, setAuth, updateUserCredits, logout }),
-    [data, loading, error, user, setAuth, updateUserCredits, logout],
+    () => ({ data, loading, error, user, setAuth, updateUser, updateUserCredits, logout }),
+    [data, loading, error, user, setAuth, updateUser, updateUserCredits, logout],
   )
 
   return <SiteDataContext.Provider value={value}>{children}</SiteDataContext.Provider>

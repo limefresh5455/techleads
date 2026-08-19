@@ -38,6 +38,7 @@ from app.schemas import (
     AuthUserOut,
     BlogPostOut,
     CategoryOut,
+    ChangePasswordRequest,
     CheckoutConfirmOut,
     CheckoutRequest,
     CheckoutSessionOut,
@@ -69,6 +70,7 @@ from app.schemas import (
     SocialLinkOut,
     TechnologyOut,
     TrustLogoOut,
+    UpdateProfileRequest,
 )
 from app.services.detect_service import detect_and_store, refresh_website
 from app.services.stripe_billing import (
@@ -304,7 +306,52 @@ def google_auth_callback(
 
 @router.get("/me", response_model=AuthUserOut)
 def get_me(user: User = Depends(get_current_user)):
-    return user
+    return _auth_user_out(user)
+
+
+@router.patch("/me", response_model=AuthUserOut)
+def update_me(
+    payload: UpdateProfileRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    user.name = payload.name.strip()
+    db.commit()
+    db.refresh(user)
+    return _auth_user_out(user)
+
+
+@router.post("/me/password", response_model=AuthUserOut)
+def change_password(
+    payload: ChangePasswordRequest,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if (user.password_hash or "").startswith("oauth:"):
+        raise HTTPException(
+            status_code=400,
+            detail="Google accounts manage passwords through Google. Sign in with Google instead.",
+        )
+    if not verify_password(payload.current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    if payload.current_password == payload.new_password:
+        raise HTTPException(status_code=400, detail="New password must be different")
+    user.password_hash = hash_password(payload.new_password)
+    db.commit()
+    db.refresh(user)
+    return _auth_user_out(user)
+
+
+def _auth_user_out(user: User) -> AuthUserOut:
+    provider = "google" if (user.password_hash or "").startswith("oauth:") else "email"
+    return AuthUserOut(
+        id=user.id,
+        name=user.name,
+        email=user.email,
+        credits=user.credits or 0,
+        avatar_url=getattr(user, "avatar_url", None) or "",
+        auth_provider=provider,
+    )
 
 
 @router.post("/billing/checkout", response_model=CheckoutSessionOut)

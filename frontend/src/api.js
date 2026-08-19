@@ -50,6 +50,20 @@ export function fetchMe() {
   return request('/api/me')
 }
 
+export function updateProfile({ name }) {
+  return request('/api/me', {
+    method: 'PATCH',
+    body: JSON.stringify({ name }),
+  })
+}
+
+export function changePassword({ current_password, new_password }) {
+  return request('/api/me/password', {
+    method: 'POST',
+    body: JSON.stringify({ current_password, new_password }),
+  })
+}
+
 export function fetchDashboardSearch({ q = '', technologies = [], match = 'any', page = 1, pageSize = 10 }) {
   const params = new URLSearchParams()
   if (q) params.set('q', q)

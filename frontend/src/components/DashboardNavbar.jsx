@@ -1,6 +1,6 @@
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
-import { useState } from 'react'
 import { useSiteData } from '../context/SiteDataContext'
 
 function BrandMark({ content }) {
@@ -27,6 +27,17 @@ export default function DashboardNavbar() {
   const { data, user, logout } = useSiteData()
   const content = data.content
   const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef(null)
+
+  useEffect(() => {
+    function onDocClick(e) {
+      if (menuRef.current && !menuRef.current.contains(e.target)) {
+        setMenuOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', onDocClick)
+    return () => document.removeEventListener('mousedown', onDocClick)
+  }, [])
 
   if (!content || !user) return null
 
@@ -68,26 +79,35 @@ export default function DashboardNavbar() {
           <span className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
             {user.credits?.toLocaleString?.() ?? user.credits ?? 0} credits
           </span>
-          <div className="relative">
+          <div className="relative" ref={menuRef}>
             <button
               type="button"
               onClick={() => setMenuOpen((v) => !v)}
               className="flex items-center gap-2 rounded-lg border border-border px-2 py-1.5 hover:bg-surface"
             >
-              <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-sm font-bold text-ink">
-                {initial}
-              </span>
+              {user.avatar_url ? (
+                <img
+                  src={user.avatar_url}
+                  alt=""
+                  className="h-8 w-8 rounded-full object-cover"
+                  referrerPolicy="no-referrer"
+                />
+              ) : (
+                <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-sm font-bold text-ink">
+                  {initial}
+                </span>
+              )}
               <span className="max-w-[120px] truncate text-sm font-medium text-ink">{user.name}</span>
               <ChevronDown className="h-4 w-4 text-muted" />
             </button>
             {menuOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 min-w-40 rounded-xl border border-border bg-white p-2 shadow-lg">
+              <div className="absolute right-0 top-full z-50 mt-2 min-w-44 rounded-xl border border-border bg-white p-2 shadow-lg">
                 <Link
-                  to="/"
+                  to="/account"
                   className="block rounded-lg px-3 py-2 text-sm text-ink hover:bg-surface"
                   onClick={() => setMenuOpen(false)}
                 >
-                  Marketing site
+                  Manage account
                 </Link>
                 <button
                   type="button"

@@ -307,9 +307,20 @@ class AuthUserOut(BaseModel):
     name: str
     email: EmailStr
     credits: int = 0
+    avatar_url: str = ""
+    auth_provider: str = "email"
 
     class Config:
         from_attributes = True
+
+
+class UpdateProfileRequest(BaseModel):
+    name: str = Field(min_length=2, max_length=160)
+
+
+class ChangePasswordRequest(BaseModel):
+    current_password: str = Field(min_length=6, max_length=128)
+    new_password: str = Field(min_length=6, max_length=128)
 
 
 class AuthResponse(BaseModel):

@@ -17,6 +17,7 @@ import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
 import AuthCallbackPage from './pages/AuthCallbackPage'
 import DashboardPage from './pages/DashboardPage'
+import AccountPage from './pages/AccountPage'
 import LegalPage from './pages/LegalPage'
 
 const DETECTOR_SLUGS = [
@@ -49,6 +50,7 @@ export default function App() {
             }
           >
             <Route path="dashboard" element={<DashboardPage />} />
+            <Route path="account" element={<AccountPage />} />
           </Route>
           <Route element={<MainLayout />}>
             <Route index element={<HomePage />} />
