@@ -14,13 +14,13 @@ services:
           name: techleads-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: https://polite-tapioca-20439a.netlify.app,http://localhost:5173,http://127.0.0.1:5173
+        value: https://techleads-1.onrender.com,https://polite-tapioca-20439a.netlify.app,http://localhost:5173,http://127.0.0.1:5173
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL
         value: openai/gpt-oss-120b
       - key: FRONTEND_URL
-        sync: false
+        value: https://techleads-1.onrender.com
       - key: STRIPE_SECRET_KEY
         sync: false
       - key: STRIPE_PUBLISHABLE_KEY
@@ -33,6 +33,24 @@ services:
         sync: false
       - key: GOOGLE_REDIRECT_URI
         sync: false
+
+  - type: web
+    name: techleads-web
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /index.html
+        name: Cache-Control
+        value: no-cache
+      - path: /assets/*
+        name: Cache-Control
+        value: public, max-age=31536000, immutable
 
 databases:
   - name: techleads-db
