@@ -66,7 +66,7 @@ from app.schemas import (
     TechnologyOut,
     TrustLogoOut,
 )
-from app.services.detect_service import detect_and_store
+from app.services.detect_service import detect_and_store, refresh_website
 
 router = APIRouter(prefix="/api")
 
@@ -506,6 +506,8 @@ def dashboard_export(
 
 
 def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
+    import json
+
     techs = sorted(
         [link.technology for link in row.technologies],
         key=lambda tech: tech.sort_order,
@@ -513,14 +515,15 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
     primary = [t.name for t in techs]
     extra = [t.strip() for t in (row.extra_technologies or "").split(",") if t.strip()]
     all_detected = primary + [t for t in extra if t not in primary]
+    enriched = json.loads(row.enriched_json or "{}")
 
     return DashboardWebsiteDetailOut(
         id=row.id,
         domain=row.domain,
         title=row.title or row.domain,
-        description=row.description or "",
-        category_label=row.category_label or "Uncategorized",
-        contact_info=row.contact_info or "No contact information available",
+        description=row.description or enriched.get("description", ""),
+        category_label=row.category_label or enriched.get("category_label", "Uncategorized"),
+        contact_info=row.contact_info or enriched.get("contact_info", "No contact information available"),
         rank=row.rank,
         technologies=[
             DashboardTechOut(
@@ -533,11 +536,32 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
             for tech in techs
         ],
         all_detected_technologies=all_detected,
-        facebook_url=row.facebook_url or "",
-        twitter_url=row.twitter_url or "",
-        linkedin_url=row.linkedin_url or "",
+        facebook_url=row.facebook_url or enriched.get("facebook_url", ""),
+        twitter_url=row.twitter_url or enriched.get("twitter_url", ""),
+        linkedin_url=row.linkedin_url or enriched.get("linkedin_url", ""),
         last_crawled_at=row.last_crawled_at.isoformat() if row.last_crawled_at else None,
         source_url=row.source_url or "",
+        enriched=enriched,
+        llm_used=bool(enriched.get("llm_used")),
+        llm_error=str(enriched.get("llm_error") or ""),
+        industry=str(enriched.get("industry") or ""),
+        company_type=str(enriched.get("company_type") or ""),
+        business_summary=str(enriched.get("business_summary") or ""),
+        marketing_stack=enriched.get("marketing_stack") or [],
+        analytics_tools=enriched.get("analytics_tools") or [],
+        payment_providers=enriched.get("payment_providers") or [],
+        cms_platform=str(enriched.get("cms_platform") or ""),
+        ecommerce_platform=str(enriched.get("ecommerce_platform") or ""),
+        hosting_cdn=str(enriched.get("hosting_cdn") or ""),
+        key_features=enriched.get("key_features") or [],
+        target_audience=str(enriched.get("target_audience") or ""),
+        phone=str(enriched.get("phone") or ""),
+        address=str(enriched.get("address") or ""),
+        instagram_url=str(enriched.get("instagram_url") or ""),
+        youtube_url=str(enriched.get("youtube_url") or ""),
+        estimated_traffic_tier=str(enriched.get("estimated_traffic_tier") or ""),
+        confidence_score=int(enriched.get("confidence_score") or 0),
+        llm_insights=enriched.get("llm_insights") or [],
     )
 
 
@@ -598,7 +622,11 @@ def enrich_websites(payload: EnrichRequest, db: Session = Depends(get_db)):
 
 
 @router.get("/dashboard/websites/{website_id}", response_model=DashboardWebsiteDetailOut)
-def get_dashboard_website(website_id: int, db: Session = Depends(get_db)):
+def get_dashboard_website(
+    website_id: int,
+    refresh: bool = Query(False),
+    db: Session = Depends(get_db),
+):
     row = (
         db.query(Website)
         .options(
@@ -609,4 +637,19 @@ def get_dashboard_website(website_id: int, db: Session = Depends(get_db)):
     )
     if not row:
         raise HTTPException(status_code=404, detail="Website not found")
+
+    if refresh:
+        try:
+            row = refresh_website(db, row)
+            row = (
+                db.query(Website)
+                .options(
+                    joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+                )
+                .filter(Website.id == website_id)
+                .first()
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=502, detail=f"AI enrichment failed: {exc}") from exc
+
     return _website_detail_out(row)

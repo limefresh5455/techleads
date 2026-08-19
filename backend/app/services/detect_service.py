@@ -26,6 +26,7 @@ def detect_and_store(db: Session, raw_url: str) -> Website:
 
     crawl = crawl_url(url)
     signals = extract_signals(crawl.html, crawl.headers, crawl.final_url)
+    signals["final_url"] = crawl.final_url
     enriched = enrich_with_gemini(domain, signals)
 
     website = db.query(Website).filter(Website.domain == domain).first()
@@ -41,7 +42,15 @@ def detect_and_store(db: Session, raw_url: str) -> Website:
     website.facebook_url = enriched.get("facebook_url", "")
     website.twitter_url = enriched.get("twitter_url", "")
     website.linkedin_url = enriched.get("linkedin_url", "")
-    website.extra_technologies = ", ".join(enriched.get("extra_technologies", []))
+    extras = list(
+        dict.fromkeys(
+            (enriched.get("extra_technologies") or [])
+            + (enriched.get("marketing_stack") or [])
+            + (enriched.get("analytics_tools") or [])
+            + (enriched.get("payment_providers") or [])
+        )
+    )
+    website.extra_technologies = ", ".join(extras)
     website.rank = max(1, min(100, int(enriched.get("rank", 75))))
     website.signals_json = signals_to_json(signals)
     website.enriched_json = json.dumps(enriched, ensure_ascii=False)
@@ -64,6 +73,11 @@ def detect_and_store(db: Session, raw_url: str) -> Website:
     db.refresh(website)
     website._crawl_ms = int((time.perf_counter() - started) * 1000)  # type: ignore[attr-defined]
     return website
+
+
+def refresh_website(db: Session, website: Website) -> Website:
+    url = website.source_url or f"https://{website.domain}"
+    return detect_and_store(db, url)
 
 
 def _get_or_create_technology(db: Session, name: str, order: int) -> Technology:

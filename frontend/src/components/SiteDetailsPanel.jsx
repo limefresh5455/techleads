@@ -1,10 +1,8 @@
-import { BarChart3, ExternalLink, Globe, Tag, X } from 'lucide-react'
+import { BarChart3, Brain, ExternalLink, Globe, Sparkles, Tag, X } from 'lucide-react'
 
 function TechPill({ name, color }) {
   return (
-    <span
-      className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-ink"
-    >
+    <span className="inline-flex items-center gap-1.5 rounded-lg border border-border bg-white px-2.5 py-1.5 text-xs font-medium text-ink">
       <span
         className="grid h-5 w-5 place-items-center rounded-full text-[9px] font-bold text-white"
         style={{ backgroundColor: color || '#FF6B35' }}
@@ -16,11 +14,40 @@ function TechPill({ name, color }) {
   )
 }
 
-export default function SiteDetailsPanel({ site, loading, onClose }) {
-  if (loading) {
+function ChipList({ items, variant = 'default' }) {
+  if (!items?.length) return <p className="mt-2 text-sm text-muted">Not detected</p>
+  const cls =
+    variant === 'brand'
+      ? 'rounded-full border border-brand/20 bg-brand/5 px-2.5 py-1 text-xs font-medium text-brand'
+      : 'rounded-lg border border-border bg-surface px-2.5 py-1 text-xs font-medium text-ink'
+  return (
+    <div className="mt-2 flex flex-wrap gap-2">
+      {items.map((item) => (
+        <span key={item} className={cls}>
+          {item}
+        </span>
+      ))}
+    </div>
+  )
+}
+
+function Section({ title, children }) {
+  return (
+    <div className="mt-5">
+      <p className="text-xs font-semibold uppercase tracking-wide text-muted">{title}</p>
+      {children}
+    </div>
+  )
+}
+
+export default function SiteDetailsPanel({ site, loading, enriching, onClose, onRefresh }) {
+  if (loading || enriching) {
     return (
       <aside className="rounded-2xl border border-border bg-white p-4 shadow-sm">
-        <p className="text-sm text-muted">Loading site details…</p>
+        <div className="flex items-center gap-2 text-sm text-muted">
+          <Sparkles className="h-4 w-4 animate-pulse text-brand" />
+          {enriching ? 'Enriching with AI…' : 'Loading site details…'}
+        </div>
       </aside>
     )
   }
@@ -31,20 +58,45 @@ export default function SiteDetailsPanel({ site, loading, onClose }) {
     { label: 'Facebook', url: site.facebook_url },
     { label: 'Twitter', url: site.twitter_url },
     { label: 'LinkedIn', url: site.linkedin_url },
+    { label: 'Instagram', url: site.instagram_url },
+    { label: 'YouTube', url: site.youtube_url },
   ].filter((s) => s.url)
 
   return (
     <aside className="rounded-2xl border border-border bg-white shadow-sm">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h3 className="text-sm font-semibold text-ink">Site Details</h3>
-        <button
-          type="button"
-          onClick={onClose}
-          className="rounded-lg p-1 text-muted hover:bg-surface hover:text-ink"
-          aria-label="Close site details"
-        >
-          <X className="h-4 w-4" />
-        </button>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-ink">Site Details</h3>
+          {site.llm_used ? (
+            <span className="inline-flex items-center gap-1 rounded-full bg-brand/10 px-2 py-0.5 text-[10px] font-semibold text-brand">
+              <Brain className="h-3 w-3" />
+              AI Enriched
+            </span>
+          ) : (
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-[10px] font-semibold text-amber-700">
+              Rule-based
+            </span>
+          )}
+        </div>
+        <div className="flex items-center gap-1">
+          {onRefresh ? (
+            <button
+              type="button"
+              onClick={onRefresh}
+              className="rounded-lg px-2 py-1 text-xs font-medium text-brand hover:bg-brand/5"
+            >
+              Re-enrich
+            </button>
+          ) : null}
+          <button
+            type="button"
+            onClick={onClose}
+            className="rounded-lg p-1 text-muted hover:bg-surface hover:text-ink"
+            aria-label="Close site details"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
       </div>
 
       <div className="max-h-[calc(100vh-12rem)] overflow-y-auto p-4">
@@ -61,57 +113,125 @@ export default function SiteDetailsPanel({ site, loading, onClose }) {
         </a>
 
         <div className="mt-4 rounded-xl bg-brand/5 p-3">
-          <div className="flex items-center gap-2 text-sm">
-            <BarChart3 className="h-4 w-4 text-brand" />
-            <span className="text-muted">Rank</span>
-            <span className="font-bold text-brand">{site.rank}</span>
-          </div>
-          <div className="mt-2 flex items-center gap-2 text-sm">
-            <Tag className="h-4 w-4 text-brand" />
-            <span className="text-muted">Category</span>
-            <span className="font-medium text-ink">{site.category_label}</span>
+          <div className="grid gap-2 text-sm">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4 text-brand" />
+              <span className="text-muted">Rank</span>
+              <span className="font-bold text-brand">{site.rank}</span>
+              {site.confidence_score > 0 ? (
+                <span className="ml-auto text-xs text-muted">Confidence {site.confidence_score}%</span>
+              ) : null}
+            </div>
+            <div className="flex items-center gap-2">
+              <Tag className="h-4 w-4 text-brand" />
+              <span className="text-muted">Category</span>
+              <span className="font-medium text-ink">{site.category_label}</span>
+            </div>
+            {site.industry ? (
+              <div className="flex items-center gap-2">
+                <span className="text-muted">Industry</span>
+                <span className="font-medium text-ink">{site.industry}</span>
+              </div>
+            ) : null}
+            {site.company_type ? (
+              <div className="flex items-center gap-2">
+                <span className="text-muted">Type</span>
+                <span className="font-medium text-ink">{site.company_type}</span>
+              </div>
+            ) : null}
+            {site.estimated_traffic_tier ? (
+              <div className="flex items-center gap-2">
+                <span className="text-muted">Traffic</span>
+                <span className="font-medium text-ink">{site.estimated_traffic_tier}</span>
+              </div>
+            ) : null}
           </div>
         </div>
 
-        <div className="mt-4">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Description</p>
+        {!site.llm_used && site.llm_error ? (
+          <p className="mt-3 rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+            AI enrichment unavailable: {site.llm_error}. Using crawl signals only.
+          </p>
+        ) : null}
+
+        {site.business_summary ? (
+          <Section title="Business Summary">
+            <p className="mt-2 text-sm leading-relaxed text-ink/80">{site.business_summary}</p>
+          </Section>
+        ) : null}
+
+        <Section title="Description">
           <p className="mt-2 text-sm leading-relaxed text-ink/80">{site.description}</p>
-        </div>
+        </Section>
 
-        <div className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Technologies</p>
+        {site.llm_insights?.length > 0 ? (
+          <Section title="AI Insights">
+            <ul className="mt-2 space-y-2">
+              {site.llm_insights.map((insight) => (
+                <li key={insight} className="flex gap-2 text-sm text-ink/80">
+                  <Sparkles className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
+                  <span>{insight}</span>
+                </li>
+              ))}
+            </ul>
+          </Section>
+        ) : null}
+
+        <Section title="Primary Technologies">
           <div className="mt-2 flex flex-wrap gap-2">
             {site.technologies.map((tech) => (
               <TechPill key={tech.id} name={tech.name} color={tech.icon_color} />
             ))}
           </div>
-        </div>
+        </Section>
 
-        <div className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            All Detected Technologies
-          </p>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {site.all_detected_technologies.map((name) => (
-              <span
-                key={name}
-                className="rounded-full border border-brand/20 bg-brand/5 px-2.5 py-1 text-xs font-medium text-brand"
-              >
-                {name}
-              </span>
-            ))}
-          </div>
-        </div>
+        <Section title="All Detected Technologies">
+          <ChipList items={site.all_detected_technologies} variant="brand" />
+        </Section>
 
-        <div className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-            Contact Information
-          </p>
-          <p className="mt-2 text-sm text-muted">{site.contact_info}</p>
-        </div>
+        {(site.cms_platform || site.ecommerce_platform || site.hosting_cdn) ? (
+          <Section title="Platform Stack">
+            <div className="mt-2 space-y-1 text-sm text-ink/80">
+              {site.cms_platform ? <p><span className="text-muted">CMS:</span> {site.cms_platform}</p> : null}
+              {site.ecommerce_platform ? <p><span className="text-muted">E-commerce:</span> {site.ecommerce_platform}</p> : null}
+              {site.hosting_cdn ? <p><span className="text-muted">Hosting/CDN:</span> {site.hosting_cdn}</p> : null}
+            </div>
+          </Section>
+        ) : null}
 
-        <div className="mt-5">
-          <p className="text-xs font-semibold uppercase tracking-wide text-muted">Social Media</p>
+        <Section title="Marketing Stack">
+          <ChipList items={site.marketing_stack} />
+        </Section>
+
+        <Section title="Analytics & Tracking">
+          <ChipList items={site.analytics_tools} />
+        </Section>
+
+        {site.payment_providers?.length > 0 ? (
+          <Section title="Payments">
+            <ChipList items={site.payment_providers} />
+          </Section>
+        ) : null}
+
+        {site.key_features?.length > 0 ? (
+          <Section title="Key Features">
+            <ChipList items={site.key_features} />
+          </Section>
+        ) : null}
+
+        {site.target_audience ? (
+          <Section title="Target Audience">
+            <p className="mt-2 text-sm text-ink/80">{site.target_audience}</p>
+          </Section>
+        ) : null}
+
+        <Section title="Contact Information">
+          <p className="mt-2 text-sm text-ink/80">{site.contact_info}</p>
+          {site.phone ? <p className="mt-1 text-sm text-ink/80">{site.phone}</p> : null}
+          {site.address ? <p className="mt-1 text-sm text-muted">{site.address}</p> : null}
+        </Section>
+
+        <Section title="Social Media">
           {socials.length > 0 ? (
             <div className="mt-2 flex flex-wrap gap-2">
               {socials.map((social) => (
@@ -130,7 +250,7 @@ export default function SiteDetailsPanel({ site, loading, onClose }) {
           ) : (
             <p className="mt-2 text-sm text-muted">No social profiles detected.</p>
           )}
-        </div>
+        </Section>
       </div>
     </aside>
   )

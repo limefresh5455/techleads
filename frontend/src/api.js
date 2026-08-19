@@ -55,8 +55,9 @@ export function exportDashboard({ q = '', technologies = [], match = 'any', limi
   return request(`/api/dashboard/export?${params.toString()}`, { method: 'POST' })
 }
 
-export function fetchWebsiteDetail(id) {
-  return request(`/api/dashboard/websites/${id}`)
+export function fetchWebsiteDetail(id, { refresh = false } = {}) {
+  const params = refresh ? '?refresh=true' : ''
+  return request(`/api/dashboard/websites/${id}${params}`)
 }
 
 export function detectUrl(url) {

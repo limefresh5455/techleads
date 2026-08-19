@@ -394,6 +394,27 @@ class DashboardWebsiteDetailOut(BaseModel):
     linkedin_url: str = ""
     last_crawled_at: str | None = None
     source_url: str = ""
+    enriched: dict = {}
+    llm_used: bool = False
+    llm_error: str = ""
+    industry: str = ""
+    company_type: str = ""
+    business_summary: str = ""
+    marketing_stack: list[str] = []
+    analytics_tools: list[str] = []
+    payment_providers: list[str] = []
+    cms_platform: str = ""
+    ecommerce_platform: str = ""
+    hosting_cdn: str = ""
+    key_features: list[str] = []
+    target_audience: str = ""
+    phone: str = ""
+    address: str = ""
+    instagram_url: str = ""
+    youtube_url: str = ""
+    estimated_traffic_tier: str = ""
+    confidence_score: int = 0
+    llm_insights: list[str] = []
 
     class Config:
         from_attributes = True

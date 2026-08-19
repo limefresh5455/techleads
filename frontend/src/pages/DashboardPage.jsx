@@ -41,6 +41,7 @@ export default function DashboardPage() {
   const [selectedId, setSelectedId] = useState(null)
   const [siteDetail, setSiteDetail] = useState(null)
   const [detailLoading, setDetailLoading] = useState(false)
+  const [enriching, setEnriching] = useState(false)
   const [analyzeUrl, setAnalyzeUrl] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [exporting, setExporting] = useState(false)
@@ -96,27 +97,29 @@ export default function DashboardPage() {
     loadResults()
   }, [loadResults])
 
+  const loadSiteDetail = useCallback(async (id, { refresh = true } = {}) => {
+    setDetailLoading(true)
+    if (refresh) setEnriching(true)
+    setError('')
+    try {
+      const data = await fetchWebsiteDetail(id, { refresh })
+      setSiteDetail(data)
+    } catch (err) {
+      setSiteDetail(null)
+      setError(err.message || 'Failed to load site details')
+    } finally {
+      setDetailLoading(false)
+      setEnriching(false)
+    }
+  }, [])
+
   useEffect(() => {
     if (!selectedId) {
       setSiteDetail(null)
       return
     }
-    let cancelled = false
-    setDetailLoading(true)
-    fetchWebsiteDetail(selectedId)
-      .then((data) => {
-        if (!cancelled) setSiteDetail(data)
-      })
-      .catch(() => {
-        if (!cancelled) setSiteDetail(null)
-      })
-      .finally(() => {
-        if (!cancelled) setDetailLoading(false)
-      })
-    return () => {
-      cancelled = true
-    }
-  }, [selectedId])
+    loadSiteDetail(selectedId, { refresh: true })
+  }, [selectedId, loadSiteDetail])
 
   useEffect(() => {
     const siteParam = searchParams.get('site')
@@ -133,6 +136,7 @@ export default function DashboardPage() {
     try {
       const result = await detectUrl(analyzeUrl.trim())
       setSelectedId(result.website.id)
+      setSiteDetail(result.website)
       setSearchParams({ site: String(result.website.id) })
       await loadResults()
     } catch (err) {
@@ -474,7 +478,9 @@ export default function DashboardPage() {
             <SiteDetailsPanel
               site={siteDetail}
               loading={detailLoading}
+              enriching={enriching}
               onClose={closeDetails}
+              onRefresh={() => selectedId && loadSiteDetail(selectedId, { refresh: true })}
             />
           ) : (
             <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
