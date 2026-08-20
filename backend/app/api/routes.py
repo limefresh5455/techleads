@@ -127,12 +127,25 @@ def get_landing(db: Session = Depends(get_db)):
     for item in nav_items:
         item.children.sort(key=lambda child: child.sort_order)
 
-    technologies = db.query(Technology).order_by(Technology.sort_order).all()
+    # Full catalog can be 30k+ rows — landing only needs featured/popular chips.
+    technologies = (
+        db.query(Technology)
+        .filter(
+            or_(
+                Technology.is_popular.is_(True),
+                Technology.is_featured.is_(True),
+                Technology.sort_order < 10_000,
+            )
+        )
+        .order_by(Technology.sort_order.asc(), Technology.website_count.desc())
+        .limit(200)
+        .all()
+    )
     popular_technologies = (
         db.query(Technology)
         .filter(Technology.is_popular.is_(True))
-        .order_by(Technology.sort_order)
-        .limit(10)
+        .order_by(Technology.website_count.desc(), Technology.sort_order.asc())
+        .limit(15)
         .all()
     )
     categories = db.query(Category).order_by(Category.sort_order).all()
@@ -406,8 +419,92 @@ def get_content(db: Session = Depends(get_db)):
 
 
 @router.get("/technologies", response_model=list[TechnologyOut])
-def list_technologies(db: Session = Depends(get_db)):
-    return db.query(Technology).order_by(Technology.sort_order).all()
+def list_technologies(
+    q: str = "",
+    limit: int = Query(default=200, ge=1, le=2000),
+    offset: int = Query(default=0, ge=0),
+    db: Session = Depends(get_db),
+):
+    query = db.query(Technology)
+    if q.strip():
+        token = q.strip()
+        query = query.filter(
+            or_(
+                Technology.name.ilike(f"%{token}%"),
+                Technology.slug.ilike(f"%{token}%"),
+            )
+        )
+    return (
+        query.order_by(Technology.website_count.desc(), Technology.name.asc())
+        .offset(offset)
+        .limit(limit)
+        .all()
+    )
+
+
+@router.post("/technologies/import-techleads")
+def import_techleads_technologies(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Fetch the public techleads.fyi catalog and upsert into the local DB."""
+    from app.services.import_techleads_catalog import sync_technologies_from_techleads
+
+    try:
+        stats = sync_technologies_from_techleads(db)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Import failed: {exc}") from exc
+    return {"ok": True, "imported_by": user.email, **stats}
+
+
+@router.post("/websites/import-techleads")
+def import_techleads_websites(
+    limit_techs: int = Query(default=100, ge=1, le=5000),
+    popular_only: bool = Query(default=False),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Import public sample websites from techleads.fyi technology pages.
+
+    Full lead lists are not publicly available; this stores page samples + counts.
+    """
+    from app.services.import_techleads_websites import sync_websites_from_techleads
+
+    try:
+        stats = sync_websites_from_techleads(
+            db,
+            limit_techs=limit_techs,
+            popular_only=popular_only,
+        )
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Website import failed: {exc}") from exc
+    return {"ok": True, "imported_by": user.email, **stats}
+
+
+@router.get("/integrations/techleads/account")
+def techleads_account_info(user: User = Depends(get_current_user)):
+    """Show TechLeads.fyi API credit balance for the configured key."""
+    from app.services.techleads_api import get_account_info
+
+    try:
+        info = get_account_info()
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"TechLeads API error: {exc}") from exc
+    return info
+
+
+@router.post("/integrations/techleads/lookup")
+def techleads_lookup(
+    url: str = Query(..., min_length=3),
+    user: User = Depends(get_current_user),
+):
+    """Run a TechLeads.fyi web lookup (1 credit) and return raw API payload."""
+    from app.services.techleads_api import lookup_website
+
+    try:
+        return lookup_website(url)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"TechLeads lookup failed: {exc}") from exc
 
 
 @router.get("/free-tools", response_model=list[FreeToolOut])
@@ -485,8 +582,18 @@ def create_contact(payload: ContactCreate, db: Session = Depends(get_db)):
 def search_technologies(q: str = "", db: Session = Depends(get_db)):
     query = db.query(Technology)
     if q.strip():
-        query = query.filter(Technology.name.ilike(f"%{q.strip()}%"))
-    return query.order_by(Technology.website_count.desc()).limit(20).all()
+        token = q.strip()
+        query = query.filter(
+            or_(
+                Technology.name.ilike(f"%{token}%"),
+                Technology.slug.ilike(f"%{token}%"),
+            )
+        )
+    return (
+        query.order_by(Technology.website_count.desc(), Technology.name.asc())
+        .limit(40)
+        .all()
+    )
 
 
 @router.get("/categories", response_model=list[CategoryOut])
@@ -886,7 +993,8 @@ def get_dashboard_website(
 
     if refresh:
         try:
-            row = refresh_website(db, row)
+            # Explicit Re-enrich / Analyze — use TechLeads.fyi API (1 credit)
+            row = refresh_website(db, row, use_techleads_api=True)
             row = (
                 db.query(Website)
                 .options(

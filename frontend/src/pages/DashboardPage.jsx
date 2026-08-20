@@ -6,7 +6,7 @@ import {
   Loader2,
   Search,
 } from 'lucide-react'
-import { detectUrl, exportDashboard, fetchDashboardSearch, fetchWebsiteDetail } from '../api'
+import { detectUrl, exportDashboard, fetchDashboardSearch, fetchWebsiteDetail, searchTechnologies } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
 import SiteDetailsPanel from '../components/SiteDetailsPanel'
 import CreditsPanel from '../components/CreditsPanel'
@@ -45,31 +45,87 @@ export default function DashboardPage() {
   const [analyzeUrl, setAnalyzeUrl] = useState('')
   const [analyzing, setAnalyzing] = useState(false)
   const [exporting, setExporting] = useState(false)
+  const [remoteTechs, setRemoteTechs] = useState([])
 
   const categoryOptions = useMemo(() => {
     const seen = new Set()
-    const items = [{ slug: 'all', name: 'All' }]
-    for (const cat of categories) {
-      if (!seen.has(cat.slug)) {
-        seen.add(cat.slug)
-        items.push({ slug: cat.slug, name: cat.name })
-      }
+    const ranked = [...categories]
+      .filter((cat) => cat.slug && cat.slug !== 'all')
+      .sort((a, b) => {
+        const byOrder = (a.sort_order ?? 0) - (b.sort_order ?? 0)
+        if (byOrder !== 0) return byOrder
+        return (b.item_count || 0) - (a.item_count || 0)
+      })
+
+    const top = []
+    for (const cat of ranked) {
+      if (seen.has(cat.slug)) continue
+      seen.add(cat.slug)
+      top.push({ slug: cat.slug, name: cat.name })
+      if (top.length >= 15) break
     }
-    return items
-  }, [categories])
+
+    // Keep current selection visible if it falls outside the top 15.
+    if (selectedCategory !== 'all' && !seen.has(selectedCategory)) {
+      const selected = categories.find((c) => c.slug === selectedCategory)
+      if (selected) top.push({ slug: selected.slug, name: selected.name })
+    }
+
+    return [{ slug: 'all', name: 'All' }, ...top]
+  }, [categories, selectedCategory])
+
+  useEffect(() => {
+    const q = techSearch.trim()
+    if (q.length < 2) {
+      setRemoteTechs([])
+      return undefined
+    }
+    let cancelled = false
+    const timer = setTimeout(async () => {
+      try {
+        const rows = await searchTechnologies(q)
+        if (!cancelled) setRemoteTechs(Array.isArray(rows) ? rows : [])
+      } catch {
+        if (!cancelled) setRemoteTechs([])
+      }
+    }, 250)
+    return () => {
+      cancelled = true
+      clearTimeout(timer)
+    }
+  }, [techSearch])
 
   const filteredTechnologies = useMemo(() => {
-    let list = [...technologies]
+    const q = techSearch.trim().toLowerCase()
+    // Prefer DB-backed search results so the full techleads.fyi catalog is reachable.
+    let list = q.length >= 2 && remoteTechs.length ? [...remoteTechs] : [...technologies]
     if (selectedCategory !== 'all') {
       const cat = categories.find((c) => c.slug === selectedCategory)
       if (cat) list = list.filter((t) => t.category_id === cat.id)
     }
-    if (techSearch.trim()) {
-      const q = techSearch.trim().toLowerCase()
-      list = list.filter((t) => t.name.toLowerCase().includes(q))
+    if (q && !(q.length >= 2 && remoteTechs.length)) {
+      list = list.filter((t) => t.name.toLowerCase().includes(q) || t.slug?.toLowerCase().includes(q))
     }
-    return list.sort((a, b) => a.sort_order - b.sort_order)
-  }, [technologies, categories, selectedCategory, techSearch])
+    list.sort((a, b) => {
+      const byCount = (b.website_count || 0) - (a.website_count || 0)
+      if (byCount !== 0) return byCount
+      return (a.sort_order ?? 0) - (b.sort_order ?? 0)
+    })
+    // Keep selected techs visible, then fill with top results (max 15).
+    const selected = list.filter((t) => selectedTechs.includes(t.slug))
+    const rest = list.filter((t) => !selectedTechs.includes(t.slug))
+    const merged = [...selected, ...rest]
+    const seen = new Set()
+    const top = []
+    for (const tech of merged) {
+      const key = tech.slug || tech.id
+      if (seen.has(key)) continue
+      seen.add(key)
+      top.push(tech)
+      if (top.length >= 15) break
+    }
+    return top
+  }, [technologies, categories, selectedCategory, techSearch, remoteTechs, selectedTechs])
 
   const loadResults = useCallback(async () => {
     setLoading(true)

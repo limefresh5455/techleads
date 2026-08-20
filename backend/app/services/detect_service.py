@@ -5,10 +5,12 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
+from app.core.config import Settings
 from app.models import Category, Technology, Website, WebsiteTechnology
 from app.services.crawler import crawl_url
 from app.services.llm_enrichment import enrich_with_llm
 from app.services.signals import extract_signals, signals_to_json
+from app.services.techleads_api import lookup_website, merge_lookup_into_signals, tech_names_from_lookup
 from app.services.url_utils import extract_domain, normalize_url, slugify
 
 TECH_COLORS = {
@@ -20,7 +22,7 @@ TECH_COLORS = {
 }
 
 
-def detect_and_store(db: Session, raw_url: str) -> Website:
+def detect_and_store(db: Session, raw_url: str, *, use_techleads_api: bool | None = None) -> Website:
     started = time.perf_counter()
     url = normalize_url(raw_url)
     domain = extract_domain(url)
@@ -28,7 +30,40 @@ def detect_and_store(db: Session, raw_url: str) -> Website:
     crawl = crawl_url(url)
     signals = extract_signals(crawl.html, crawl.headers, crawl.final_url)
     signals["final_url"] = crawl.final_url
+
+    # Optional TechLeads.fyi API lookup (1 credit) — authoritative tech stack
+    cfg = Settings()
+    api_enabled = cfg.techleads_api_enabled if use_techleads_api is None else use_techleads_api
+    api_techs: list[str] = []
+    if api_enabled and cfg.techleads_api_key.strip():
+        try:
+            lookup = lookup_website(url)
+            if not lookup.get("error"):
+                signals = merge_lookup_into_signals(signals, lookup)
+                api_techs = tech_names_from_lookup(lookup)
+                page_meta = lookup.get("page_meta") or {}
+                if isinstance(page_meta, dict) and page_meta.get("final_url"):
+                    crawl.final_url = str(page_meta["final_url"])
+        except Exception as exc:  # noqa: BLE001
+            signals["techleads_used"] = False
+            signals["techleads_error"] = str(exc)
+
     enriched = enrich_with_llm(domain, signals)
+
+    # Prefer TechLeads.fyi detected technologies when present
+    if api_techs:
+        extras = list(enriched.get("technologies") or [])
+        enriched["technologies"] = list(dict.fromkeys(api_techs + extras))[:20]
+        if signals.get("techleads_meta"):
+            enriched["techleads_meta"] = signals["techleads_meta"]
+        if signals.get("technology_spend"):
+            enriched["technology_spend"] = signals["technology_spend"]
+        page_meta = signals.get("techleads_page_meta") or {}
+        if isinstance(page_meta, dict):
+            if page_meta.get("title") and not enriched.get("title"):
+                enriched["title"] = str(page_meta["title"])[:200]
+            if page_meta.get("description") and not enriched.get("description"):
+                enriched["description"] = str(page_meta["description"])
 
     website = db.query(Website).filter(Website.domain == domain).first()
     if not website:
@@ -56,9 +91,10 @@ def detect_and_store(db: Session, raw_url: str) -> Website:
     return website
 
 
-def refresh_website(db: Session, website: Website) -> Website:
+def refresh_website(db: Session, website: Website, *, use_techleads_api: bool = False) -> Website:
+    """Re-crawl + enrich. TechLeads API off by default to avoid burning credits on list loads."""
     url = website.source_url or f"https://{website.domain}"
-    return detect_and_store(db, url)
+    return detect_and_store(db, url, use_techleads_api=use_techleads_api)
 
 
 def _apply_enrichment_to_website(
