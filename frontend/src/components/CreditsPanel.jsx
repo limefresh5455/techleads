@@ -21,7 +21,7 @@ export default function CreditsPanel({
     : exportRecords > 0 && credits >= exportCost
 
   return (
-    <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-center justify-between">
         <h3 className="flex items-center gap-2 text-sm font-semibold text-ink">
           <Coins className="h-4 w-4 text-brand" />
@@ -102,7 +102,7 @@ export default function CreditsPanel({
         type="button"
         onClick={onExport}
         disabled={exporting || !canExport}
-        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-50"
+        className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark disabled:opacity-50"
       >
         {exporting
           ? 'Exporting…'

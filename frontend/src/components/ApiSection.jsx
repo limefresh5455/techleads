@@ -4,7 +4,7 @@ export default function ApiSection({ content }) {
   if (!content) return null
 
   return (
-    <section className="bg-[#fff8f4] py-16 md:py-20">
+    <section className="bg-panel py-16 md:py-20">
       <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 lg:grid-cols-2 lg:px-6">
         <div>
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{content.api_eyebrow}</p>
@@ -14,12 +14,12 @@ export default function ApiSection({ content }) {
           <p className="mt-4 text-muted">{content.api_subtitle}</p>
           <Link
             to="/api-docs"
-            className="mt-8 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
+            className="mt-8 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark"
           >
             {content.api_cta}
           </Link>
         </div>
-        <div className="overflow-hidden rounded-2xl border border-border bg-ink p-5 shadow-xl md:p-6">
+        <div className="overflow-hidden rounded-2xl border border-border bg-inverse p-5 shadow-xl md:p-6">
           <div className="mb-4 flex gap-2">
             <span className="h-3 w-3 rounded-full bg-[#ff5f57]" />
             <span className="h-3 w-3 rounded-full bg-[#febc2e]" />

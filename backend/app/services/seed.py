@@ -149,12 +149,16 @@ def _sync_branding(db: Session) -> None:
         "and generate high-intent leads."
     )
     content.footer_copyright = "TechLeads.Ai"
-    content.pricing_title = "Buy credits. Unlock more leads."
+    content.pricing_title = "Simple, transparent pricing"
     content.pricing_subtitle = (
-        "Purchase one-time credit packs with Stripe. "
-        "1 credit = 1 technology CSV export. Dashboard browsing and pagination are free."
+        "Choose the plan that fits your needs. Bulk datasets are $29 per technology. "
+        "Growth and Business packs add enrichment credits for exports and API use."
     )
-    content.pricing_yearly_badge = "One-time"
+    content.pricing_yearly_badge = "Best value"
+    content.calculator_title = "How credits work"
+    content.calculator_subtitle = (
+        "1 credit = 1 technology CSV export. Free preview shows 10 records without a filter."
+    )
     content.contact_title = "Contact sales"
     content.contact_subtitle = "Talk to our team about custom data, API access, or enterprise plans."
 
@@ -618,20 +622,32 @@ def _sync_faqs(db: Session) -> None:
     db.flush()
     faqs = [
         (
-            "How do credits work?",
-            "Browsing the dashboard is free. Exporting costs 1 credit per selected technology. Credits never expire.",
+            "What are Enrichment Credits?",
+            "Credits power technology CSV exports and enrichment. 1 credit exports one selected technology’s matching sites. Unused prepaid credits never expire.",
+        ),
+        (
+            "What does Bulk Purchase include?",
+            "Pay $29 per technology for a one-time dataset export credit. Choose how many technologies you need, pay once, and export those lead lists from the dashboard.",
+        ),
+        (
+            "What does the Growth plan include?",
+            "Growth adds 5,000 enrichment credits in one purchase — enough for large multi-technology exports, keyword-style filtering, and ongoing prospecting. Secure Stripe checkout.",
+        ),
+        (
+            "What does the Business plan include?",
+            "Business adds 25,000 enrichment credits plus higher-volume export capacity for teams that need unlimited technology coverage and frequent CSV downloads.",
+        ),
+        (
+            "How do dashboard credits work?",
+            "Without a technology filter you can preview the first 10 records free. Select technologies to browse all matches free. Export costs 1 credit per selected technology.",
         ),
         (
             "How do I buy credits?",
-            "Choose a credit pack on the Pricing page and checkout securely with Stripe. Credits are added to your account as soon as payment succeeds.",
+            "Choose Bulk, Growth, or Business on the Pricing page and checkout securely with Stripe. Credits are added as soon as payment succeeds.",
         ),
         (
             "Can I get an invoice?",
-            "Stripe emails a receipt after purchase. For custom invoices, net-30, or large packs, contact sales for Enterprise.",
-        ),
-        (
-            "Do you offer custom data solutions?",
-            "Yes. Enterprise covers custom credit volume, dedicated support, and specialized data fields. Contact our sales team.",
+            "Stripe emails a receipt after purchase. For custom invoices or larger packs, contact sales.",
         ),
     ]
     for i, (q, a) in enumerate(faqs):
@@ -679,73 +695,54 @@ def _sync_pricing(db: Session) -> None:
     db.flush()
     plans = [
         {
-            "name": "Starter",
-            "slug": "starter",
-            "description": "Try paid unlocks — enough for light prospecting and CSV exports.",
-            "monthly_price": 19,
-            "yearly_price": 19,
-            "credits": 100,
+            "name": "Bulk Purchase",
+            "slug": "bulk",
+            "description": "One-time datasets for specific technologies",
+            "monthly_price": 29,
+            "yearly_price": 29,
+            "credits": 1,
             "is_popular": False,
-            "cta_label": "Buy 100 credits",
+            "cta_label": "Select Technologies & Pay",
             "features": [
-                "100 credits added instantly",
-                "≈ 100 technology CSV exports",
-                "1 credit per technology export",
-                "Technology detection & AI enrichment",
+                "Choose technologies, pay once, own data forever",
+                "$29 per technology export credit",
+                "CSV export from the dashboard",
+                "Ready for CRM import",
                 "Secure Stripe checkout",
             ],
         },
         {
             "name": "Growth",
             "slug": "growth",
-            "description": "Best for agencies and sales teams running regular tech-based lead lists.",
-            "monthly_price": 49,
-            "yearly_price": 49,
-            "credits": 500,
+            "description": "Lead lists, keyword search, exports & API",
+            "monthly_price": 79,
+            "yearly_price": 79,
+            "credits": 5000,
             "is_popular": True,
-            "cta_label": "Buy 500 credits",
+            "cta_label": "Buy Growth credits",
             "features": [
-                "500 credits added instantly",
-                "≈ 500 technology CSV exports",
-                "1 credit per technology export",
-                "Bulk lookup & advanced filters",
-                "Priority email support",
+                "5,000 enrichment credits",
+                "Full technology lead-list exports",
+                "Unlimited dashboard browsing with tech filters",
+                "1 credit = 1 technology CSV export",
                 "Secure Stripe checkout",
             ],
         },
         {
-            "name": "Scale",
-            "slug": "scale",
-            "description": "High-volume credit pack for continuous outbound and enrichment workflows.",
+            "name": "Business",
+            "slug": "business",
+            "description": "Unlimited technologies + API + priority volume",
             "monthly_price": 149,
             "yearly_price": 149,
-            "credits": 2000,
+            "credits": 25000,
             "is_popular": False,
-            "cta_label": "Buy 2,000 credits",
+            "cta_label": "Buy Business credits",
             "features": [
-                "2,000 credits added instantly",
-                "≈ 2,000 technology CSV exports",
-                "1 credit per technology export",
-                "Best per-credit value",
-                "API-ready account",
+                "25,000 enrichment credits",
+                "Unlimited technology exports (credit-based)",
+                "Higher-volume CSV downloads",
+                "Priority support",
                 "Secure Stripe checkout",
-            ],
-        },
-        {
-            "name": "Enterprise",
-            "slug": "enterprise",
-            "description": "Custom credit volume, invoicing, and dedicated support for large teams.",
-            "monthly_price": 0,
-            "yearly_price": 0,
-            "credits": 0,
-            "is_popular": False,
-            "cta_label": "Contact Sales",
-            "features": [
-                "Custom credit volume",
-                "Invoice / net-30 billing",
-                "Dedicated account manager",
-                "Custom data fields & SLAs",
-                "SSO & team seats",
             ],
         },
     ]
@@ -951,14 +948,16 @@ def _seed_site_content(db: Session) -> None:
             ),
             final_cta_primary="Get Started",
             final_cta_secondary="View Pricing",
-            pricing_title="Buy credits. Unlock more leads.",
+            pricing_title="Simple, transparent pricing",
             pricing_subtitle=(
-                "One-time Stripe purchases. 1 credit = 1 technology CSV export. "
-                "Dashboard browsing and pagination are free."
+                "Choose the plan that fits your needs. Bulk datasets are $29 per technology. "
+                "Growth and Business packs add enrichment credits for exports and API use."
             ),
-            pricing_yearly_badge="One-time",
-            calculator_title="How many credits do you need?",
-            calculator_subtitle="Estimate credits from leads you want to unlock beyond the free 10 results.",
+            pricing_yearly_badge="Best value",
+            calculator_title="How credits work",
+            calculator_subtitle=(
+                "1 credit = 1 technology CSV export. Free preview shows 10 records without a filter."
+            ),
             calculator_default_leads=500,
             contact_title="Contact sales",
             contact_subtitle="Talk to our team about custom data, API access, or enterprise plans.",

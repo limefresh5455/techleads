@@ -8,7 +8,7 @@ export default function MainLayout() {
 
   if (loading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-white text-muted">
+      <div className="grid min-h-screen place-items-center bg-page text-muted">
         Loading…
       </div>
     )
@@ -16,7 +16,7 @@ export default function MainLayout() {
 
   if (error || !data.content) {
     return (
-      <div className="grid min-h-screen place-items-center bg-white px-4 text-center">
+      <div className="grid min-h-screen place-items-center bg-page px-4 text-center">
         <div>
           <p className="text-lg font-semibold text-ink">Unable to load site data</p>
           <p className="mt-2 text-sm text-muted">{error || 'No content returned from /api/landing'}</p>
@@ -26,7 +26,7 @@ export default function MainLayout() {
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-page">
       <Navbar />
       <main>
         <Outlet />

@@ -6,7 +6,7 @@ export default function Datasets({ technologies = [], content, showHeader = true
   if (!content) return null
 
   return (
-    <section id="datasets" className="bg-white py-16 md:py-20">
+    <section id="datasets" className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         {showHeader && (
           <div className="mx-auto max-w-2xl text-center">
@@ -39,7 +39,7 @@ export default function Datasets({ technologies = [], content, showHeader = true
                   +{tech.growth_percent}% growth
                 </p>
               </div>
-              <span className="mt-1 grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-ink/60 transition group-hover:border-brand group-hover:text-brand">
+              <span className="mt-1 grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-ink/60 transition group-hover:border-brand group-hover:text-brand">
                 <ArrowRight className="h-4 w-4" />
               </span>
             </Link>
@@ -49,7 +49,7 @@ export default function Datasets({ technologies = [], content, showHeader = true
         <div className="mt-10 text-center">
           <Link
             to="/technologies"
-            className="inline-flex rounded-xl border border-border bg-white px-6 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
+            className="inline-flex rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
           >
             {content.datasets_cta}
           </Link>

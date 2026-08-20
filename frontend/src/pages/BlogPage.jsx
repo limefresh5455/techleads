@@ -6,8 +6,8 @@ export default function BlogPage() {
   const posts = data.blog_posts || []
 
   return (
-    <div className="bg-white">
-      <section className="border-b border-border bg-gradient-to-b from-[#fffbeb] to-white py-14 md:py-20">
+    <div className="bg-card">
+      <section className="border-b border-border bg-gradient-to-b from-hero to-page py-14 md:py-20">
         <div className="mx-auto max-w-7xl px-4 text-center lg:px-6">
           <p className="text-sm font-semibold uppercase tracking-wider text-brand">Blog</p>
           <h1 className="mt-3 text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
@@ -24,7 +24,7 @@ export default function BlogPage() {
           {posts.map((post) => (
             <article
               key={post.id}
-              className="flex flex-col rounded-2xl border border-border bg-white p-6 shadow-sm transition hover:border-brand/40 hover:shadow-md"
+              className="flex flex-col rounded-2xl border border-border bg-card p-6 shadow-sm transition hover:border-brand/40 hover:shadow-md"
             >
               <span className="w-fit rounded-full bg-brand/10 px-3 py-1 text-xs font-bold uppercase tracking-wide text-brand">
                 {post.category}

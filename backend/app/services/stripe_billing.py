@@ -26,6 +26,7 @@ def create_checkout_session(
     *,
     user: User,
     plan_slug: str,
+    quantity: int = 1,
 ) -> dict:
     plan = db.query(PricingPlan).filter(PricingPlan.slug == plan_slug).first()
     if not plan:
@@ -33,22 +34,45 @@ def create_checkout_session(
     if plan.slug == "enterprise" or plan.monthly_price <= 0 or plan.credits <= 0:
         raise HTTPException(status_code=400, detail="This plan is not available for self-serve purchase")
 
+    qty = max(1, min(int(quantity or 1), 100))
+    # Only Bulk Purchase supports multi-technology quantity (1 credit each).
+    if plan.slug != "bulk":
+        qty = 1
+    elif qty not in {1, 5, 10, 25, 100}:
+        raise HTTPException(
+            status_code=400,
+            detail="Bulk quantity must be one of: 1, 5, 10, 25, 100",
+        )
+
     _configure_stripe()
-    amount_cents = int(plan.monthly_price) * 100
+    unit_cents = int(plan.monthly_price) * 100
+    amount_cents = unit_cents * qty
+    credits = int(plan.credits) * qty
     frontend = settings.frontend_url.rstrip("/")
+
+    product_name = (
+        f"{plan.name} — {qty} technolog{'y' if qty == 1 else 'ies'}"
+        if plan.slug == "bulk"
+        else f"{plan.name} — {credits:,} credits"
+    )
+    product_desc = (
+        f"{qty} technology export credit{'s' if qty != 1 else ''} · $29 each"
+        if plan.slug == "bulk"
+        else (plan.description or f"{credits:,} TechLeads.Ai credits")
+    )
 
     session = stripe.checkout.Session.create(
         mode="payment",
         customer_email=user.email,
         line_items=[
             {
-                "quantity": 1,
+                "quantity": qty,
                 "price_data": {
                     "currency": "usd",
-                    "unit_amount": amount_cents,
+                    "unit_amount": unit_cents,
                     "product_data": {
-                        "name": f"{plan.name} — {plan.credits:,} credits",
-                        "description": plan.description or f"{plan.credits:,} TechLeads.Ai credits",
+                        "name": product_name,
+                        "description": product_desc,
                     },
                 },
             }
@@ -58,13 +82,15 @@ def create_checkout_session(
         metadata={
             "user_id": str(user.id),
             "plan_slug": plan.slug,
-            "credits": str(plan.credits),
+            "credits": str(credits),
+            "quantity": str(qty),
         },
         payment_intent_data={
             "metadata": {
                 "user_id": str(user.id),
                 "plan_slug": plan.slug,
-                "credits": str(plan.credits),
+                "credits": str(credits),
+                "quantity": str(qty),
             }
         },
     )
@@ -72,7 +98,7 @@ def create_checkout_session(
     purchase = CreditPurchase(
         user_id=user.id,
         plan_slug=plan.slug,
-        credits=plan.credits,
+        credits=credits,
         amount_cents=amount_cents,
         currency="usd",
         stripe_session_id=session.id,

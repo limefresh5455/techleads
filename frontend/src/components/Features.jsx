@@ -17,7 +17,7 @@ export default function Features({ features = [], content }) {
 
         <div className="mt-10 grid gap-6 md:grid-cols-3">
           {features.map((f) => (
-            <div key={f.id} className="card-hover rounded-2xl border border-border bg-white p-6">
+            <div key={f.id} className="card-hover rounded-2xl border border-border bg-card p-6">
               <div className="grid h-12 w-12 place-items-center rounded-xl bg-brand/10 text-brand">
                 <Icon name={f.icon} className="h-5 w-5" />
               </div>
@@ -36,10 +36,10 @@ export default function Features({ features = [], content }) {
 
         <div
           id="tools"
-          className="mt-12 flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-ink p-6 text-white md:flex-row md:items-center md:p-8"
+          className="mt-12 flex flex-col items-start justify-between gap-4 rounded-2xl border border-border bg-inverse p-6 text-white md:flex-row md:items-center md:p-8"
         >
           <div className="flex items-start gap-4">
-            <div className="grid h-12 w-12 place-items-center rounded-xl bg-white/10">
+            <div className="grid h-12 w-12 place-items-center rounded-xl bg-card/10">
               <Puzzle className="h-6 w-6" />
             </div>
             <div>
@@ -49,7 +49,7 @@ export default function Features({ features = [], content }) {
           </div>
           <Link
             to={content.extension_cta_href || '/products/chrome-extension'}
-            className="shrink-0 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
+            className="shrink-0 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
           >
             {content.extension_cta_label}
           </Link>

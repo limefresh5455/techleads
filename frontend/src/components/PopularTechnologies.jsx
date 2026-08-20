@@ -5,7 +5,7 @@ export default function PopularTechnologies({ content, technologies = [] }) {
   if (!content) return null
 
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{content.popular_eyebrow}</p>
@@ -20,7 +20,7 @@ export default function PopularTechnologies({ content, technologies = [] }) {
             <Link
               key={tech.id}
               to="/directory"
-              className="card-hover rounded-xl border border-border bg-white px-4 py-4"
+              className="card-hover rounded-xl border border-border bg-card px-4 py-4"
             >
               <span
                 className="grid h-10 w-10 place-items-center rounded-lg"

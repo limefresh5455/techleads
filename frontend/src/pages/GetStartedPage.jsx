@@ -20,23 +20,23 @@ export default function GetStartedPage() {
           onSubmit={(e) => e.preventDefault()}
         >
           <input
-            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-brand"
             placeholder="Work email"
             type="email"
             required
           />
           <input
-            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-brand"
             placeholder="Full name"
             required
           />
           <input
-            className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-brand"
             placeholder="Company website"
           />
           <button
             type="submit"
-            className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
+            className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark"
           >
             Create Free Account
           </button>

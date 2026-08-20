@@ -1,13 +1,56 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --tl-brand: #ffd23f;
+  --tl-brand-dark: #f0c020;
+  --tl-brand-soft: #ffd9b8;
+  --tl-ink: #111111;
+  --tl-muted: #6b7280;
+  --tl-surface: #f7f5f0;
+  --tl-border: #e8e6e1;
+  --tl-page: #ffffff;
+  --tl-card: #ffffff;
+  --tl-canvas: #f8f9fb;
+  --tl-hero: #fffbeb;
+  --tl-panel: #fff8f4;
+  --tl-shadow: rgba(17, 17, 17, 0.06);
+  --tl-inverse: #111111;
+}
+
+html.dark {
+  --tl-brand: #ffd23f;
+  --tl-brand-dark: #f0c020;
+  --tl-brand-soft: #5c4a2a;
+  --tl-ink: #f4f4f5;
+  --tl-muted: #a1a1aa;
+  --tl-surface: #1c1c1f;
+  --tl-border: #2e2e33;
+  --tl-page: #0f0f12;
+  --tl-card: #17171b;
+  --tl-canvas: #121216;
+  --tl-hero: #1a160c;
+  --tl-panel: #1a1612;
+  --tl-shadow: rgba(0, 0, 0, 0.35);
+  --tl-inverse: #050505;
+}
+
 @theme {
-  --color-brand: #ffd23f;
-  --color-brand-dark: #f0c020;
-  --color-brand-soft: #ffd9b8;
-  --color-ink: #111111;
-  --color-muted: #6b7280;
-  --color-surface: #f7f5f0;
-  --color-border: #e8e6e1;
+  --color-brand: var(--tl-brand);
+  --color-brand-dark: var(--tl-brand-dark);
+  --color-brand-soft: var(--tl-brand-soft);
+  --color-ink: var(--tl-ink);
+  --color-muted: var(--tl-muted);
+  --color-surface: var(--tl-surface);
+  --color-border: var(--tl-border);
+  --color-page: var(--tl-page);
+  --color-card: var(--tl-card);
+  --color-canvas: var(--tl-canvas);
+  --color-hero: var(--tl-hero);
+  --color-panel: var(--tl-panel);
+  --color-inverse: var(--tl-inverse);
+  --color-on-brand: #111111;
   --font-sans: "Plus Jakarta Sans", "Segoe UI", sans-serif;
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.6s ease both;
@@ -72,9 +115,12 @@ html {
 body {
   margin: 0;
   font-family: var(--font-sans);
-  color: var(--color-ink);
-  background: #ffffff;
+  color: var(--tl-ink);
+  background: var(--tl-page);
   -webkit-font-smoothing: antialiased;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease;
 }
 
 #root {
@@ -88,8 +134,8 @@ body {
   justify-content: center;
   gap: 0.5rem;
   border-radius: 0.75rem;
-  background: var(--color-brand);
-  color: var(--color-ink);
+  background: var(--tl-brand);
+  color: #111111;
   font-weight: 600;
   transition:
     background-color 0.2s ease,
@@ -99,7 +145,7 @@ body {
 }
 
 .btn-brand:hover {
-  background: var(--color-brand-dark);
+  background: var(--tl-brand-dark);
   transform: translateY(-1px);
   box-shadow: 0 12px 28px rgba(255, 210, 63, 0.38);
 }
@@ -116,8 +162,8 @@ body {
 }
 
 .card-hover:hover {
-  border-color: color-mix(in srgb, var(--color-brand) 55%, var(--color-border));
-  box-shadow: 0 14px 36px rgba(17, 17, 17, 0.06);
+  border-color: color-mix(in srgb, var(--tl-brand) 55%, var(--tl-border));
+  box-shadow: 0 14px 36px var(--tl-shadow);
   transform: translateY(-3px);
 }
 
@@ -141,11 +187,53 @@ body {
   background: radial-gradient(ellipse at top, rgba(255, 210, 63, 0.22), transparent 55%);
 }
 
+html.dark .brand-glow {
+  background: radial-gradient(ellipse at top, rgba(255, 210, 63, 0.12), transparent 55%);
+}
+
 .brand-panel {
   background: linear-gradient(135deg, #ffd23f 0%, #ffe07a 48%, #ffd23f 100%);
   background-size: 200% 200%;
   animation: var(--animate-shine);
-  color: var(--color-ink);
+  color: #111111;
+}
+
+/* Yellow brand surfaces always use near-black text (readable in light + dark mode) */
+.bg-brand,
+.bg-brand-dark,
+.hover\:bg-brand:hover,
+.hover\:bg-brand-dark:hover {
+  color: #111111 !important;
+}
+
+.brand-panel,
+.brand-panel.text-ink {
+  color: #111111 !important;
+}
+
+.brand-panel :is(h1, h2, h3, h4, h5, p, span, li, label, strong, em, small, div):not(.bg-inverse):not([class*="bg-inverse"]) {
+  color: inherit;
+}
+
+.brand-panel :is(.text-ink, .text-muted),
+.brand-panel [class*="text-ink/"] {
+  color: rgba(17, 17, 17, 0.78) !important;
+}
+
+.brand-panel .bg-ink\/10 {
+  background-color: rgba(17, 17, 17, 0.1) !important;
+  color: #111111 !important;
+}
+
+/* Dark CTAs on yellow panels need light/brand text, not inherited black */
+.brand-panel :is(a, button).bg-inverse,
+.brand-panel .bg-inverse {
+  color: #ffd23f !important;
+}
+
+.brand-panel :is(a, button).bg-inverse:hover,
+.brand-panel .bg-inverse:hover {
+  color: #ffe07a !important;
 }
 
 @media (prefers-reduced-motion: reduce) {

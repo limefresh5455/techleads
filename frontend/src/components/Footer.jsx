@@ -47,7 +47,7 @@ export default function Footer({
                   target="_blank"
                   rel="noreferrer"
                   aria-label={icon.label}
-                  className="grid h-9 w-9 place-items-center rounded-full border border-border bg-white text-ink/70 hover:text-brand"
+                  className="grid h-9 w-9 place-items-center rounded-full border border-border bg-card text-ink/70 hover:text-brand"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4 fill-current" aria-hidden="true">
                     <path d={SOCIAL_PATHS[icon.icon_key] || SOCIAL_PATHS.x} />
@@ -89,7 +89,7 @@ export default function Footer({
 
       <Link
         to="/contact-us"
-        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-ink shadow-lg shadow-brand/40 transition hover:-translate-y-1 hover:bg-brand-dark"
+        className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-on-brand shadow-lg shadow-brand/40 transition hover:-translate-y-1 hover:bg-brand-dark"
       >
         <MessageCircle className="h-4 w-4" />
         {content.chat_label}

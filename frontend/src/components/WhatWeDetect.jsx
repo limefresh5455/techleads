@@ -8,7 +8,7 @@ export default function WhatWeDetect({ content, groups = [] }) {
   if (!content) return null
 
   return (
-    <section className="bg-white py-16 md:py-20">
+    <section className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         <div className="text-center">
           <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{content.detect_eyebrow}</p>
@@ -29,7 +29,7 @@ export default function WhatWeDetect({ content, groups = [] }) {
                 {(group.tags || []).map((tag) => (
                   <span
                     key={tag.id}
-                    className="rounded-full border border-black/5 bg-white px-3 py-1.5 text-xs font-medium text-ink"
+                    className="rounded-full border border-black/5 bg-card px-3 py-1.5 text-xs font-medium text-ink"
                   >
                     {tag.label}
                   </span>

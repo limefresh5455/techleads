@@ -39,7 +39,7 @@ export default function FeatureBento({ content, features = [] }) {
               </div>
               <Link
                 to="/directory"
-                className="mt-8 inline-flex rounded-lg bg-ink px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-ink/90"
+                className="mt-8 inline-flex rounded-lg bg-inverse px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-inverse/90"
               >
                 {hero.link_label}
               </Link>
@@ -47,7 +47,7 @@ export default function FeatureBento({ content, features = [] }) {
           )}
 
           {cards.map((card) => (
-            <div key={card.id} className="card-hover rounded-2xl border border-border bg-white p-6">
+            <div key={card.id} className="card-hover rounded-2xl border border-border bg-card p-6">
               <div className="grid h-11 w-11 place-items-center rounded-xl bg-brand/10 text-brand">
                 <Icon name={card.icon} className="h-5 w-5" />
               </div>
@@ -57,7 +57,7 @@ export default function FeatureBento({ content, features = [] }) {
           ))}
 
           {banner && (
-            <div className="rounded-2xl bg-ink p-7 text-white lg:col-span-3">
+            <div className="rounded-2xl bg-inverse p-7 text-white lg:col-span-3">
               <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
                 <div>
                   <h3 className="text-xl font-bold">{banner.title}</h3>
@@ -65,7 +65,7 @@ export default function FeatureBento({ content, features = [] }) {
                 </div>
                 <Link
                   to="/directory"
-                  className="shrink-0 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-ink shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
+                  className="shrink-0 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
                 >
                   {banner.link_label}
                 </Link>

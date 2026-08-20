@@ -23,7 +23,7 @@ export default function DevelopersPage() {
             </div>
           ))}
         </div>
-        <div className="mt-10 rounded-2xl border border-border bg-ink p-6 text-white md:p-8">
+        <div className="mt-10 rounded-2xl border border-border bg-inverse p-6 text-white md:p-8">
           <h3 className="text-xl font-bold">Ready to integrate?</h3>
           <p className="mt-2 max-w-2xl text-sm text-white/70">
             Create an account to generate API keys, or contact sales for enterprise quotas.
@@ -31,13 +31,13 @@ export default function DevelopersPage() {
           <div className="mt-5 flex flex-wrap gap-3">
             <Link
               to="/get-started"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark"
             >
               Get Started
             </Link>
             <Link
               to="/contact-us"
-              className="rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white hover:bg-white/10"
+              className="rounded-xl border border-white/20 px-5 py-3 text-sm font-semibold text-white hover:bg-card/10"
             >
               Contact Sales
             </Link>

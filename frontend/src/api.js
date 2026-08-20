@@ -132,10 +132,10 @@ export function login(payload) {
   })
 }
 
-export function createCheckoutSession(planSlug) {
+export function createCheckoutSession(planSlug, quantity = 1) {
   return request('/api/billing/checkout', {
     method: 'POST',
-    body: JSON.stringify({ plan_slug: planSlug }),
+    body: JSON.stringify({ plan_slug: planSlug, quantity }),
   })
 }
 

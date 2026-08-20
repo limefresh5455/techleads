@@ -14,7 +14,7 @@ import { changePassword, fetchMe, updateProfile } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
 
 const field =
-  'mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none transition focus:border-brand'
+  'mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none transition focus:border-brand'
 
 export default function AccountPage() {
   const { user, updateUser, logout } = useSiteData()
@@ -99,7 +99,11 @@ export default function AccountPage() {
   return (
     <div className="relative overflow-hidden">
       <div
-        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_at_top,_rgba(255,210,63,0.35),_transparent_55%),linear-gradient(180deg,#fffbeb_0%,#f8f9fb_70%)]"
+        className="pointer-events-none absolute inset-x-0 top-0 h-[420px] bg-[radial-gradient(ellipse_at_top,_rgba(255,210,63,0.28),_transparent_55%)] from-hero to-canvas"
+        style={{
+          backgroundImage:
+            'radial-gradient(ellipse at top, rgba(255,210,63,0.28), transparent 55%), linear-gradient(180deg, var(--tl-hero) 0%, var(--tl-canvas) 70%)',
+        }}
         aria-hidden="true"
       />
       <div
@@ -123,7 +127,7 @@ export default function AccountPage() {
         </div>
 
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
-          <section className="animate-fade-up rounded-[1.75rem] border border-border bg-white/90 p-6 shadow-sm backdrop-blur md:p-8 [animation-delay:80ms]">
+          <section className="animate-fade-up rounded-[1.75rem] border border-border bg-card/90 p-6 shadow-sm backdrop-blur md:p-8 [animation-delay:80ms]">
             <div className="flex flex-wrap items-center gap-4">
               {user.avatar_url ? (
                 <img
@@ -133,7 +137,7 @@ export default function AccountPage() {
                   referrerPolicy="no-referrer"
                 />
               ) : (
-                <span className="grid h-16 w-16 place-items-center rounded-2xl bg-brand text-2xl font-extrabold text-ink shadow-sm shadow-brand/30">
+                <span className="grid h-16 w-16 place-items-center rounded-2xl bg-brand text-2xl font-extrabold text-on-brand shadow-sm shadow-brand/30">
                   {initial}
                 </span>
               )}
@@ -174,7 +178,7 @@ export default function AccountPage() {
               <button
                 type="submit"
                 disabled={profileSaving || name.trim() === user.name}
-                className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-50"
+                className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark disabled:opacity-50"
               >
                 {profileSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                 {profileSaving ? 'Saving…' : 'Save changes'}
@@ -200,14 +204,14 @@ export default function AccountPage() {
               </div>
               <Link
                 to="/pricing"
-                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-ink px-4 py-2.5 text-sm font-semibold text-brand hover:bg-ink/90"
+                className="mt-6 inline-flex items-center gap-2 rounded-xl bg-inverse px-4 py-2.5 text-sm font-semibold text-brand hover:bg-inverse/90"
               >
                 Buy credits
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 text-brand" />
               </Link>
             </section>
 
-            <section className="animate-fade-up rounded-[1.75rem] border border-border bg-white/90 p-6 shadow-sm backdrop-blur md:p-7 [animation-delay:200ms]">
+            <section className="animate-fade-up rounded-[1.75rem] border border-border bg-card/90 p-6 shadow-sm backdrop-blur md:p-7 [animation-delay:200ms]">
               <div className="flex items-center gap-2 text-sm font-semibold text-ink">
                 <KeyRound className="h-4 w-4 text-brand-dark" />
                 Security
@@ -255,7 +259,7 @@ export default function AccountPage() {
                   <button
                     type="submit"
                     disabled={passwordSaving}
-                    className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink hover:bg-white disabled:opacity-50"
+                    className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink hover:bg-card disabled:opacity-50"
                   >
                     {passwordSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                     {passwordSaving ? 'Updating…' : 'Update password'}
@@ -266,7 +270,7 @@ export default function AccountPage() {
               )}
             </section>
 
-            <section className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-[1.75rem] border border-border bg-white/90 px-6 py-5 shadow-sm [animation-delay:260ms]">
+            <section className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-[1.75rem] border border-border bg-card/90 px-6 py-5 shadow-sm [animation-delay:260ms]">
               <div>
                 <p className="text-sm font-semibold text-ink">Session</p>
                 <p className="mt-1 text-sm text-muted">Sign out of TechLeads on this device.</p>

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDown } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
+import ThemeToggle from './ThemeToggle'
 
 function BrandMark({ content }) {
   return (
@@ -44,62 +45,65 @@ export default function DashboardNavbar() {
   const initial = user.name?.trim()?.[0]?.toUpperCase() || 'U'
 
   return (
-    <header className="sticky top-0 z-50 border-b border-border bg-white">
+    <header className="sticky top-0 z-50 border-b border-border bg-card">
       <div className="mx-auto flex max-w-[1400px] items-center justify-between gap-4 px-4 py-3 lg:px-6">
         <BrandMark content={content} />
 
-        <div className="hidden items-center gap-3 lg:flex">
-          <Link
-            to="/pricing"
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-ink hover:bg-brand-dark"
-          >
-            Upgrade
-          </Link>
-          <span className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
-            {user.credits?.toLocaleString?.() ?? user.credits ?? 0} credits
-          </span>
-          <div className="relative" ref={menuRef}>
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              className="flex items-center gap-2 rounded-lg border border-border px-2 py-1.5 hover:bg-surface"
+        <div className="flex items-center gap-3">
+          <ThemeToggle />
+          <div className="hidden items-center gap-3 lg:flex">
+            <Link
+              to="/pricing"
+              className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-on-brand hover:bg-brand-dark"
             >
-              {user.avatar_url ? (
-                <img
-                  src={user.avatar_url}
-                  alt=""
-                  className="h-8 w-8 rounded-full object-cover"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-sm font-bold text-ink">
-                  {initial}
-                </span>
+              Upgrade
+            </Link>
+            <span className="rounded-lg border border-border bg-surface px-3 py-1.5 text-xs font-semibold text-ink">
+              {user.credits?.toLocaleString?.() ?? user.credits ?? 0} credits
+            </span>
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                className="flex items-center gap-2 rounded-lg border border-border px-2 py-1.5 hover:bg-surface"
+              >
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    className="h-8 w-8 rounded-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className="grid h-8 w-8 place-items-center rounded-full bg-brand text-sm font-bold text-on-brand">
+                    {initial}
+                  </span>
+                )}
+                <span className="max-w-[120px] truncate text-sm font-medium text-ink">{user.name}</span>
+                <ChevronDown className="h-4 w-4 text-muted" />
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-full z-50 mt-2 min-w-44 rounded-xl border border-border bg-card p-2 shadow-lg">
+                  <Link
+                    to="/account"
+                    className="block rounded-lg px-3 py-2 text-sm text-ink hover:bg-surface"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Manage account
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMenuOpen(false)
+                      logout()
+                    }}
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-ink hover:bg-surface"
+                  >
+                    Log out
+                  </button>
+                </div>
               )}
-              <span className="max-w-[120px] truncate text-sm font-medium text-ink">{user.name}</span>
-              <ChevronDown className="h-4 w-4 text-muted" />
-            </button>
-            {menuOpen && (
-              <div className="absolute right-0 top-full z-50 mt-2 min-w-44 rounded-xl border border-border bg-white p-2 shadow-lg">
-                <Link
-                  to="/account"
-                  className="block rounded-lg px-3 py-2 text-sm text-ink hover:bg-surface"
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Manage account
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setMenuOpen(false)
-                    logout()
-                  }}
-                  className="block w-full rounded-lg px-3 py-2 text-left text-sm text-ink hover:bg-surface"
-                >
-                  Log out
-                </button>
-              </div>
-            )}
+            </div>
           </div>
         </div>
       </div>

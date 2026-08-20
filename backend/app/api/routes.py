@@ -362,7 +362,12 @@ def billing_checkout(
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
-    return create_checkout_session(db, user=user, plan_slug=payload.plan_slug)
+    return create_checkout_session(
+        db,
+        user=user,
+        plan_slug=payload.plan_slug,
+        quantity=payload.quantity,
+    )
 
 
 @router.get("/billing/confirm", response_model=CheckoutConfirmOut)

@@ -1,8 +1,49 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
-import { Check, ChevronDown, Loader2 } from 'lucide-react'
+import { Check, ChevronDown, Loader2, Shield } from 'lucide-react'
 import { confirmCheckoutSession, createCheckoutSession } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
+
+const BULK_QTY_OPTIONS = [1, 5, 10, 25, 100]
+
+const COMPARISON = [
+  {
+    feature: 'Results per search',
+    bulk: 'One-time dataset',
+    growth: 'Unlimited browsing',
+    business: 'Unlimited browsing',
+  },
+  {
+    feature: 'Technologies',
+    bulk: '1, 5, 10, 25, or 100',
+    growth: '5,000 export credits',
+    business: '25,000 export credits',
+  },
+  {
+    feature: 'Enrichment credits',
+    bulk: '1 per technology purchased',
+    growth: '5,000 (prepaid)',
+    business: '25,000 (prepaid)',
+  },
+  {
+    feature: 'CSV Export',
+    bulk: 'Yes',
+    growth: 'Yes',
+    business: 'Yes',
+  },
+  {
+    feature: 'Dashboard tech filters',
+    bulk: 'Yes',
+    growth: 'Yes',
+    business: 'Yes',
+  },
+  {
+    feature: 'Best for',
+    bulk: 'Single / few tech lists',
+    growth: 'Agencies & sales teams',
+    business: 'High-volume teams',
+  },
+]
 
 export default function PricingPage() {
   const { data, user, updateUserCredits } = useSiteData()
@@ -11,6 +52,7 @@ export default function PricingPage() {
   const faqs = data.faqs || []
   const [openFaq, setOpenFaq] = useState(0)
   const [buyingSlug, setBuyingSlug] = useState('')
+  const [bulkQty, setBulkQty] = useState(1)
   const [message, setMessage] = useState('')
   const [error, setError] = useState('')
   const [searchParams, setSearchParams] = useSearchParams()
@@ -61,10 +103,16 @@ export default function PricingPage() {
 
   if (!content) return null
 
-  async function buyPlan(plan) {
+  const bulk = plans.find((p) => p.slug === 'bulk')
+  const growth = plans.find((p) => p.slug === 'growth')
+  const business = plans.find((p) => p.slug === 'business')
+  const ordered = [bulk, growth, business].filter(Boolean)
+  const displayPlans = ordered.length ? ordered : plans.slice(0, 3)
+
+  async function buyPlan(plan, quantity = 1) {
     setError('')
     setMessage('')
-    if (plan.slug === 'enterprise' || plan.credits <= 0 || plan.monthly_price <= 0) {
+    if (plan.monthly_price <= 0 || plan.credits <= 0) {
       navigate('/contact')
       return
     }
@@ -74,7 +122,7 @@ export default function PricingPage() {
     }
     setBuyingSlug(plan.slug)
     try {
-      const session = await createCheckoutSession(plan.slug)
+      const session = await createCheckoutSession(plan.slug, quantity)
       if (session.checkout_url) {
         if (session.session_id) {
           localStorage.setItem('tl_pending_checkout', session.session_id)
@@ -91,13 +139,16 @@ export default function PricingPage() {
   }
 
   return (
-    <div className="bg-white">
-      <section className="border-b border-border bg-gradient-to-b from-[#fffbeb] to-white py-14 md:py-16">
+    <div className="bg-card">
+      <section className="border-b border-border bg-gradient-to-b from-hero to-page py-14 md:py-16">
         <div className="mx-auto max-w-3xl px-4 text-center lg:px-6">
           <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
-            {content.pricing_title}
+            {content.pricing_title || 'Simple, transparent pricing'}
           </h1>
-          <p className="mt-4 text-muted">{content.pricing_subtitle}</p>
+          <p className="mt-4 text-muted">
+            {content.pricing_subtitle ||
+              'Choose the plan that fits your needs. Upgrade anytime—no hidden fees.'}
+          </p>
           {user ? (
             <p className="mt-4 inline-flex rounded-full bg-brand/15 px-4 py-1.5 text-sm font-semibold text-ink">
               Your balance: {(user.credits || 0).toLocaleString()} credits
@@ -106,7 +157,7 @@ export default function PricingPage() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-4 py-14 lg:px-6">
+      <section className="mx-auto max-w-6xl px-4 py-14 lg:px-6">
         {message ? (
           <p className="mb-6 rounded-xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
             {message}
@@ -118,41 +169,64 @@ export default function PricingPage() {
           </p>
         ) : null}
 
-        <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-          {plans.map((plan) => {
-            const isCustom = plan.slug === 'enterprise' || plan.monthly_price <= 0
+        <div className="grid gap-6 lg:grid-cols-3">
+          {displayPlans.map((plan) => {
+            const isBulk = plan.slug === 'bulk'
             const buying = buyingSlug === plan.slug
+            const qty = isBulk ? bulkQty : 1
+            const total = plan.monthly_price * qty
             return (
               <div
                 key={plan.id}
-                className={`relative flex flex-col rounded-2xl border p-6 md:p-7 ${
+                className={`relative flex flex-col rounded-3xl border p-6 md:p-8 ${
                   plan.is_popular
-                    ? 'border-brand bg-white shadow-xl shadow-brand/15 ring-1 ring-brand/30'
-                    : 'border-border bg-white'
+                    ? 'border-brand bg-card shadow-xl shadow-brand/20 ring-1 ring-brand/40'
+                    : 'border-border bg-card'
                 }`}
               >
-                {plan.is_popular && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold uppercase tracking-wide text-ink">
-                    Most Popular
+                {plan.is_popular ? (
+                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-brand px-3 py-1 text-xs font-bold uppercase tracking-wide text-on-brand">
+                    Most popular
                   </span>
-                )}
+                ) : null}
+
                 <h2 className="text-2xl font-extrabold text-ink">{plan.name}</h2>
                 <p className="mt-2 text-sm text-muted">{plan.description}</p>
-                <div className="mt-6">
-                  {isCustom ? (
-                    <p className="text-4xl font-extrabold text-ink">Custom</p>
-                  ) : (
-                    <>
-                      <p className="text-4xl font-extrabold text-ink">${plan.monthly_price}</p>
-                      <p className="mt-1 text-sm font-semibold text-brand">
-                        {plan.credits.toLocaleString()} credits · one-time
-                      </p>
-                      <p className="mt-1 text-xs text-muted">
-                        ≈ ${(plan.monthly_price / plan.credits).toFixed(3)} per credit
-                      </p>
-                    </>
-                  )}
-                </div>
+
+                {isBulk ? (
+                  <div className="mt-5">
+                    <label className="text-xs font-semibold uppercase tracking-wide text-muted">
+                      Select quantity
+                    </label>
+                    <div className="mt-2 flex items-center gap-3">
+                      <select
+                        value={bulkQty}
+                        onChange={(e) => setBulkQty(Number(e.target.value))}
+                        className="rounded-xl border border-border bg-surface px-3 py-2 text-sm font-semibold text-ink outline-none focus:border-brand"
+                      >
+                        {BULK_QTY_OPTIONS.map((n) => (
+                          <option key={n} value={n}>
+                            {n} Technolog{n === 1 ? 'y' : 'ies'}
+                          </option>
+                        ))}
+                      </select>
+                      <span className="text-sm text-muted">${plan.monthly_price}/each</span>
+                    </div>
+                    <p className="mt-4 text-4xl font-extrabold text-ink">${total}</p>
+                    <p className="mt-1 text-sm font-semibold text-brand">one-time</p>
+                  </div>
+                ) : (
+                  <div className="mt-6">
+                    <p className="text-4xl font-extrabold text-ink">
+                      ${plan.monthly_price}
+                      <span className="ml-1 text-base font-semibold text-muted">one-time</span>
+                    </p>
+                    <p className="mt-2 text-sm font-semibold text-brand">
+                      {plan.credits.toLocaleString()} enrichment credits
+                    </p>
+                  </div>
+                )}
+
                 <ul className="mt-6 flex-1 space-y-3">
                   {plan.features.map((f) => (
                     <li key={f.id} className="flex items-start gap-2 text-sm text-ink/80">
@@ -161,58 +235,95 @@ export default function PricingPage() {
                     </li>
                   ))}
                 </ul>
+
                 <button
                   type="button"
                   disabled={buying}
-                  onClick={() => buyPlan(plan)}
+                  onClick={() => buyPlan(plan, qty)}
                   className={`mt-8 inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-center text-sm font-semibold transition hover:-translate-y-0.5 disabled:opacity-60 ${
                     plan.is_popular
-                      ? 'bg-brand text-ink hover:bg-brand-dark'
-                      : 'border border-border text-ink hover:border-brand'
+                      ? 'bg-brand text-on-brand hover:bg-brand-dark'
+                      : 'border border-border text-ink hover:border-brand hover:bg-surface'
                   }`}
                 >
                   {buying ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
                   {buying ? 'Redirecting…' : plan.cta_label}
                 </button>
+                <p className="mt-3 flex items-center justify-center gap-1.5 text-xs text-muted">
+                  <Shield className="h-3.5 w-3.5" />
+                  Secure payment via Stripe
+                </p>
               </div>
             )
           })}
         </div>
-
-        <div className="mt-10 rounded-2xl border border-border bg-surface px-5 py-4 text-sm text-muted">
-          <p className="font-semibold text-ink">Credit usage</p>
-          <p className="mt-1">
-            Free browsing of all dashboard results. Export costs 1 credit per selected
-            technology. Payments are processed securely by Stripe.
-          </p>
-        </div>
       </section>
 
       <section className="bg-surface py-14">
+        <div className="mx-auto max-w-5xl px-4 lg:px-6">
+          <h2 className="text-center text-3xl font-extrabold text-ink">Plan Comparison</h2>
+          <p className="mx-auto mt-2 max-w-2xl text-center text-sm text-muted">
+            See how Bulk datasets, Growth, and Business compare at a glance.
+          </p>
+          <div className="mt-8 overflow-x-auto rounded-2xl border border-border bg-card">
+            <table className="min-w-full text-left text-sm">
+              <thead className="border-b border-border bg-surface/70 text-xs uppercase tracking-wide text-muted">
+                <tr>
+                  <th className="px-4 py-3 font-semibold">Feature</th>
+                  <th className="px-4 py-3 font-semibold">Bulk Purchase</th>
+                  <th className="px-4 py-3 font-semibold">Growth</th>
+                  <th className="px-4 py-3 font-semibold">Business</th>
+                </tr>
+              </thead>
+              <tbody>
+                {COMPARISON.map((row) => (
+                  <tr key={row.feature} className="border-b border-border last:border-0">
+                    <td className="px-4 py-3 font-medium text-ink">{row.feature}</td>
+                    <td className="px-4 py-3 text-muted">{row.bulk}</td>
+                    <td className="px-4 py-3 text-muted">{row.growth}</td>
+                    <td className="px-4 py-3 text-muted">{row.business}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <section className="py-14">
         <div className="mx-auto max-w-3xl px-4 lg:px-6">
           <h2 className="text-center text-3xl font-extrabold text-ink">Frequently Asked Questions</h2>
           <div className="mt-8 space-y-3">
             {faqs.map((faq, idx) => {
               const open = openFaq === idx
               return (
-                <div key={faq.id} className="rounded-xl border border-border bg-white">
+                <div key={faq.id} className="rounded-xl border border-border bg-card">
                   <button
                     type="button"
                     className="flex w-full items-center justify-between gap-3 px-5 py-4 text-left"
                     onClick={() => setOpenFaq(open ? -1 : idx)}
                   >
                     <span className="font-semibold text-ink">{faq.question}</span>
-                    <ChevronDown className={`h-4 w-4 text-muted transition ${open ? 'rotate-180' : ''}`} />
+                    <ChevronDown
+                      className={`h-4 w-4 text-muted transition ${open ? 'rotate-180' : ''}`}
+                    />
                   </button>
-                  {open && <p className="border-t border-border px-5 py-4 text-sm text-muted">{faq.answer}</p>}
+                  {open ? (
+                    <p className="border-t border-border px-5 py-4 text-sm text-muted">{faq.answer}</p>
+                  ) : null}
                 </div>
               )
             })}
           </div>
+          <div className="mt-8 flex flex-wrap justify-center gap-4 text-xs font-semibold text-muted">
+            <span>Secure Payment</span>
+            <span>Credits never expire</span>
+            <span>$29 / technology bulk datasets</span>
+          </div>
         </div>
       </section>
 
-      <section className="py-14">
+      <section className="pb-14">
         <div className="mx-auto max-w-4xl px-4 text-center lg:px-6">
           <div className="brand-panel rounded-3xl px-6 py-12 text-ink md:px-10">
             <h2 className="text-2xl font-extrabold md:text-3xl">Need a custom credit volume?</h2>
@@ -222,13 +333,13 @@ export default function PricingPage() {
             <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 to="/contact"
-                className="rounded-xl bg-ink px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-ink/90"
+                className="rounded-xl bg-inverse px-5 py-3 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-inverse/90"
               >
                 Contact Sales
               </Link>
               <Link
                 to="/dashboard"
-                className="rounded-xl border border-ink/25 bg-white/40 px-5 py-3 text-sm font-semibold text-ink backdrop-blur transition hover:-translate-y-0.5 hover:bg-white/70"
+                className="rounded-xl border border-ink/25 bg-card/40 px-5 py-3 text-sm font-semibold text-ink backdrop-blur transition hover:-translate-y-0.5 hover:bg-card/70"
               >
                 Go to dashboard
               </Link>

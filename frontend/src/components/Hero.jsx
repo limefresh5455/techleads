@@ -33,7 +33,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
   }
 
   return (
-    <section className="relative overflow-hidden bg-gradient-to-b from-[#fffbeb] via-white to-white pb-12 pt-12 md:pt-16">
+    <section className="relative overflow-hidden bg-gradient-to-b from-hero via-white to-page pb-12 pt-12 md:pt-16">
       <div className="brand-glow pointer-events-none absolute inset-0" />
       <div className="pointer-events-none absolute -left-24 top-24 h-56 w-56 animate-float rounded-full bg-brand/20 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 top-40 h-48 w-48 animate-float rounded-full bg-brand-soft/40 blur-3xl [animation-delay:1.2s]" />
@@ -50,7 +50,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
           onSubmit={onSubmit}
           className="reveal reveal-delay-2 mx-auto mt-8 flex max-w-2xl flex-col gap-3 sm:flex-row sm:items-center"
         >
-          <div className="flex flex-1 items-center rounded-xl border border-border bg-white px-4 shadow-sm transition focus-within:border-brand focus-within:shadow-md focus-within:shadow-brand/20">
+          <div className="flex flex-1 items-center rounded-xl border border-border bg-card px-4 shadow-sm transition focus-within:border-brand focus-within:shadow-md focus-within:shadow-brand/20">
             <Search className="h-4 w-4 text-muted" />
             <input
               value={query}
@@ -62,7 +62,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
           <button
             type="submit"
             disabled={loading}
-            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-ink shadow-md shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark disabled:opacity-60"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-on-brand shadow-md shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark disabled:opacity-60"
           >
             {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {loading ? 'Analyzing…' : content.hero_search_cta}
@@ -72,10 +72,10 @@ export default function Hero({ content, dashboardPreviews = [] }) {
       </div>
 
       <div className="relative mx-auto mt-12 max-w-6xl px-4 lg:px-6">
-        <div className="reveal reveal-delay-3 overflow-hidden rounded-2xl border border-border bg-white shadow-xl shadow-brand/15 transition hover:shadow-2xl hover:shadow-brand/20">
+        <div className="reveal reveal-delay-3 overflow-hidden rounded-2xl border border-border bg-card shadow-xl shadow-brand/15 transition hover:shadow-2xl hover:shadow-brand/20">
           <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
             <p className="text-sm font-semibold text-ink">TechLeads.Ai Dashboard</p>
-            <span className="rounded-full bg-brand/25 px-2.5 py-1 text-xs font-semibold text-ink">
+            <span className="rounded-full bg-brand/25 px-2.5 py-1 text-xs font-semibold text-on-brand">
               Live
             </span>
           </div>
@@ -108,14 +108,14 @@ export default function Hero({ content, dashboardPreviews = [] }) {
         <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
           <Link
             to="/signup"
-            className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-ink shadow-md shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
+            className="inline-flex items-center gap-2 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-on-brand shadow-md shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
           >
             {content.hero_secondary_cta}
             <ArrowRight className="h-4 w-4" />
           </Link>
           <Link
             to="/directory"
-            className="inline-flex rounded-xl border border-border bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:border-brand hover:text-ink"
+            className="inline-flex rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:border-brand hover:text-ink"
           >
             Explore Our Database
           </Link>

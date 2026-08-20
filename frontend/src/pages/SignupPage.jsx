@@ -28,12 +28,12 @@ export default function SignupPage() {
   }
 
   const field =
-    'mt-1.5 w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand'
+    'mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-brand'
 
   return (
-    <section className="bg-gradient-to-b from-[#fffbeb] to-white py-12 md:py-16">
+    <section className="bg-gradient-to-b from-hero to-page py-12 md:py-16">
       <div className="mx-auto grid max-w-6xl items-stretch gap-8 px-4 lg:grid-cols-2 lg:px-6">
-        <div className="rounded-3xl border border-border bg-white p-6 shadow-sm md:p-8">
+        <div className="rounded-3xl border border-border bg-card p-6 shadow-sm md:p-8">
           <h1 className="text-3xl font-extrabold tracking-tight text-ink">Create an account</h1>
           <p className="mt-2 text-muted">Start your free trial and unlock technology insights</p>
 
@@ -79,7 +79,7 @@ export default function SignupPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
+              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark disabled:opacity-60"
             >
               {loading ? 'Creating account…' : 'Start My Free Trial'}
             </button>

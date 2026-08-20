@@ -26,12 +26,12 @@ export default function ApiDocsPage() {
             </ul>
             <Link
               to="/signup"
-              className="mt-8 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
+              className="mt-8 inline-flex rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark"
             >
               {content?.api_cta || 'Get API Access'}
             </Link>
           </div>
-          <div className="overflow-hidden rounded-2xl border border-border bg-ink p-5 md:p-6">
+          <div className="overflow-hidden rounded-2xl border border-border bg-inverse p-5 md:p-6">
             <pre className="overflow-x-auto text-xs leading-relaxed text-orange-100 md:text-sm">
               <code>{content?.api_sample}</code>
             </pre>

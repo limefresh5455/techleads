@@ -6,8 +6,8 @@ export default function CustomDataPage() {
   const blocks = data.custom_data_blocks || []
 
   return (
-    <div className="bg-white">
-      <section className="border-b border-border bg-gradient-to-b from-[#fffbeb] to-white py-14 md:py-20">
+    <div className="bg-card">
+      <section className="border-b border-border bg-gradient-to-b from-hero to-page py-14 md:py-20">
         <div className="mx-auto max-w-4xl px-4 text-center lg:px-6">
           <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
             Custom Technology Data Solutions
@@ -19,13 +19,13 @@ export default function CustomDataPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/contact"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark"
             >
               Contact Sales
             </Link>
             <Link
               to="/pricing"
-              className="rounded-xl border border-border bg-white px-5 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
+              className="rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
             >
               View Plans
             </Link>
@@ -56,13 +56,13 @@ export default function CustomDataPage() {
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
               to="/contact"
-              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
+              className="rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark"
             >
               Contact Sales
             </Link>
             <Link
               to="/pricing"
-              className="rounded-xl border border-border bg-white px-5 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
+              className="rounded-xl border border-border bg-card px-5 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
             >
               Self-Serve Plans
             </Link>

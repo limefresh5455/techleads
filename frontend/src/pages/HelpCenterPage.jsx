@@ -21,7 +21,7 @@ export default function HelpCenterPage() {
       <section className="mx-auto max-w-3xl px-4 py-14 lg:px-6">
         <ul className="space-y-3">
           {TOPICS.map((topic) => (
-            <li key={topic} className="rounded-xl border border-border bg-white px-4 py-3 text-sm font-medium text-ink">
+            <li key={topic} className="rounded-xl border border-border bg-card px-4 py-3 text-sm font-medium text-ink">
               {topic}
             </li>
           ))}

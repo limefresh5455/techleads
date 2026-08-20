@@ -14,7 +14,7 @@ import CreditsPanel from '../components/CreditsPanel'
 function TechBadge({ tech }) {
   return (
     <span
-      className="grid h-7 w-7 place-items-center rounded-full border border-border bg-white text-[10px] font-bold text-white"
+      className="grid h-7 w-7 place-items-center rounded-full border border-border bg-card text-[10px] font-bold text-white"
       style={{ backgroundColor: tech.icon_color }}
       title={tech.name}
     >
@@ -336,7 +336,7 @@ export default function DashboardPage() {
     <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-6">
       <form onSubmit={onAnalyzeUrl} className="mb-6 flex max-w-2xl gap-2">
         <input
-          className="w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand"
+          className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-brand"
           placeholder="Analyze any website URL…"
           value={analyzeUrl}
           onChange={(e) => setAnalyzeUrl(e.target.value)}
@@ -344,7 +344,7 @@ export default function DashboardPage() {
         <button
           type="submit"
           disabled={analyzing}
-          className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
+          className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark disabled:opacity-60"
         >
           {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {analyzing ? 'Analyzing…' : 'Detect'}
@@ -353,7 +353,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_260px]">
         {/* Filters */}
-        <aside className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+        <aside className="rounded-2xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-center gap-2 text-sm font-semibold text-ink">
             <Filter className="h-4 w-4" />
             Filters
@@ -368,7 +368,7 @@ export default function DashboardPage() {
             />
             <button
               type="submit"
-              className="rounded-lg bg-brand px-3 py-2 text-ink hover:bg-brand-dark"
+              className="rounded-lg bg-brand px-3 py-2 text-on-brand hover:bg-brand-dark"
               aria-label="Search domains"
             >
               <Search className="h-4 w-4" />
@@ -391,7 +391,7 @@ export default function DashboardPage() {
                   }}
                   className={`rounded-lg border px-3 py-2 text-sm font-medium ${
                     matchMode === mode.id
-                      ? 'border-brand bg-brand text-ink'
+                      ? 'border-brand bg-brand text-on-brand'
                       : 'border-border text-ink hover:bg-surface'
                   }`}
                 >
@@ -422,7 +422,7 @@ export default function DashboardPage() {
                   onClick={() => setSelectedCategory(cat.slug)}
                   className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
                     selectedCategory === cat.slug
-                      ? 'border-brand bg-brand text-ink'
+                      ? 'border-brand bg-brand text-on-brand'
                       : 'border-border text-ink hover:bg-surface'
                   }`}
                 >
@@ -462,7 +462,7 @@ export default function DashboardPage() {
 
         {/* Results */}
         <section className="min-w-0">
-          <div className="rounded-2xl border border-border bg-white shadow-sm">
+          <div className="rounded-2xl border border-border bg-card shadow-sm">
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 text-sm text-muted">
               <span>
                 {results
@@ -571,7 +571,7 @@ export default function DashboardPage() {
                 >
                   Previous
                 </button>
-                <span className="grid h-8 min-w-8 place-items-center rounded-lg bg-brand px-2 text-sm font-semibold text-ink">
+                <span className="grid h-8 min-w-8 place-items-center rounded-lg bg-brand px-2 text-sm font-semibold text-on-brand">
                   {page}
                 </span>
                 <button
@@ -609,7 +609,7 @@ export default function DashboardPage() {
               activeTechNames={activeTechNames}
             />
           ) : (
-            <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+            <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">
               <h3 className="text-sm font-semibold text-ink">Summary</h3>
               <dl className="mt-4 space-y-4 text-sm">
                 <div>

@@ -22,13 +22,13 @@ export default function Enrichment({ content }) {
           <p className="mt-3 text-muted">{content.enrich_subtitle}</p>
         </div>
 
-        <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-2xl border border-border bg-white shadow-lg">
+        <div className="mx-auto mt-10 max-w-4xl overflow-hidden rounded-2xl border border-border bg-card shadow-lg">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-ink">prospects.csv</p>
               <p className="text-xs text-muted">5 rows · Column: domain</p>
             </div>
-            <button type="button" className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-ink">
+            <button type="button" className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-on-brand">
               Enrich 5 rows
             </button>
           </div>
@@ -58,7 +58,7 @@ export default function Enrichment({ content }) {
         <div className="mt-8 text-center">
           <Link
             to="/signup"
-            className="inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-ink hover:bg-brand-dark"
+            className="inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark"
           >
             {content.enrich_cta}
           </Link>

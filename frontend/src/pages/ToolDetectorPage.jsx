@@ -84,7 +84,7 @@ export default function ToolDetectorPage() {
 
   return (
     <>
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#fffbeb] via-white to-white">
+      <section className="relative overflow-hidden bg-gradient-to-b from-hero via-white to-page">
         <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_at_top,_rgba(255,210,63,0.18),_transparent_55%)]" />
         <div className="relative mx-auto max-w-3xl px-4 py-16 text-center lg:px-6 lg:py-20">
           <h1 className="text-4xl font-extrabold tracking-tight text-ink md:text-5xl">{tool.name}</h1>
@@ -94,7 +94,7 @@ export default function ToolDetectorPage() {
             onSubmit={onAnalyze}
           >
             <input
-              className="w-full flex-1 rounded-xl border border-border bg-white px-4 py-3.5 text-sm outline-none focus:border-brand"
+              className="w-full flex-1 rounded-xl border border-border bg-card px-4 py-3.5 text-sm outline-none focus:border-brand"
               placeholder="Enter website URL…"
               value={url}
               onChange={(e) => setUrl(e.target.value)}
@@ -102,7 +102,7 @@ export default function ToolDetectorPage() {
             <button
               type="submit"
               disabled={analyzing}
-              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-brand px-6 py-3.5 text-sm font-semibold text-on-brand hover:bg-brand-dark disabled:opacity-60"
             >
               {analyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
               {analyzing ? 'Analyzing…' : tool.cta_label || 'Analyze'}
@@ -119,7 +119,7 @@ export default function ToolDetectorPage() {
         </div>
         <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {(tool.popular_items || []).map((item) => (
-            <article key={item.id} className="rounded-2xl border border-border bg-white p-6">
+            <article key={item.id} className="rounded-2xl border border-border bg-card p-6">
               <h3 className="text-lg font-bold text-ink">{item.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{item.description}</p>
             </article>
@@ -137,7 +137,7 @@ export default function ToolDetectorPage() {
             {(tool.features || []).map((item, idx) => {
               const Icon = featureIcons[idx % featureIcons.length]
               return (
-                <article key={item.id} className="rounded-2xl border border-border bg-white p-6">
+                <article key={item.id} className="rounded-2xl border border-border bg-card p-6">
                   <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand/10 text-brand">
                     <Icon className="h-5 w-5" />
                   </span>
@@ -159,7 +159,7 @@ export default function ToolDetectorPage() {
           {(tool.faqs || []).map((faq, idx) => {
             const open = openFaq === idx
             return (
-              <div key={faq.id} className="rounded-xl border border-border bg-white">
+              <div key={faq.id} className="rounded-xl border border-border bg-card">
                 <button
                   type="button"
                   className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left"
@@ -187,7 +187,7 @@ export default function ToolDetectorPage() {
           <p className="mx-auto mt-4 max-w-xl text-ink/75">{tool.final_cta_subtitle}</p>
           <Link
             to="/"
-            className="mt-8 inline-flex rounded-xl bg-ink px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-ink/90"
+            className="mt-8 inline-flex rounded-xl bg-inverse px-6 py-3.5 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-inverse/90"
           >
             {tool.final_cta_label || 'Scan Your Website Now'}
           </Link>

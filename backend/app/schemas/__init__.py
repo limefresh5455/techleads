@@ -330,6 +330,7 @@ class AuthResponse(BaseModel):
 
 class CheckoutRequest(BaseModel):
     plan_slug: str = Field(min_length=2, max_length=100)
+    quantity: int = Field(default=1, ge=1, le=100)
 
 
 class CheckoutSessionOut(BaseModel):

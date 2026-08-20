@@ -2,6 +2,7 @@ import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useEffect, useRef, useState } from 'react'
 import { ChevronDown, Menu, X } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
+import ThemeToggle from './ThemeToggle'
 
 function BrandMark({ content, to = '/' }) {
   return (
@@ -63,7 +64,7 @@ export default function Navbar() {
   return (
     <header
       className={`sticky top-0 z-50 border-b border-border/60 transition-all ${
-        scrolled ? 'bg-white/95 shadow-sm backdrop-blur' : 'bg-white'
+        scrolled ? 'bg-card/95 shadow-sm backdrop-blur' : 'bg-card'
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3 lg:px-6">
@@ -82,7 +83,7 @@ export default function Navbar() {
                   <ChevronDown className="h-4 w-4" />
                 </button>
                 {toolsOpen && (
-                  <div className="absolute left-0 top-full z-50 mt-2 min-w-64 rounded-xl border border-border bg-white p-2 shadow-lg">
+                  <div className="absolute left-0 top-full z-50 mt-2 min-w-64 rounded-xl border border-border bg-card p-2 shadow-lg">
                     <Link to={item.href} className="block rounded-lg px-3 py-2 text-sm font-semibold text-ink hover:bg-surface">
                       All Free Tools
                     </Link>
@@ -107,6 +108,7 @@ export default function Navbar() {
         </nav>
 
         <div className="hidden items-center gap-3 lg:flex">
+          <ThemeToggle />
           {user ? (
             <>
               <span className="text-sm text-muted">Hi, {user.name.split(' ')[0]}</span>
@@ -125,24 +127,27 @@ export default function Navbar() {
           )}
           <Link
             to={user ? '/dashboard' : '/signup'}
-            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-ink shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
+            className="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-on-brand shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
           >
             {user ? 'Dashboard' : content.nav_cta_label}
           </Link>
         </div>
 
-        <button
-          type="button"
-          className="lg:hidden rounded-lg border border-border p-2"
-          onClick={() => setOpen((v) => !v)}
-          aria-label="Toggle menu"
-        >
-          {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-        </button>
+        <div className="flex items-center gap-2 lg:hidden">
+          <ThemeToggle />
+          <button
+            type="button"
+            className="rounded-lg border border-border p-2 text-ink"
+            onClick={() => setOpen((v) => !v)}
+            aria-label="Toggle menu"
+          >
+            {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
+        </div>
       </div>
 
       {open && (
-        <div className="border-t border-border bg-white px-4 py-4 lg:hidden">
+        <div className="border-t border-border bg-card px-4 py-4 lg:hidden">
           <div className="flex flex-col gap-1">
             {items.map((item) => (
               <div key={item.id}>
@@ -167,7 +172,7 @@ export default function Navbar() {
             )}
             <Link
               to={user ? '/dashboard' : '/signup'}
-              className="mt-2 rounded-lg bg-brand px-4 py-2.5 text-center text-sm font-semibold text-ink"
+              className="mt-2 rounded-lg bg-brand px-4 py-2.5 text-center text-sm font-semibold text-on-brand"
             >
               {user ? 'Dashboard' : content.nav_cta_label}
             </Link>

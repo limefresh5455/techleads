@@ -9,7 +9,7 @@ function TechPill({ name, color, active, onClick }) {
       className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm ${
         active
           ? 'border-brand bg-brand/15 text-ink'
-          : 'border-border bg-white text-ink'
+          : 'border-border bg-card text-ink'
       }`}
     >
       <span
@@ -36,7 +36,7 @@ function ChipList({ items, variant = 'default', activeNames = [], onItemClick })
         const cls =
           variant === 'brand'
             ? active
-              ? `${base} border-brand bg-brand text-ink`
+              ? `${base} border-brand bg-brand text-on-brand`
               : `${base} border-brand/20 bg-brand/5 text-ink hover:border-brand hover:bg-brand/15`
             : active
               ? `${base} border-brand bg-brand/15 text-ink`
@@ -78,7 +78,7 @@ export default function SiteDetailsPanel({
 }) {
   if (loading || enriching) {
     return (
-      <aside className="rounded-2xl border border-border bg-white p-4 shadow-sm">
+      <aside className="rounded-2xl border border-border bg-card p-4 shadow-sm">
         <div className="flex items-center gap-2 text-sm text-muted">
           <Sparkles className="h-4 w-4 animate-pulse text-brand" />
           {enriching ? 'Enriching with AI…' : 'Loading site details…'}
@@ -98,7 +98,7 @@ export default function SiteDetailsPanel({
   ].filter((s) => s.url)
 
   return (
-    <aside className="rounded-2xl border border-border bg-white shadow-sm">
+    <aside className="rounded-2xl border border-border bg-card shadow-sm">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <div className="flex items-center gap-2">
           <h3 className="text-sm font-semibold text-ink">Site Details</h3>

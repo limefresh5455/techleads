@@ -33,10 +33,10 @@ export default function Contact({ content, trustLogos = [], showHeader = true })
   }
 
   const fieldClass =
-    'w-full rounded-xl border border-border bg-white px-4 py-3 text-sm outline-none focus:border-brand'
+    'w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-brand'
 
   return (
-    <section id="contact" className="bg-white py-16 md:py-20">
+    <section id="contact" className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         <div className="mb-10 flex flex-wrap items-center justify-center gap-8 opacity-70 grayscale">
           {trustLogos.map((logo) => (
@@ -88,7 +88,7 @@ export default function Contact({ content, trustLogos = [], showHeader = true })
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-60"
+              className="w-full rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark disabled:opacity-60"
             >
               {loading ? 'Sending…' : content.contact_button_label}
             </button>

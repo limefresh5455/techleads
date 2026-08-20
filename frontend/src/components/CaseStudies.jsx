@@ -2,7 +2,7 @@ export default function CaseStudies({ content, caseStudies = [] }) {
   if (!content) return null
 
   return (
-    <section id="case-studies" className="bg-white py-16 md:py-20">
+    <section id="case-studies" className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 text-center lg:px-6">
         <p className="text-sm font-semibold uppercase tracking-wider text-brand">
           {content.case_studies_eyebrow}

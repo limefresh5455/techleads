@@ -8,22 +8,22 @@ export default function DashboardLayout() {
 
   if (loading) {
     return (
-      <div className="grid min-h-screen place-items-center bg-surface/40">
-        <p className="text-muted">Loading dashboard…</p>
+      <div className="grid min-h-screen place-items-center bg-canvas text-muted">
+        <p>Loading dashboard…</p>
       </div>
     )
   }
 
   if (error || !data.content) {
     return (
-      <div className="grid min-h-screen place-items-center bg-surface/40 px-4 text-center">
+      <div className="grid min-h-screen place-items-center bg-canvas px-4 text-center">
         <p className="text-red-600">{error || 'Failed to load dashboard data.'}</p>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fb]">
+    <div className="min-h-screen bg-canvas">
       <DashboardNavbar />
       <main>
         <Outlet />
