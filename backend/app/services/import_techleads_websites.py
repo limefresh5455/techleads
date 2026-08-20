@@ -37,7 +37,7 @@ WEBSITE_COUNT_RE = re.compile(
 COUNT_FALLBACK_RE = re.compile(r"([\d,]{3,})\s*websites", re.IGNORECASE)
 
 
-def _http_get(url: str, *, timeout: float = 60.0) -> str:
+def _http_get(url: str, *, timeout: float = 30.0) -> str:
     headers = {
         "User-Agent": "TechLeads.AiCatalogImporter/1.0 (+https://localhost)",
         "Accept": "text/html,application/xhtml+xml",

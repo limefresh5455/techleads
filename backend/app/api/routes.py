@@ -1,3 +1,7 @@
+from concurrent.futures import ThreadPoolExecutor
+from threading import Lock
+from uuid import uuid4
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import func, or_
@@ -11,7 +15,7 @@ from app.core.auth import (
     get_current_user,
     store_user_token,
 )
-from app.core.database import get_db
+from app.core.database import SessionLocal, get_db
 from app.core.security import hash_password, make_token, verify_password
 from app.models import (
     BlogPost,
@@ -112,6 +116,108 @@ def _get_or_create_content(db: Session) -> SiteContent:
 @router.get("/health")
 def health():
     return {"status": "ok"}
+
+
+_IMPORT_JOBS: dict[str, dict] = {}
+_IMPORT_JOBS_LOCK = Lock()
+_IMPORT_EXECUTOR = ThreadPoolExecutor(max_workers=1, thread_name_prefix="techleads-import")
+
+
+def _set_import_job(job_id: str, **fields) -> None:
+    with _IMPORT_JOBS_LOCK:
+        row = _IMPORT_JOBS.setdefault(job_id, {"id": job_id})
+        row.update(fields)
+
+
+def _get_import_job(job_id: str) -> dict | None:
+    with _IMPORT_JOBS_LOCK:
+        row = _IMPORT_JOBS.get(job_id)
+        return dict(row) if row else None
+
+
+def _run_website_import_job(job_id: str, *, limit_techs: int, popular_only: bool, email: str) -> None:
+    from app.services.import_techleads_websites import sync_websites_from_techleads
+
+    _set_import_job(job_id, status="running", started_by=email)
+    db = SessionLocal()
+    try:
+        stats = sync_websites_from_techleads(
+            db,
+            limit_techs=limit_techs,
+            popular_only=popular_only,
+            max_workers=4,
+        )
+        _set_import_job(job_id, status="done", result=stats)
+    except Exception as exc:  # noqa: BLE001
+        _set_import_job(job_id, status="failed", error=str(exc))
+    finally:
+        db.close()
+
+
+@router.post("/technologies/import-techleads")
+def import_techleads_technologies(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    """Fetch the public techleads.fyi catalog and upsert into the local DB."""
+    from app.services.import_techleads_catalog import sync_technologies_from_techleads
+
+    try:
+        stats = sync_technologies_from_techleads(db)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Import failed: {exc}") from exc
+    return {"ok": True, "imported_by": user.email, **stats}
+
+
+@router.post("/websites/import-techleads")
+def import_techleads_websites(
+    limit_techs: int = Query(default=50, ge=1, le=5000),
+    popular_only: bool = Query(default=False),
+    user: User = Depends(get_current_user),
+):
+    """Start a background import of public sample websites from techleads.fyi.
+
+    Scraping many technology pages exceeds Render's HTTP timeout, so this returns
+    a job id immediately. Poll GET /api/websites/import-techleads/{job_id}.
+    """
+    job_id = uuid4().hex[:12]
+    _set_import_job(
+        job_id,
+        status="queued",
+        limit_techs=limit_techs,
+        popular_only=popular_only,
+        started_by=user.email,
+    )
+    _IMPORT_EXECUTOR.submit(
+        _run_website_import_job,
+        job_id,
+        limit_techs=limit_techs,
+        popular_only=popular_only,
+        email=user.email,
+    )
+    return {
+        "ok": True,
+        "queued": True,
+        "job_id": job_id,
+        "status_url": f"/api/websites/import-techleads/{job_id}",
+        "message": (
+            "Import started in the background. Poll status_url until status is "
+            "'done' or 'failed'. Large limit_techs can take many minutes."
+        ),
+        "limit_techs": limit_techs,
+        "popular_only": popular_only,
+    }
+
+
+@router.get("/websites/import-techleads/{job_id}")
+def import_techleads_websites_status(
+    job_id: str,
+    user: User = Depends(get_current_user),
+):
+    job = _get_import_job(job_id)
+    if not job:
+        raise HTTPException(status_code=404, detail="Import job not found")
+    return {"ok": True, **job}
 
 
 @router.get("/landing", response_model=LandingPayload)
@@ -440,45 +546,6 @@ def list_technologies(
         .limit(limit)
         .all()
     )
-
-
-@router.post("/technologies/import-techleads")
-def import_techleads_technologies(
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    """Fetch the public techleads.fyi catalog and upsert into the local DB."""
-    from app.services.import_techleads_catalog import sync_technologies_from_techleads
-
-    try:
-        stats = sync_technologies_from_techleads(db)
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Import failed: {exc}") from exc
-    return {"ok": True, "imported_by": user.email, **stats}
-
-
-@router.post("/websites/import-techleads")
-def import_techleads_websites(
-    limit_techs: int = Query(default=100, ge=1, le=5000),
-    popular_only: bool = Query(default=False),
-    db: Session = Depends(get_db),
-    user: User = Depends(get_current_user),
-):
-    """Import public sample websites from techleads.fyi technology pages.
-
-    Full lead lists are not publicly available; this stores page samples + counts.
-    """
-    from app.services.import_techleads_websites import sync_websites_from_techleads
-
-    try:
-        stats = sync_websites_from_techleads(
-            db,
-            limit_techs=limit_techs,
-            popular_only=popular_only,
-        )
-    except Exception as exc:
-        raise HTTPException(status_code=502, detail=f"Website import failed: {exc}") from exc
-    return {"ok": True, "imported_by": user.email, **stats}
 
 
 @router.get("/integrations/techleads/account")
