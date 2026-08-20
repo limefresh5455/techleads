@@ -97,13 +97,29 @@ export default function DashboardPage() {
     loadResults()
   }, [loadResults])
 
-  const loadSiteDetail = useCallback(async (id, { refresh = true } = {}) => {
+  const loadSiteDetail = useCallback(async (id, { refresh = false } = {}) => {
     setDetailLoading(true)
     if (refresh) setEnriching(true)
     setError('')
     try {
       const data = await fetchWebsiteDetail(id, { refresh })
       setSiteDetail(data)
+      // Keep table rank + tech stack in sync with LLM detail
+      if (data?.id != null) {
+        setResults((prev) => {
+          if (!prev?.items?.length) return prev
+          let changed = false
+          const items = prev.items.map((item) => {
+            if (item.id !== data.id) return item
+            const nextRank = typeof data.rank === 'number' ? data.rank : item.rank
+            const nextTechs = Array.isArray(data.technologies) ? data.technologies : item.technologies
+            if (item.rank === nextRank && item.technologies === nextTechs) return item
+            changed = true
+            return { ...item, rank: nextRank, technologies: nextTechs }
+          })
+          return changed ? { ...prev, items } : prev
+        })
+      }
     } catch (err) {
       setSiteDetail(null)
       setError(err.message || 'Failed to load site details')
@@ -118,7 +134,8 @@ export default function DashboardPage() {
       setSiteDetail(null)
       return
     }
-    loadSiteDetail(selectedId, { refresh: true })
+    // List already LLM-enriches on load; View uses stored AI data unless Re-enrich.
+    loadSiteDetail(selectedId, { refresh: false })
   }, [selectedId, loadSiteDetail])
 
   useEffect(() => {
@@ -469,7 +486,7 @@ export default function DashboardPage() {
                   ? previewOnly
                     ? `${start.toLocaleString()} - ${end.toLocaleString()} of first ${(results.free_limit ?? 10).toLocaleString()} free · ${results.total_filtered.toLocaleString()} total`
                     : `${start.toLocaleString()} - ${end.toLocaleString()} of ${results.total_filtered.toLocaleString()} results`
-                  : 'Loading results…'}
+                  : 'Loading AI-enriched results…'}
               </span>
               <span>sorted by Rank</span>
             </div>
@@ -532,7 +549,7 @@ export default function DashboardPage() {
                           <td className="px-4 py-3">
                             <div className="flex flex-wrap gap-1.5">
                               {row.technologies.map((tech) => (
-                                <TechBadge key={tech.id} tech={tech} />
+                                <TechBadge key={tech.slug || tech.id || tech.name} tech={tech} />
                               ))}
                             </div>
                           </td>

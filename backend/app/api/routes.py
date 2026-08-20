@@ -1,3 +1,5 @@
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from fastapi.responses import RedirectResponse
 from sqlalchemy import func, or_
@@ -11,7 +13,7 @@ from app.core.auth import (
     get_current_user,
     store_user_token,
 )
-from app.core.database import get_db
+from app.core.database import SessionLocal, get_db
 from app.core.security import hash_password, make_token, verify_password
 from app.models import (
     BlogPost,
@@ -551,6 +553,10 @@ def dashboard_search(
         .all()
     )
 
+    # Enrich missing rows once (LLM → DB). Cached rows are served from DB only.
+    rows = _ensure_page_llm_enriched(db, rows)
+    rows.sort(key=lambda r: (_detail_rank(r, _parse_enriched(r)), r.sort_order or 0))
+
     items = _website_rows_to_out(rows)
 
     return DashboardSearchOut(
@@ -644,28 +650,131 @@ def _filter_websites_by_technologies(db: Session, query, tech_tokens: list[str],
     return query.filter(Website.id.in_(final_ids))
 
 
+def _parse_enriched(row: Website) -> dict:
+    import json
+
+    if not row.enriched_json:
+        return {}
+    try:
+        data = json.loads(row.enriched_json)
+    except (TypeError, ValueError, json.JSONDecodeError):
+        return {}
+    return data if isinstance(data, dict) else {}
+
+
+def _has_stored_enrichment(row: Website) -> bool:
+    """True when LLM/fallback payload was already saved — serve from DB next time."""
+    if row.last_crawled_at and (row.enriched_json or "").strip():
+        return True
+    enriched = _parse_enriched(row)
+    if not enriched:
+        return False
+    return bool(
+        enriched.get("technologies")
+        or enriched.get("business_summary")
+        or enriched.get("rank")
+        or enriched.get("description")
+    )
+
+
+def _reload_website(db: Session, website_id: int) -> Website | None:
+    return (
+        db.query(Website)
+        .options(
+            joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+        )
+        .filter(Website.id == website_id)
+        .first()
+    )
+
+
+def _enrich_website_by_id(website_id: int) -> int:
+    """Worker: crawl + LLM once, persist to DB. Skips if already stored."""
+    worker = SessionLocal()
+    try:
+        row = _reload_website(worker, website_id)
+        if not row:
+            return website_id
+        if _has_stored_enrichment(row):
+            return website_id
+        refresh_website(worker, row)
+        return website_id
+    except Exception:
+        return website_id
+    finally:
+        worker.close()
+
+
+def _ensure_page_llm_enriched(db: Session, rows: list[Website]) -> list[Website]:
+    """Enrich missing rows once; already-stored rows are loaded from DB only."""
+    if not rows:
+        return rows
+
+    pending_ids = [row.id for row in rows if not _has_stored_enrichment(row)]
+    if pending_ids:
+        workers = min(3, len(pending_ids))
+        with ThreadPoolExecutor(max_workers=workers) as pool:
+            futures = [pool.submit(_enrich_website_by_id, wid) for wid in pending_ids]
+            for future in as_completed(futures):
+                future.result()
+        # Workers commit in other sessions — drop identity map before reload
+        db.expire_all()
+
+    reloaded = []
+    for row in rows:
+        fresh = _reload_website(db, row.id)
+        reloaded.append(fresh or row)
+    return reloaded
+
+
+def _ordered_techs_for_row(row: Website, enriched: dict) -> list:
+    linked = [link.technology for link in row.technologies if link.technology]
+    by_name = {tech.name.lower(): tech for tech in linked}
+    names = [
+        str(name).strip()
+        for name in (enriched.get("technologies") or [])
+        if str(name).strip()
+    ]
+    if not names:
+        return sorted(linked, key=lambda tech: tech.sort_order)
+
+    ordered = []
+    seen: set[int] = set()
+    for name in names:
+        tech = by_name.get(name.lower())
+        if tech and tech.id not in seen:
+            ordered.append(tech)
+            seen.add(tech.id)
+    for tech in linked:
+        if tech.id not in seen:
+            ordered.append(tech)
+            seen.add(tech.id)
+    return ordered
+
+
+def _tech_outs(row: Website, enriched: dict) -> list[DashboardTechOut]:
+    return [
+        DashboardTechOut(
+            id=tech.id,
+            name=tech.name,
+            slug=tech.slug,
+            icon=tech.icon,
+            icon_color=tech.icon_color,
+        )
+        for tech in _ordered_techs_for_row(row, enriched)
+    ]
+
+
 def _website_rows_to_out(rows: list[Website]) -> list[DashboardWebsiteOut]:
     items = []
     for row in rows:
-        techs = sorted(
-            [link.technology for link in row.technologies],
-            key=lambda tech: tech.sort_order,
-        )
+        enriched = _parse_enriched(row)
         items.append(
             DashboardWebsiteOut(
                 id=row.id,
                 domain=row.domain,
-                rank=row.rank,
-                technologies=[
-                    DashboardTechOut(
-                        id=tech.id,
-                        name=tech.name,
-                        slug=tech.slug,
-                        icon=tech.icon,
-                        icon_color=tech.icon_color,
-                    )
-                    for tech in techs
-                ],
+                rank=_detail_rank(row, enriched),
+                technologies=_tech_outs(row, enriched),
             )
         )
     return items
@@ -742,17 +851,25 @@ def _split_stored_list(value: str | None, *, sep: str | None = None) -> list[str
     return [part.strip() for part in raw.split(",") if part.strip()]
 
 
-def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
-    import json
+def _detail_rank(row: Website, enriched: dict) -> int:
+    """Prefer LLM enrichment rank so detail matches AI output."""
+    candidates = [enriched.get("rank"), getattr(row, "rank", None)]
+    for value in candidates:
+        try:
+            rank = int(value)
+        except (TypeError, ValueError):
+            continue
+        if rank > 0:
+            return max(1, min(100, rank))
+    return 75
 
-    techs = sorted(
-        [link.technology for link in row.technologies],
-        key=lambda tech: tech.sort_order,
-    )
+
+def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
+    enriched = _parse_enriched(row)
+    techs = _ordered_techs_for_row(row, enriched)
     primary = [t.name for t in techs]
     extra = [t.strip() for t in (row.extra_technologies or "").split(",") if t.strip()]
     all_detected = primary + [t for t in extra if t not in primary]
-    enriched = json.loads(row.enriched_json or "{}") if row.enriched_json else {}
 
     marketing = _split_stored_list(row.marketing_stack) or enriched.get("marketing_stack") or []
     analytics = _split_stored_list(row.analytics_tools) or enriched.get("analytics_tools") or []
@@ -768,17 +885,8 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
         category_label=row.category_label or enriched.get("category_label", "Uncategorized"),
         subcategory=str(getattr(row, "subcategory", None) or enriched.get("subcategory") or ""),
         contact_info=row.contact_info or enriched.get("contact_info", "No contact information available"),
-        rank=row.rank,
-        technologies=[
-            DashboardTechOut(
-                id=tech.id,
-                name=tech.name,
-                slug=tech.slug,
-                icon=tech.icon,
-                icon_color=tech.icon_color,
-            )
-            for tech in techs
-        ],
+        rank=_detail_rank(row, enriched),
+        technologies=_tech_outs(row, enriched),
         all_detected_technologies=all_detected,
         facebook_url=row.facebook_url or enriched.get("facebook_url", ""),
         twitter_url=row.twitter_url or enriched.get("twitter_url", ""),
@@ -884,7 +992,10 @@ def get_dashboard_website(
     if not row:
         raise HTTPException(status_code=404, detail="Website not found")
 
-    if refresh:
+    # refresh=true → force new LLM run and overwrite DB.
+    # Otherwise enrich once if missing, then always serve from DB.
+    needs_enrich = refresh or not _has_stored_enrichment(row)
+    if needs_enrich:
         try:
             row = refresh_website(db, row)
             row = (
@@ -896,6 +1007,7 @@ def get_dashboard_website(
                 .first()
             )
         except Exception as exc:
-            raise HTTPException(status_code=502, detail=f"AI enrichment failed: {exc}") from exc
+            if refresh or not row:
+                raise HTTPException(status_code=502, detail=f"AI enrichment failed: {exc}") from exc
 
     return _website_detail_out(row)
