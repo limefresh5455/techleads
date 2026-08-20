@@ -1,10 +1,20 @@
-const API_BASE = import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000'
+function resolveApiBase() {
+  const fromEnv = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+  if (fromEnv) return fromEnv
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    if (host === 'techleads-1.onrender.com' || host.endsWith('.onrender.com')) {
+      return 'https://techleads.onrender.com'
+    }
+  }
+  return 'http://127.0.0.1:8000'
+}
 
 export function getGoogleAuthUrl(redirectPath = '/dashboard') {
   const params = new URLSearchParams({
     redirect: redirectPath.startsWith('/') ? redirectPath : '/dashboard',
   })
-  return `${API_BASE}/api/auth/google?${params.toString()}`
+  return `${resolveApiBase()}/api/auth/google?${params.toString()}`
 }
 
 export default function GoogleAuthButton({ label = 'Continue with Google', redirect = '/dashboard' }) {

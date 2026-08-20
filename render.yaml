@@ -14,7 +14,7 @@ services:
           name: techleads-db
           property: connectionString
       - key: CORS_ORIGINS
-        value: https://techleads-1.onrender.com,https://polite-tapioca-20439a.netlify.app,http://localhost:5173,http://127.0.0.1:5173
+        value: https://techleads-1.onrender.com,https://techleads.onrender.com,https://polite-tapioca-20439a.netlify.app,http://localhost:5173,http://127.0.0.1:5173
       - key: OPENROUTER_API_KEY
         sync: false
       - key: OPENROUTER_MODEL
@@ -33,6 +33,8 @@ services:
         sync: false
       - key: GOOGLE_REDIRECT_URI
         sync: false
+      - key: TECHLEADS_API_KEY
+        sync: false
 
   - type: web
     name: techleads-web
@@ -45,7 +47,7 @@ services:
       - key: NODE_VERSION
         value: "20.18.0"
       - key: VITE_API_URL
-        sync: false
+        value: https://techleads.onrender.com
 
 databases:
   - name: techleads-db

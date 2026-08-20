@@ -1,14 +1,14 @@
 services:
-  # Use a Node Web Service (not Static Site) so /dashboard refresh works.
-  # serve -s falls back to index.html for all client routes.
+  # Node Web Service (NOT Static Site) so /dashboard returns 200 via `serve -s`.
   - type: web
     name: techleads-1
     runtime: node
     plan: free
+    rootDir: frontend
     buildCommand: npm install && npm run build
     startCommand: npm start
     envVars:
       - key: NODE_VERSION
         value: "20.18.0"
       - key: VITE_API_URL
-        sync: false
+        value: https://techleads.onrender.com

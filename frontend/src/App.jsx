@@ -11,6 +11,8 @@ import PricingPage from './pages/PricingPage'
 import CustomDataPage from './pages/CustomDataPage'
 import ToolsPage from './pages/ToolsPage'
 import ToolDetectorPage from './pages/ToolDetectorPage'
+import TechnologiesPage from './pages/TechnologiesPage'
+import CategoriesPage from './pages/CategoriesPage'
 import ApiDocsPage from './pages/ApiDocsPage'
 import ContactPage from './pages/ContactPage'
 import LoginPage from './pages/LoginPage'
@@ -55,6 +57,8 @@ export default function App() {
           <Route element={<MainLayout />}>
             <Route index element={<HomePage />} />
             <Route path="directory" element={<DirectoryPage />} />
+            <Route path="technologies" element={<TechnologiesPage />} />
+            <Route path="categories" element={<CategoriesPage />} />
             <Route path="blog" element={<BlogPage />} />
             <Route path="pricing" element={<PricingPage />} />
             <Route path="custom-data" element={<CustomDataPage />} />

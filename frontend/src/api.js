@@ -1,4 +1,15 @@
-const API_BASE = import.meta.env.VITE_API_URL || ''
+function resolveApiBase() {
+  const fromEnv = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '')
+  if (fromEnv) return fromEnv
+  // Production frontend on Render → backend API service
+  if (typeof window !== 'undefined') {
+    const host = window.location.hostname
+    if (host === 'techleads-1.onrender.com' || host.endsWith('.onrender.com')) {
+      return 'https://techleads.onrender.com'
+    }
+  }
+  return ''
+}
 
 function authHeaders() {
   const token = localStorage.getItem('tl_token')
@@ -6,7 +17,7 @@ function authHeaders() {
 }
 
 async function request(path, options = {}) {
-  const res = await fetch(`${API_BASE}${path}`, {
+  const res = await fetch(`${resolveApiBase()}${path}`, {
     headers: {
       'Content-Type': 'application/json',
       ...authHeaders(),

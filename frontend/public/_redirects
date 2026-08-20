@@ -1,1 +1,8 @@
-/*  /index.html  200
+# Render Static Site SPA fallback (only used if this service stays "Static").
+# Prefer converting techleads-1 to a Node Web Service with `npm start` (serve -s),
+# which returns HTTP 200 for /dashboard instead of 404 + 404.html.
+
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
