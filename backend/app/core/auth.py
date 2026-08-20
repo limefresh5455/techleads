@@ -7,8 +7,10 @@ from app.models import User, UserToken
 
 bearer_scheme = HTTPBearer(auto_error=False)
 
-FREE_RECORD_LIMIT = 10
-CREDITS_PER_PAGE = 10
+FREE_RECORD_LIMIT = 10  # legacy display helper; browsing is no longer credit-gated
+CREDITS_PER_PAGE = 0  # pagination is free
+CREDITS_PER_TECHNOLOGY_EXPORT = 1
+MAX_EXPORT_ROWS = 5000
 
 
 def store_user_token(db: Session, user_id: int, token: str) -> None:

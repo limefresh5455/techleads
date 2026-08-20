@@ -200,11 +200,20 @@ export default function DashboardPage() {
 
   async function exportCsv() {
     if (!results?.items?.length) return
+    const freeLimit = results.free_limit ?? 10
+    if (selectedTechs.length > 0) {
+      const cost = selectedTechs.length
+      if ((results.user_credits ?? 0) < cost) {
+        setError(`Need ${cost} credit${cost === 1 ? '' : 's'} to export ${cost} technolog${cost === 1 ? 'y' : 'ies'}.`)
+        return
+      }
+    }
     setExporting(true)
     setError('')
     try {
-      const freeLimit = results.free_limit ?? 10
-      const limit = Math.min(results.items.length, freeLimit)
+      const limit = selectedTechs.length
+        ? Math.min(results.total_filtered || results.items.length, results.export_limit || 5000)
+        : Math.min(results.items.length, freeLimit)
       const payload = await exportDashboard({
         q: domainQuery,
         technologies: selectedTechs,
@@ -309,8 +318,10 @@ export default function DashboardPage() {
 
   const maxPage = results?.max_page ?? 1
   const totalPages = maxPage
-  const start = results ? (results.page - 1) * results.page_size + 1 : 0
-  const end = results ? Math.min(results.page * results.page_size, results.total_filtered) : 0
+  const accessible = results?.accessible_records ?? results?.total_filtered ?? 0
+  const start = results && accessible > 0 ? (results.page - 1) * results.page_size + 1 : 0
+  const end = results ? Math.min(results.page * results.page_size, accessible) : 0
+  const previewOnly = selectedTechs.length === 0
 
   const activeTechNames = useMemo(
     () =>
@@ -455,7 +466,9 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3 text-sm text-muted">
               <span>
                 {results
-                  ? `${start.toLocaleString()} - ${end.toLocaleString()} of ${results.total_filtered.toLocaleString()} results`
+                  ? previewOnly
+                    ? `${start.toLocaleString()} - ${end.toLocaleString()} of first ${(results.free_limit ?? 10).toLocaleString()} free · ${results.total_filtered.toLocaleString()} total`
+                    : `${start.toLocaleString()} - ${end.toLocaleString()} of ${results.total_filtered.toLocaleString()} results`
                   : 'Loading results…'}
               </span>
               <span>sorted by Rank</span>
@@ -543,9 +556,11 @@ export default function DashboardPage() {
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-3">
               <span className="text-sm text-muted">
                 Page {results?.page || 1} of {totalPages}
-                {results && results.total_filtered > (results.free_limit ?? 10) && (
-                  <span className="ml-1 text-xs">· {results.total_filtered.toLocaleString()} total</span>
-                )}
+                {previewOnly && results && results.total_filtered > (results.free_limit ?? 10) ? (
+                  <span className="ml-1 text-xs">
+                    · select a technology to view all {results.total_filtered.toLocaleString()}
+                  </span>
+                ) : null}
               </span>
               <div className="flex items-center gap-2">
                 <button
@@ -564,11 +579,7 @@ export default function DashboardPage() {
                   disabled={page >= totalPages || loading}
                   onClick={() => setPage((p) => p + 1)}
                   className="rounded-lg border border-border px-3 py-1.5 text-sm disabled:opacity-50"
-                  title={
-                    page >= totalPages && results?.user_credits === 0
-                      ? 'Add credits to view more results'
-                      : undefined
-                  }
+                  title={undefined}
                 >
                   Next
                 </button>
@@ -579,7 +590,12 @@ export default function DashboardPage() {
 
         {/* Right panel */}
         <aside className="space-y-4">
-          <CreditsPanel results={results} onExport={exportCsv} exporting={exporting} />
+          <CreditsPanel
+            results={results}
+            onExport={exportCsv}
+            exporting={exporting}
+            selectedTechCount={selectedTechs.length}
+          />
 
           {selectedId ? (
             <SiteDetailsPanel

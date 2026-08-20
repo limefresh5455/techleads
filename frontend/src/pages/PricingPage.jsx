@@ -182,8 +182,8 @@ export default function PricingPage() {
         <div className="mt-10 rounded-2xl border border-border bg-surface px-5 py-4 text-sm text-muted">
           <p className="font-semibold text-ink">Credit usage</p>
           <p className="mt-1">
-            Free: first 10 dashboard results. Then 10 credits / page. Export beyond 10 rows: 1 credit
-            per row. Payments are processed securely by Stripe.
+            Free browsing of all dashboard results. Export costs 1 credit per selected
+            technology. Payments are processed securely by Stripe.
           </p>
         </div>
       </section>

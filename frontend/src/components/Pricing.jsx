@@ -127,8 +127,8 @@ export default function Pricing({ plans = [], content, showHeader = true }) {
           <p className="mt-4 text-sm text-ink/80">
             Example: Growth pack gives{' '}
             <span className="font-semibold">{estimate.credits.toLocaleString()} credits</span> for $
-            {estimate.price} — enough for about {Math.floor(estimate.credits / 10)} extra dashboard
-            pages or {estimate.credits.toLocaleString()} extra export rows.
+            {estimate.price} — enough for about {estimate.credits.toLocaleString()} technology CSV
+            exports (1 credit per technology).
           </p>
           <Link to="/pricing" className="mt-4 inline-flex text-sm font-semibold text-brand hover:underline">
             Compare all credit packs →

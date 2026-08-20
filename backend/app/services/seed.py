@@ -152,7 +152,7 @@ def _sync_branding(db: Session) -> None:
     content.pricing_title = "Buy credits. Unlock more leads."
     content.pricing_subtitle = (
         "Purchase one-time credit packs with Stripe. "
-        "1 credit = 1 extra exported row; 10 credits unlock each dashboard page after page 1."
+        "1 credit = 1 technology CSV export. Dashboard browsing and pagination are free."
     )
     content.pricing_yearly_badge = "One-time"
     content.contact_title = "Contact sales"
@@ -619,7 +619,7 @@ def _sync_faqs(db: Session) -> None:
     faqs = [
         (
             "How do credits work?",
-            "Page 1 of dashboard results (10 rows) is free. Each extra page costs 10 credits. Exporting beyond 10 rows costs 1 credit per extra row. Credits never expire.",
+            "Browsing the dashboard is free. Exporting costs 1 credit per selected technology. Credits never expire.",
         ),
         (
             "How do I buy credits?",
@@ -689,8 +689,8 @@ def _sync_pricing(db: Session) -> None:
             "cta_label": "Buy 100 credits",
             "features": [
                 "100 credits added instantly",
-                "≈ 10 extra dashboard pages",
-                "≈ 100 extra CSV export rows",
+                "≈ 100 technology CSV exports",
+                "1 credit per technology export",
                 "Technology detection & AI enrichment",
                 "Secure Stripe checkout",
             ],
@@ -706,8 +706,8 @@ def _sync_pricing(db: Session) -> None:
             "cta_label": "Buy 500 credits",
             "features": [
                 "500 credits added instantly",
-                "≈ 50 extra dashboard pages",
-                "≈ 500 extra CSV export rows",
+                "≈ 500 technology CSV exports",
+                "1 credit per technology export",
                 "Bulk lookup & advanced filters",
                 "Priority email support",
                 "Secure Stripe checkout",
@@ -724,8 +724,8 @@ def _sync_pricing(db: Session) -> None:
             "cta_label": "Buy 2,000 credits",
             "features": [
                 "2,000 credits added instantly",
-                "≈ 200 extra dashboard pages",
-                "≈ 2,000 extra CSV export rows",
+                "≈ 2,000 technology CSV exports",
+                "1 credit per technology export",
                 "Best per-credit value",
                 "API-ready account",
                 "Secure Stripe checkout",
@@ -953,8 +953,8 @@ def _seed_site_content(db: Session) -> None:
             final_cta_secondary="View Pricing",
             pricing_title="Buy credits. Unlock more leads.",
             pricing_subtitle=(
-                "One-time Stripe purchases. 1 credit = 1 extra export row; "
-                "10 credits unlock each dashboard page after page 1."
+                "One-time Stripe purchases. 1 credit = 1 technology CSV export. "
+                "Dashboard browsing and pagination are free."
             ),
             pricing_yearly_badge="One-time",
             calculator_title="How many credits do you need?",

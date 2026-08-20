@@ -5,7 +5,9 @@ from sqlalchemy.orm import Session, joinedload
 
 from app.core.auth import (
     CREDITS_PER_PAGE,
+    CREDITS_PER_TECHNOLOGY_EXPORT,
     FREE_RECORD_LIMIT,
+    MAX_EXPORT_ROWS,
     get_current_user,
     store_user_token,
 )
@@ -510,26 +512,29 @@ def dashboard_search(
     db_total = db.query(Website).count()
     total_actual = max(db_total, 7_781_930) if db_total else 7_781_930
 
-    accessible_records = FREE_RECORD_LIMIT + max(user.credits, 0)
-    viewable = min(accessible_records, total_filtered)
-    max_page = max(1, (viewable + page_size - 1) // page_size)
+    # No technology selected → only first 10 records (free preview).
+    # With technologies → browse all matches free; credits charged on export (1 / tech).
+    if tech_tokens:
+        accessible_records = total_filtered
+    else:
+        accessible_records = min(FREE_RECORD_LIMIT, total_filtered)
+
+    viewable = accessible_records
+    max_page = max(1, (viewable + page_size - 1) // page_size) if viewable else 1
 
     if page > max_page:
-        needed = CREDITS_PER_PAGE
-        raise HTTPException(
-            status_code=402,
-            detail=f"Need {needed} credits to view more than {FREE_RECORD_LIMIT} results. Buy credits on Pricing.",
-        )
-
-    if page > 1:
-        if user.credits < CREDITS_PER_PAGE:
+        if not tech_tokens:
             raise HTTPException(
-                status_code=402,
-                detail=f"Need {CREDITS_PER_PAGE} credits to view page {page}.",
+                status_code=400,
+                detail=(
+                    f"Without a technology filter only the first {FREE_RECORD_LIMIT} records "
+                    "are shown. Select a technology to browse and export more."
+                ),
             )
-        user.credits -= CREDITS_PER_PAGE
-        db.commit()
-        db.refresh(user)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Page {page} is out of range. Max page is {max_page}.",
+        )
 
     rows = (
         query.options(
@@ -537,7 +542,7 @@ def dashboard_search(
         )
         .order_by(Website.rank.asc(), Website.sort_order.asc())
         .offset((page - 1) * page_size)
-        .limit(page_size)
+        .limit(min(page_size, max(0, viewable - (page - 1) * page_size)))
         .all()
     )
 
@@ -550,7 +555,7 @@ def dashboard_search(
         total_filtered=total_filtered,
         total_actual=total_actual,
         filters_applied=filters_applied,
-        export_limit=FREE_RECORD_LIMIT,
+        export_limit=MAX_EXPORT_ROWS,
         free_limit=FREE_RECORD_LIMIT,
         user_credits=user.credits,
         max_page=max_page,
@@ -666,7 +671,7 @@ def dashboard_export(
     q: str = "",
     technologies: str = "",
     match: str = Query(default="any", pattern="^(any|all)$"),
-    limit: int = Query(default=10, ge=1, le=500),
+    limit: int = Query(default=MAX_EXPORT_ROWS, ge=1, le=MAX_EXPORT_ROWS),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -678,31 +683,35 @@ def dashboard_export(
 
     query = _filter_websites_by_technologies(db, query, tech_tokens, match)
 
-    max_export = FREE_RECORD_LIMIT + max(user.credits, 0)
-    if limit > max_export:
-        extra = limit - FREE_RECORD_LIMIT
-        raise HTTPException(
-            status_code=402,
-            detail=f"Need {extra} credits to export {limit} records. You have {user.credits} credits.",
-        )
+    if tech_tokens:
+        # 1 credit per selected technology
+        credits_used = len(tech_tokens) * CREDITS_PER_TECHNOLOGY_EXPORT
+        export_limit = min(limit, MAX_EXPORT_ROWS)
+        if user.credits < credits_used:
+            raise HTTPException(
+                status_code=402,
+                detail=(
+                    f"Need {credits_used} credit{'s' if credits_used != 1 else ''} to export "
+                    f"{len(tech_tokens)} technolog{'ies' if len(tech_tokens) != 1 else 'y'}. "
+                    f"You have {user.credits}."
+                ),
+            )
+    else:
+        # No technology selected → free export of first 10 records only
+        credits_used = 0
+        export_limit = min(limit, FREE_RECORD_LIMIT)
 
-    credits_used = max(0, limit - FREE_RECORD_LIMIT)
-    if credits_used > user.credits:
-        raise HTTPException(
-            status_code=402,
-            detail=f"Need {credits_used} credits to export {limit} records.",
-        )
-
-    user.credits -= credits_used
-    db.commit()
-    db.refresh(user)
+    if credits_used:
+        user.credits -= credits_used
+        db.commit()
+        db.refresh(user)
 
     rows = (
         query.options(
             joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
         )
         .order_by(Website.rank.asc(), Website.sort_order.asc())
-        .limit(limit)
+        .limit(export_limit)
         .all()
     )
 

@@ -191,7 +191,7 @@ export default function AccountPage() {
                   <p className="text-xs font-semibold uppercase tracking-wider text-ink/65">Credits</p>
                   <p className="mt-2 text-4xl font-extrabold tracking-tight">{credits}</p>
                   <p className="mt-2 max-w-xs text-sm text-ink/75">
-                    Use credits for extra dashboard pages and CSV export rows.
+                    Use credits to export technology lead lists (1 credit per technology).
                   </p>
                 </div>
                 <span className="grid h-11 w-11 place-items-center rounded-2xl bg-ink/10">

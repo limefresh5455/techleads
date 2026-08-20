@@ -1,16 +1,24 @@
 import { Link } from 'react-router-dom'
 import { Coins, Zap } from 'lucide-react'
 
-export default function CreditsPanel({ results, onExport, exporting }) {
+export default function CreditsPanel({
+  results,
+  onExport,
+  exporting,
+  selectedTechCount = 0,
+}) {
   const credits = results?.user_credits ?? 0
   const freeLimit = results?.free_limit ?? 10
-  const maxPage = results?.max_page ?? 1
-  const accessible = results?.accessible_records ?? freeLimit
   const totalFiltered = results?.total_filtered ?? 0
-  const creditsPerPage = results?.credits_per_page ?? 10
-
-  const usedFree = Math.min(freeLimit, results?.items?.length ?? 0)
-  const progress = Math.min(100, (usedFree / freeLimit) * 100)
+  const accessible = results?.accessible_records ?? freeLimit
+  const exportCost = Math.max(0, selectedTechCount)
+  const previewOnly = selectedTechCount === 0
+  const exportRecords = previewOnly
+    ? Math.min(accessible, freeLimit, totalFiltered)
+    : totalFiltered
+  const canExport = previewOnly
+    ? exportRecords > 0
+    : exportRecords > 0 && credits >= exportCost
 
   return (
     <div className="rounded-2xl border border-border bg-white p-4 shadow-sm">
@@ -25,43 +33,61 @@ export default function CreditsPanel({ results, onExport, exporting }) {
       </div>
 
       <div className="mt-4 rounded-xl bg-surface/80 p-3">
-        <div className="flex items-center justify-between text-xs text-muted">
-          <span>Free results</span>
-          <span className="font-semibold text-ink">
-            {usedFree} / {freeLimit}
-          </span>
-        </div>
-        <div className="mt-2 h-2 overflow-hidden rounded-full bg-border">
-          <div
-            className="h-full rounded-full bg-brand transition-all"
-            style={{ width: `${progress}%` }}
-          />
-        </div>
-        <p className="mt-2 text-xs text-muted">
-          Showing top {freeLimit} records free. View up to{' '}
-          <span className="font-semibold text-ink">{accessible.toLocaleString()}</span> with credits.
-        </p>
+        {previewOnly ? (
+          <>
+            <p className="text-xs text-muted">
+              No technology selected — first {freeLimit} records are free to view and export.
+            </p>
+            <p className="mt-2 text-sm font-semibold text-ink">
+              Showing {exportRecords.toLocaleString()} of {totalFiltered.toLocaleString()} matches
+            </p>
+            <p className="mt-1 text-xs text-muted">Export cost: free</p>
+          </>
+        ) : (
+          <>
+            <p className="text-xs text-muted">
+              Technology filter active — browse all matches free. Export costs 1 credit per
+              technology.
+            </p>
+            <p className="mt-3 text-sm font-semibold text-ink">
+              Export cost:{' '}
+              <span className="text-brand-dark">
+                {exportCost} credit{exportCost === 1 ? '' : 's'}
+              </span>
+            </p>
+            <p className="mt-1 text-xs text-muted">
+              {selectedTechCount} technolog{selectedTechCount === 1 ? 'y' : 'ies'} selected · 1
+              credit each
+            </p>
+          </>
+        )}
       </div>
 
       <ul className="mt-4 space-y-2 text-xs text-muted">
         <li className="flex items-start gap-2">
           <Zap className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
-          Page 1: {freeLimit} results included free
+          No tech selected: first {freeLimit} records free
         </li>
         <li className="flex items-start gap-2">
           <Zap className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
-          Page 2+: costs {creditsPerPage} credits per page
+          With tech selected: browse all matches free
         </li>
         <li className="flex items-start gap-2">
           <Zap className="mt-0.5 h-3.5 w-3.5 shrink-0 text-brand" />
-          Export beyond {freeLimit}: 1 credit per extra row
+          Export with tech: 1 credit per technology
         </li>
       </ul>
 
-      {totalFiltered > freeLimit && maxPage <= 1 && credits === 0 && (
+      {previewOnly && totalFiltered > freeLimit && (
         <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
-          {totalFiltered.toLocaleString()} matches found. Add credits to view or export more than{' '}
-          {freeLimit}.
+          Select a technology to view and export all {totalFiltered.toLocaleString()} matches (1
+          credit per technology).
+        </p>
+      )}
+
+      {selectedTechCount > 0 && credits < exportCost && (
+        <p className="mt-3 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800">
+          Need {exportCost} credit{exportCost === 1 ? '' : 's'} to export. Buy more on Pricing.
         </p>
       )}
 
@@ -75,10 +101,14 @@ export default function CreditsPanel({ results, onExport, exporting }) {
       <button
         type="button"
         onClick={onExport}
-        disabled={exporting || !results?.items?.length}
+        disabled={exporting || !canExport}
         className="mt-3 flex w-full items-center justify-center gap-2 rounded-xl bg-brand px-4 py-3 text-sm font-semibold text-ink hover:bg-brand-dark disabled:opacity-50"
       >
-        {exporting ? 'Exporting…' : `Export CSV (${Math.min(results?.items?.length ?? 0, freeLimit)} free)`}
+        {exporting
+          ? 'Exporting…'
+          : exportRecords > 0
+            ? `Export CSV (${exportRecords.toLocaleString()} records)`
+            : 'Export CSV'}
       </button>
     </div>
   )

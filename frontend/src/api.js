@@ -74,7 +74,7 @@ export function fetchDashboardSearch({ q = '', technologies = [], match = 'any',
   return request(`/api/dashboard/search?${params.toString()}`)
 }
 
-export function exportDashboard({ q = '', technologies = [], match = 'any', limit = 10 }) {
+export function exportDashboard({ q = '', technologies = [], match = 'any', limit = 5000 }) {
   const params = new URLSearchParams()
   if (q) params.set('q', q)
   if (technologies.length) params.set('technologies', technologies.join(','))
