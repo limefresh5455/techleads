@@ -1,0 +1,2080 @@
+{
+  "categories": [
+    {
+      "name": "WordPress Theme",
+      "url": "https://techleads.fyi/category/wordpress-theme",
+      "description": "WordPress Theme technologies and tools"
+    },
+    {
+      "name": "US Agency",
+      "url": "https://techleads.fyi/category/us-agency",
+      "description": "US Agency technologies and tools"
+    },
+    {
+      "name": "Non Platform",
+      "url": "https://techleads.fyi/category/non-platform",
+      "description": "Non Platform technologies and tools"
+    },
+    {
+      "name": "WordPress Plugins",
+      "url": "https://techleads.fyi/category/wordpress-plugins",
+      "description": "WordPress Plugins technologies and tools"
+    },
+    {
+      "name": "US hosting",
+      "url": "https://techleads.fyi/category/us-hosting",
+      "description": "US hosting technologies and tools"
+    },
+    {
+      "name": "UK Agency",
+      "url": "https://techleads.fyi/category/uk-agency",
+      "description": "UK Agency technologies and tools"
+    },
+    {
+      "name": "Marketing Automation",
+      "url": "https://techleads.fyi/category/marketing-automation",
+      "description": "Marketing automation, CRM tools, and customer engagement platforms"
+    },
+    {
+      "name": "Bookings",
+      "url": "https://techleads.fyi/category/bookings",
+      "description": "Bookings technologies and tools"
+    },
+    {
+      "name": "Australian Agency",
+      "url": "https://techleads.fyi/category/australian-agency",
+      "description": "Australian Agency technologies and tools"
+    },
+    {
+      "name": "Conversion Optimization",
+      "url": "https://techleads.fyi/category/conversion-optimization",
+      "description": "Conversion Optimization technologies and tools"
+    },
+    {
+      "name": "Shopify App",
+      "url": "https://techleads.fyi/category/shopify-app",
+      "description": "Shopify App technologies and tools"
+    },
+    {
+      "name": "Live Chat",
+      "url": "https://techleads.fyi/category/live-chat",
+      "description": "Live Chat technologies and tools"
+    },
+    {
+      "name": "Feedback Forms and Surveys",
+      "url": "https://techleads.fyi/category/feedback-forms-and-surveys",
+      "description": "Feedback Forms and Surveys technologies and tools"
+    },
+    {
+      "name": "Hosted Solution",
+      "url": "https://techleads.fyi/category/hosted-solution",
+      "description": "Hosted Solution technologies and tools"
+    },
+    {
+      "name": "ads txt",
+      "url": "https://techleads.fyi/category/ads-txt",
+      "description": "ads txt technologies and tools"
+    },
+    {
+      "name": "AI",
+      "url": "https://techleads.fyi/category/ai",
+      "description": "AI technologies and tools"
+    },
+    {
+      "name": "Enterprise",
+      "url": "https://techleads.fyi/category/enterprise",
+      "description": "Enterprise technologies and tools"
+    },
+    {
+      "name": "Real Estate",
+      "url": "https://techleads.fyi/category/real-estate",
+      "description": "Real Estate technologies and tools"
+    },
+    {
+      "name": "eCommerce",
+      "url": "https://techleads.fyi/category/ecommerce",
+      "description": "Online shopping platforms, payment gateways, and e-commerce solutions"
+    },
+    {
+      "name": "CRM",
+      "url": "https://techleads.fyi/category/crm",
+      "description": "CRM technologies and tools"
+    },
+    {
+      "name": "Lead Generation",
+      "url": "https://techleads.fyi/category/lead-generation",
+      "description": "Lead Generation technologies and tools"
+    },
+    {
+      "name": "Ecommerce",
+      "url": "https://techleads.fyi/category/ecommerce",
+      "description": "Online shopping platforms, payment gateways, and e-commerce solutions"
+    },
+    {
+      "name": "CMS",
+      "url": "https://techleads.fyi/category/cms",
+      "description": "Content management systems and platforms for creating and managing digital content"
+    },
+    {
+      "name": "Canadian Agency",
+      "url": "https://techleads.fyi/category/canadian-agency",
+      "description": "Canadian Agency technologies and tools"
+    },
+    {
+      "name": "Personalization",
+      "url": "https://techleads.fyi/category/personalization",
+      "description": "Personalization technologies and tools"
+    },
+    {
+      "name": "Shopify Theme",
+      "url": "https://techleads.fyi/category/shopify-theme",
+      "description": "Shopify Theme technologies and tools"
+    },
+    {
+      "name": "Audience Measurement",
+      "url": "https://techleads.fyi/category/audience-measurement",
+      "description": "Audience Measurement technologies and tools"
+    },
+    {
+      "name": "Dedicated Hosting",
+      "url": "https://techleads.fyi/category/dedicated-hosting",
+      "description": "Dedicated Hosting technologies and tools"
+    },
+    {
+      "name": "Healthcare",
+      "url": "https://techleads.fyi/category/healthcare",
+      "description": "Healthcare technologies and tools"
+    },
+    {
+      "name": "Analytics",
+      "url": "https://techleads.fyi/category/analytics",
+      "description": "Web analytics, tracking, and measurement tools for understanding user behavior"
+    },
+    {
+      "name": "Mobile",
+      "url": "https://techleads.fyi/category/mobile",
+      "description": "Mobile technologies and tools"
+    },
+    {
+      "name": "Marketing Platform",
+      "url": "https://techleads.fyi/category/marketing-platform",
+      "description": "Marketing Platform technologies and tools"
+    },
+    {
+      "name": "Privacy Compliance",
+      "url": "https://techleads.fyi/category/privacy-compliance",
+      "description": "Privacy Compliance technologies and tools"
+    },
+    {
+      "name": "Job Board",
+      "url": "https://techleads.fyi/category/job-board",
+      "description": "Job Board technologies and tools"
+    },
+    {
+      "name": "Learning Management System",
+      "url": "https://techleads.fyi/category/learning-management-system",
+      "description": "Learning Management System technologies and tools"
+    },
+    {
+      "name": "Financial",
+      "url": "https://techleads.fyi/category/financial",
+      "description": "Financial technologies and tools"
+    },
+    {
+      "name": "WordPress plugins",
+      "url": "https://techleads.fyi/category/wordpress-plugins",
+      "description": "WordPress plugins technologies and tools"
+    },
+    {
+      "name": "New Zealand Agency",
+      "url": "https://techleads.fyi/category/new-zealand-agency",
+      "description": "New Zealand Agency technologies and tools"
+    },
+    {
+      "name": "Simple Website Builder",
+      "url": "https://techleads.fyi/category/simple-website-builder",
+      "description": "Simple Website Builder technologies and tools"
+    },
+    {
+      "name": "Cloud Hosting",
+      "url": "https://techleads.fyi/category/cloud-hosting",
+      "description": "Cloud Hosting technologies and tools"
+    },
+    {
+      "name": "Shopify Currency",
+      "url": "https://techleads.fyi/category/shopify-currency",
+      "description": "Shopify Currency technologies and tools"
+    },
+    {
+      "name": "Affiliate Programs",
+      "url": "https://techleads.fyi/category/affiliate-programs",
+      "description": "Affiliate Programs technologies and tools"
+    },
+    {
+      "name": "Social Sharing",
+      "url": "https://techleads.fyi/category/social-sharing",
+      "description": "Social Sharing technologies and tools"
+    },
+    {
+      "name": "German hosting",
+      "url": "https://techleads.fyi/category/german-hosting",
+      "description": "German hosting technologies and tools"
+    },
+    {
+      "name": "WordPress themes",
+      "url": "https://techleads.fyi/category/wordpress-themes",
+      "description": "WordPress themes technologies and tools"
+    },
+    {
+      "name": "A/B Testing",
+      "url": "https://techleads.fyi/category/a-b-testing",
+      "description": "A/B Testing technologies and tools"
+    },
+    {
+      "name": "Shopify apps",
+      "url": "https://techleads.fyi/category/shopify-apps",
+      "description": "Shopify apps technologies and tools"
+    },
+    {
+      "name": "Open Source",
+      "url": "https://techleads.fyi/category/open-source",
+      "description": "Open Source technologies and tools"
+    },
+    {
+      "name": "Australian hosting",
+      "url": "https://techleads.fyi/category/australian-hosting",
+      "description": "Australian hosting technologies and tools"
+    },
+    {
+      "name": "Marketing automation",
+      "url": "https://techleads.fyi/category/marketing-automation",
+      "description": "Marketing automation, CRM tools, and customer engagement platforms"
+    },
+    {
+      "name": "Advertising",
+      "url": "https://techleads.fyi/category/advertising",
+      "description": "Advertising technologies and tools"
+    },
+    {
+      "name": "Widgets",
+      "url": "https://techleads.fyi/category/widgets",
+      "description": "Widgets technologies and tools"
+    },
+    {
+      "name": "Indian Agency",
+      "url": "https://techleads.fyi/category/indian-agency",
+      "description": "Indian Agency technologies and tools"
+    },
+    {
+      "name": "Social Management",
+      "url": "https://techleads.fyi/category/social-management",
+      "description": "Social Management technologies and tools"
+    },
+    {
+      "name": "Schema",
+      "url": "https://techleads.fyi/category/schema",
+      "description": "Schema technologies and tools"
+    },
+    {
+      "name": "Automotive",
+      "url": "https://techleads.fyi/category/automotive",
+      "description": "Automotive technologies and tools"
+    },
+    {
+      "name": "JavaScript libraries",
+      "url": "https://techleads.fyi/category/javascript-libraries",
+      "description": "JavaScript libraries technologies and tools"
+    },
+    {
+      "name": "Ticketing System",
+      "url": "https://techleads.fyi/category/ticketing-system",
+      "description": "Ticketing System technologies and tools"
+    },
+    {
+      "name": "Community CMS",
+      "url": "https://techleads.fyi/category/community-cms",
+      "description": "Community CMS technologies and tools"
+    },
+    {
+      "name": "UK hosting",
+      "url": "https://techleads.fyi/category/uk-hosting",
+      "description": "UK hosting technologies and tools"
+    },
+    {
+      "name": "Call Tracking",
+      "url": "https://techleads.fyi/category/call-tracking",
+      "description": "Call Tracking technologies and tools"
+    },
+    {
+      "name": "Wix App",
+      "url": "https://techleads.fyi/category/wix-app",
+      "description": "Wix App technologies and tools"
+    },
+    {
+      "name": "Digital Video Ads",
+      "url": "https://techleads.fyi/category/digital-video-ads",
+      "description": "Digital Video Ads technologies and tools"
+    },
+    {
+      "name": "Application Performance",
+      "url": "https://techleads.fyi/category/application-performance",
+      "description": "Application Performance technologies and tools"
+    },
+    {
+      "name": "Payment processors",
+      "url": "https://techleads.fyi/category/payment-processors",
+      "description": "Payment processors technologies and tools"
+    },
+    {
+      "name": "Retargeting / Remarketing",
+      "url": "https://techleads.fyi/category/retargeting-remarketing",
+      "description": "Retargeting / Remarketing technologies and tools"
+    },
+    {
+      "name": "Canadian hosting",
+      "url": "https://techleads.fyi/category/canadian-hosting",
+      "description": "Canadian hosting technologies and tools"
+    },
+    {
+      "name": "Dutch hosting",
+      "url": "https://techleads.fyi/category/dutch-hosting",
+      "description": "Dutch hosting technologies and tools"
+    },
+    {
+      "name": "Live chat",
+      "url": "https://techleads.fyi/category/live-chat",
+      "description": "Live chat technologies and tools"
+    },
+    {
+      "name": "Ad Network",
+      "url": "https://techleads.fyi/category/ad-network",
+      "description": "Ad Network technologies and tools"
+    },
+    {
+      "name": "Page builders",
+      "url": "https://techleads.fyi/category/page-builders",
+      "description": "Website builders and drag-and-drop page creation tools"
+    },
+    {
+      "name": "jQuery Plugin",
+      "url": "https://techleads.fyi/category/jquery-plugin",
+      "description": "jQuery Plugin technologies and tools"
+    },
+    {
+      "name": "SMB Solution",
+      "url": "https://techleads.fyi/category/smb-solution",
+      "description": "SMB Solution technologies and tools"
+    },
+    {
+      "name": "French hosting",
+      "url": "https://techleads.fyi/category/french-hosting",
+      "description": "French hosting technologies and tools"
+    },
+    {
+      "name": "Site Optimization",
+      "url": "https://techleads.fyi/category/site-optimization",
+      "description": "Site Optimization technologies and tools"
+    },
+    {
+      "name": "Fraud Prevention",
+      "url": "https://techleads.fyi/category/fraud-prevention",
+      "description": "Fraud Prevention technologies and tools"
+    },
+    {
+      "name": "WooCommerce Extension",
+      "url": "https://techleads.fyi/category/woocommerce-extension",
+      "description": "WooCommerce Extension technologies and tools"
+    },
+    {
+      "name": "Secure Email",
+      "url": "https://techleads.fyi/category/secure-email",
+      "description": "Secure Email technologies and tools"
+    },
+    {
+      "name": "Miscellaneous",
+      "url": "https://techleads.fyi/category/miscellaneous",
+      "description": "Miscellaneous technologies and tools"
+    },
+    {
+      "name": "Cart Abandonment",
+      "url": "https://techleads.fyi/category/cart-abandonment",
+      "description": "Cart Abandonment technologies and tools"
+    },
+    {
+      "name": "Push Notifications",
+      "url": "https://techleads.fyi/category/push-notifications",
+      "description": "Push Notifications technologies and tools"
+    },
+    {
+      "name": "Web servers",
+      "url": "https://techleads.fyi/category/web-servers",
+      "description": "Web servers technologies and tools"
+    },
+    {
+      "name": "Web frameworks",
+      "url": "https://techleads.fyi/category/web-frameworks",
+      "description": "Web frameworks technologies and tools"
+    },
+    {
+      "name": "Italian Agency",
+      "url": "https://techleads.fyi/category/italian-agency",
+      "description": "Italian Agency technologies and tools"
+    },
+    {
+      "name": "Donation",
+      "url": "https://techleads.fyi/category/donation",
+      "description": "Donation technologies and tools"
+    },
+    {
+      "name": "Server Location",
+      "url": "https://techleads.fyi/category/server-location",
+      "description": "Server Location technologies and tools"
+    },
+    {
+      "name": "Advertiser Tracking",
+      "url": "https://techleads.fyi/category/advertiser-tracking",
+      "description": "Advertiser Tracking technologies and tools"
+    },
+    {
+      "name": "Login",
+      "url": "https://techleads.fyi/category/login",
+      "description": "Login technologies and tools"
+    },
+    {
+      "name": "Pay Later",
+      "url": "https://techleads.fyi/category/pay-later",
+      "description": "Pay Later technologies and tools"
+    },
+    {
+      "name": "Product Recommendations",
+      "url": "https://techleads.fyi/category/product-recommendations",
+      "description": "Product Recommendations technologies and tools"
+    },
+    {
+      "name": "Multi-Channel",
+      "url": "https://techleads.fyi/category/multi-channel",
+      "description": "Multi-Channel technologies and tools"
+    },
+    {
+      "name": "Customer Data Platform",
+      "url": "https://techleads.fyi/category/customer-data-platform",
+      "description": "Customer Data Platform technologies and tools"
+    },
+    {
+      "name": "Web Badge",
+      "url": "https://techleads.fyi/category/web-badge",
+      "description": "Web Badge technologies and tools"
+    },
+    {
+      "name": "Site Search",
+      "url": "https://techleads.fyi/category/site-search",
+      "description": "Site Search technologies and tools"
+    },
+    {
+      "name": "Conversion Tracking",
+      "url": "https://techleads.fyi/category/conversion-tracking",
+      "description": "Conversion Tracking technologies and tools"
+    },
+    {
+      "name": "JavaScript frameworks",
+      "url": "https://techleads.fyi/category/javascript-frameworks",
+      "description": "JavaScript frameworks technologies and tools"
+    },
+    {
+      "name": "Dutch Agency",
+      "url": "https://techleads.fyi/category/dutch-agency",
+      "description": "Dutch Agency technologies and tools"
+    },
+    {
+      "name": "eCommerce Enabled",
+      "url": "https://techleads.fyi/category/ecommerce-enabled",
+      "description": "eCommerce Enabled technologies and tools"
+    },
+    {
+      "name": "Adult",
+      "url": "https://techleads.fyi/category/adult",
+      "description": "Adult technologies and tools"
+    },
+    {
+      "name": "Transactional Email",
+      "url": "https://techleads.fyi/category/transactional-email",
+      "description": "Transactional Email technologies and tools"
+    },
+    {
+      "name": "Bitcoin",
+      "url": "https://techleads.fyi/category/bitcoin",
+      "description": "Bitcoin technologies and tools"
+    },
+    {
+      "name": "Russian hosting",
+      "url": "https://techleads.fyi/category/russian-hosting",
+      "description": "Russian hosting technologies and tools"
+    },
+    {
+      "name": "Security",
+      "url": "https://techleads.fyi/category/security",
+      "description": "Security tools and protection services"
+    },
+    {
+      "name": "UI frameworks",
+      "url": "https://techleads.fyi/category/ui-frameworks",
+      "description": "UI frameworks technologies and tools"
+    },
+    {
+      "name": "Issue trackers",
+      "url": "https://techleads.fyi/category/issue-trackers",
+      "description": "Issue trackers technologies and tools"
+    },
+    {
+      "name": "South African Agency",
+      "url": "https://techleads.fyi/category/south-african-agency",
+      "description": "South African Agency technologies and tools"
+    },
+    {
+      "name": "Data Management Platform",
+      "url": "https://techleads.fyi/category/data-management-platform",
+      "description": "Data Management Platform technologies and tools"
+    },
+    {
+      "name": "Schedule Management",
+      "url": "https://techleads.fyi/category/schedule-management",
+      "description": "Schedule Management technologies and tools"
+    },
+    {
+      "name": "German Agency",
+      "url": "https://techleads.fyi/category/german-agency",
+      "description": "German Agency technologies and tools"
+    },
+    {
+      "name": "Hosting",
+      "url": "https://techleads.fyi/category/hosting",
+      "description": "Web hosting services and cloud infrastructure"
+    },
+    {
+      "name": "Landing Page",
+      "url": "https://techleads.fyi/category/landing-page",
+      "description": "Landing Page technologies and tools"
+    },
+    {
+      "name": "Spanish hosting",
+      "url": "https://techleads.fyi/category/spanish-hosting",
+      "description": "Spanish hosting technologies and tools"
+    },
+    {
+      "name": "Business Email Hosting",
+      "url": "https://techleads.fyi/category/business-email-hosting",
+      "description": "Business Email Hosting technologies and tools"
+    },
+    {
+      "name": "Cookie compliance",
+      "url": "https://techleads.fyi/category/cookie-compliance",
+      "description": "Cookie compliance technologies and tools"
+    },
+    {
+      "name": "Online Video Platform",
+      "url": "https://techleads.fyi/category/online-video-platform",
+      "description": "Online Video Platform technologies and tools"
+    },
+    {
+      "name": "Swiss hosting",
+      "url": "https://techleads.fyi/category/swiss-hosting",
+      "description": "Swiss hosting technologies and tools"
+    },
+    {
+      "name": "Campaign Management",
+      "url": "https://techleads.fyi/category/campaign-management",
+      "description": "Campaign Management technologies and tools"
+    },
+    {
+      "name": "Turkish hosting",
+      "url": "https://techleads.fyi/category/turkish-hosting",
+      "description": "Turkish hosting technologies and tools"
+    },
+    {
+      "name": "Image Provider",
+      "url": "https://techleads.fyi/category/image-provider",
+      "description": "Image Provider technologies and tools"
+    },
+    {
+      "name": "Performance",
+      "url": "https://techleads.fyi/category/performance",
+      "description": "Performance technologies and tools"
+    },
+    {
+      "name": "Visitor Count Tracking",
+      "url": "https://techleads.fyi/category/visitor-count-tracking",
+      "description": "Visitor Count Tracking technologies and tools"
+    },
+    {
+      "name": "Appointment scheduling",
+      "url": "https://techleads.fyi/category/appointment-scheduling",
+      "description": "Appointment scheduling technologies and tools"
+    },
+    {
+      "name": "Affiliate programs",
+      "url": "https://techleads.fyi/category/affiliate-programs",
+      "description": "Affiliate programs technologies and tools"
+    },
+    {
+      "name": "Belgian Agency",
+      "url": "https://techleads.fyi/category/belgian-agency",
+      "description": "Belgian Agency technologies and tools"
+    },
+    {
+      "name": "Irish Agency",
+      "url": "https://techleads.fyi/category/irish-agency",
+      "description": "Irish Agency technologies and tools"
+    },
+    {
+      "name": "Error Tracking",
+      "url": "https://techleads.fyi/category/error-tracking",
+      "description": "Error Tracking technologies and tools"
+    },
+    {
+      "name": "JavaScript graphics",
+      "url": "https://techleads.fyi/category/javascript-graphics",
+      "description": "JavaScript graphics technologies and tools"
+    },
+    {
+      "name": "CDN",
+      "url": "https://techleads.fyi/category/cdn",
+      "description": "Content delivery networks and edge computing solutions"
+    },
+    {
+      "name": "Italian hosting",
+      "url": "https://techleads.fyi/category/italian-hosting",
+      "description": "Italian hosting technologies and tools"
+    },
+    {
+      "name": "Japan hosting",
+      "url": "https://techleads.fyi/category/japan-hosting",
+      "description": "Japan hosting technologies and tools"
+    },
+    {
+      "name": "Buy now pay later",
+      "url": "https://techleads.fyi/category/buy-now-pay-later",
+      "description": "Buy now pay later technologies and tools"
+    },
+    {
+      "name": "Indian hosting",
+      "url": "https://techleads.fyi/category/indian-hosting",
+      "description": "Indian hosting technologies and tools"
+    },
+    {
+      "name": "Plugin / Module",
+      "url": "https://techleads.fyi/category/plugin-module",
+      "description": "Plugin / Module technologies and tools"
+    },
+    {
+      "name": "Blog",
+      "url": "https://techleads.fyi/category/blog",
+      "description": "Blog technologies and tools"
+    },
+    {
+      "name": "Greek Agency",
+      "url": "https://techleads.fyi/category/greek-agency",
+      "description": "Greek Agency technologies and tools"
+    },
+    {
+      "name": "Charting",
+      "url": "https://techleads.fyi/category/charting",
+      "description": "Charting technologies and tools"
+    },
+    {
+      "name": "PaaS",
+      "url": "https://techleads.fyi/category/paas",
+      "description": "PaaS technologies and tools"
+    },
+    {
+      "name": "Framework",
+      "url": "https://techleads.fyi/category/framework",
+      "description": "Framework technologies and tools"
+    },
+    {
+      "name": "Translation",
+      "url": "https://techleads.fyi/category/translation",
+      "description": "Translation technologies and tools"
+    },
+    {
+      "name": "Email",
+      "url": "https://techleads.fyi/category/email",
+      "description": "Email marketing, transactional email, and email service providers"
+    },
+    {
+      "name": "Contextual Advertising",
+      "url": "https://techleads.fyi/category/contextual-advertising",
+      "description": "Contextual Advertising technologies and tools"
+    },
+    {
+      "name": "Reviews",
+      "url": "https://techleads.fyi/category/reviews",
+      "description": "Reviews technologies and tools"
+    },
+    {
+      "name": "Czech hosting",
+      "url": "https://techleads.fyi/category/czech-hosting",
+      "description": "Czech hosting technologies and tools"
+    },
+    {
+      "name": "Policy",
+      "url": "https://techleads.fyi/category/policy",
+      "description": "Policy technologies and tools"
+    },
+    {
+      "name": "Ad Exchange",
+      "url": "https://techleads.fyi/category/ad-exchange",
+      "description": "Ad Exchange technologies and tools"
+    },
+    {
+      "name": "French Agency",
+      "url": "https://techleads.fyi/category/french-agency",
+      "description": "French Agency technologies and tools"
+    },
+    {
+      "name": "Payments Processor",
+      "url": "https://techleads.fyi/category/payments-processor",
+      "description": "Payments Processor technologies and tools"
+    },
+    {
+      "name": "VPS Hosting",
+      "url": "https://techleads.fyi/category/vps-hosting",
+      "description": "VPS Hosting technologies and tools"
+    },
+    {
+      "name": "Brazilian hosting",
+      "url": "https://techleads.fyi/category/brazilian-hosting",
+      "description": "Brazilian hosting technologies and tools"
+    },
+    {
+      "name": "Agency",
+      "url": "https://techleads.fyi/category/agency",
+      "description": "Agency technologies and tools"
+    },
+    {
+      "name": "Swiss Agency",
+      "url": "https://techleads.fyi/category/swiss-agency",
+      "description": "Swiss Agency technologies and tools"
+    },
+    {
+      "name": "Customer data platform",
+      "url": "https://techleads.fyi/category/customer-data-platform",
+      "description": "Customer data platform technologies and tools"
+    },
+    {
+      "name": "Spanish Agency",
+      "url": "https://techleads.fyi/category/spanish-agency",
+      "description": "Spanish Agency technologies and tools"
+    },
+    {
+      "name": "Ad Analytics",
+      "url": "https://techleads.fyi/category/ad-analytics",
+      "description": "Ad Analytics technologies and tools"
+    },
+    {
+      "name": "Forum Software",
+      "url": "https://techleads.fyi/category/forum-software",
+      "description": "Forum Software technologies and tools"
+    },
+    {
+      "name": "Swedish hosting",
+      "url": "https://techleads.fyi/category/swedish-hosting",
+      "description": "Swedish hosting technologies and tools"
+    },
+    {
+      "name": "Search engines",
+      "url": "https://techleads.fyi/category/search-engines",
+      "description": "Search engines technologies and tools"
+    },
+    {
+      "name": "JavaScript Library",
+      "url": "https://techleads.fyi/category/javascript-library",
+      "description": "JavaScript utilities and helper libraries"
+    },
+    {
+      "name": "Fonts",
+      "url": "https://techleads.fyi/category/fonts",
+      "description": "Fonts technologies and tools"
+    },
+    {
+      "name": "UI",
+      "url": "https://techleads.fyi/category/ui",
+      "description": "UI technologies and tools"
+    },
+    {
+      "name": "Video Players",
+      "url": "https://techleads.fyi/category/video-players",
+      "description": "Video Players technologies and tools"
+    },
+    {
+      "name": "Development",
+      "url": "https://techleads.fyi/category/development",
+      "description": "Development technologies and tools"
+    },
+    {
+      "name": "Fundraising & donations",
+      "url": "https://techleads.fyi/category/fundraising-donations",
+      "description": "Fundraising & donations technologies and tools"
+    },
+    {
+      "name": "Reservations & delivery",
+      "url": "https://techleads.fyi/category/reservations-delivery",
+      "description": "Reservations & delivery technologies and tools"
+    },
+    {
+      "name": "Tag Management",
+      "url": "https://techleads.fyi/category/tag-management",
+      "description": "Tag Management technologies and tools"
+    },
+    {
+      "name": "Chinese hosting",
+      "url": "https://techleads.fyi/category/chinese-hosting",
+      "description": "Chinese hosting technologies and tools"
+    },
+    {
+      "name": "Message boards",
+      "url": "https://techleads.fyi/category/message-boards",
+      "description": "Message boards technologies and tools"
+    },
+    {
+      "name": "Checkout Buttons",
+      "url": "https://techleads.fyi/category/checkout-buttons",
+      "description": "Checkout Buttons technologies and tools"
+    },
+    {
+      "name": "Blogs",
+      "url": "https://techleads.fyi/category/blogs",
+      "description": "Blogs technologies and tools"
+    },
+    {
+      "name": "Extended Validation",
+      "url": "https://techleads.fyi/category/extended-validation",
+      "description": "Extended Validation technologies and tools"
+    },
+    {
+      "name": "Compatibility",
+      "url": "https://techleads.fyi/category/compatibility",
+      "description": "Compatibility technologies and tools"
+    },
+    {
+      "name": "CAPTCHA",
+      "url": "https://techleads.fyi/category/captcha",
+      "description": "CAPTCHA technologies and tools"
+    },
+    {
+      "name": "Payment Acceptance",
+      "url": "https://techleads.fyi/category/payment-acceptance",
+      "description": "Payment Acceptance technologies and tools"
+    },
+    {
+      "name": "Polish hosting",
+      "url": "https://techleads.fyi/category/polish-hosting",
+      "description": "Polish hosting technologies and tools"
+    },
+    {
+      "name": "Audience Targeting",
+      "url": "https://techleads.fyi/category/audience-targeting",
+      "description": "Audience Targeting technologies and tools"
+    },
+    {
+      "name": "Dynamic Creative Optimization",
+      "url": "https://techleads.fyi/category/dynamic-creative-optimization",
+      "description": "Dynamic Creative Optimization technologies and tools"
+    },
+    {
+      "name": "Austrian hosting",
+      "url": "https://techleads.fyi/category/austrian-hosting",
+      "description": "Austrian hosting technologies and tools"
+    },
+    {
+      "name": "Maps",
+      "url": "https://techleads.fyi/category/maps",
+      "description": "Maps technologies and tools"
+    },
+    {
+      "name": "Video players",
+      "url": "https://techleads.fyi/category/video-players",
+      "description": "Video players technologies and tools"
+    },
+    {
+      "name": "Authentication",
+      "url": "https://techleads.fyi/category/authentication",
+      "description": "Authentication technologies and tools"
+    },
+    {
+      "name": "Documentation",
+      "url": "https://techleads.fyi/category/documentation",
+      "description": "Documentation technologies and tools"
+    },
+    {
+      "name": "Non Profit",
+      "url": "https://techleads.fyi/category/non-profit",
+      "description": "Non Profit technologies and tools"
+    },
+    {
+      "name": "Programming languages",
+      "url": "https://techleads.fyi/category/programming-languages",
+      "description": "Programming languages technologies and tools"
+    },
+    {
+      "name": "WordPress Hosting",
+      "url": "https://techleads.fyi/category/wordpress-hosting",
+      "description": "WordPress Hosting technologies and tools"
+    },
+    {
+      "name": "Romanian hosting",
+      "url": "https://techleads.fyi/category/romanian-hosting",
+      "description": "Romanian hosting technologies and tools"
+    },
+    {
+      "name": "RUM",
+      "url": "https://techleads.fyi/category/rum",
+      "description": "RUM technologies and tools"
+    },
+    {
+      "name": "Accessibility",
+      "url": "https://techleads.fyi/category/accessibility",
+      "description": "Accessibility technologies and tools"
+    },
+    {
+      "name": "Digital asset management",
+      "url": "https://techleads.fyi/category/digital-asset-management",
+      "description": "Digital asset management technologies and tools"
+    },
+    {
+      "name": "LMS",
+      "url": "https://techleads.fyi/category/lms",
+      "description": "LMS technologies and tools"
+    },
+    {
+      "name": "Recruitment & staffing",
+      "url": "https://techleads.fyi/category/recruitment-staffing",
+      "description": "Recruitment & staffing technologies and tools"
+    },
+    {
+      "name": "Headless",
+      "url": "https://techleads.fyi/category/headless",
+      "description": "Headless technologies and tools"
+    },
+    {
+      "name": "Static site generator",
+      "url": "https://techleads.fyi/category/static-site-generator",
+      "description": "Static site generator technologies and tools"
+    },
+    {
+      "name": "Content Modification",
+      "url": "https://techleads.fyi/category/content-modification",
+      "description": "Content Modification technologies and tools"
+    },
+    {
+      "name": "SSL Seals",
+      "url": "https://techleads.fyi/category/ssl-seals",
+      "description": "SSL Seals technologies and tools"
+    },
+    {
+      "name": "Demand-side Platform",
+      "url": "https://techleads.fyi/category/demand-side-platform",
+      "description": "Demand-side Platform technologies and tools"
+    },
+    {
+      "name": "Hong Kong hosting",
+      "url": "https://techleads.fyi/category/hong-kong-hosting",
+      "description": "Hong Kong hosting technologies and tools"
+    },
+    {
+      "name": "Slider",
+      "url": "https://techleads.fyi/category/slider",
+      "description": "Slider technologies and tools"
+    },
+    {
+      "name": "Hungarian hosting",
+      "url": "https://techleads.fyi/category/hungarian-hosting",
+      "description": "Hungarian hosting technologies and tools"
+    },
+    {
+      "name": "Indonesian hosting",
+      "url": "https://techleads.fyi/category/indonesian-hosting",
+      "description": "Indonesian hosting technologies and tools"
+    },
+    {
+      "name": "Root Authority",
+      "url": "https://techleads.fyi/category/root-authority",
+      "description": "Root Authority technologies and tools"
+    },
+    {
+      "name": "Animation",
+      "url": "https://techleads.fyi/category/animation",
+      "description": "Animation technologies and tools"
+    },
+    {
+      "name": "Shipping Provider",
+      "url": "https://techleads.fyi/category/shipping-provider",
+      "description": "Shipping Provider technologies and tools"
+    },
+    {
+      "name": "Photo galleries",
+      "url": "https://techleads.fyi/category/photo-galleries",
+      "description": "Photo galleries technologies and tools"
+    },
+    {
+      "name": "Editors",
+      "url": "https://techleads.fyi/category/editors",
+      "description": "Editors technologies and tools"
+    },
+    {
+      "name": "Surveys",
+      "url": "https://techleads.fyi/category/surveys",
+      "description": "Surveys technologies and tools"
+    },
+    {
+      "name": "Operating systems",
+      "url": "https://techleads.fyi/category/operating-systems",
+      "description": "Operating systems technologies and tools"
+    },
+    {
+      "name": "Loyalty & rewards",
+      "url": "https://techleads.fyi/category/loyalty-rewards",
+      "description": "Loyalty & rewards technologies and tools"
+    },
+    {
+      "name": "Edge Delivery Network",
+      "url": "https://techleads.fyi/category/edge-delivery-network",
+      "description": "Edge Delivery Network technologies and tools"
+    },
+    {
+      "name": "eCommerce Hosting",
+      "url": "https://techleads.fyi/category/ecommerce-hosting",
+      "description": "eCommerce Hosting technologies and tools"
+    },
+    {
+      "name": "Cloud PaaS",
+      "url": "https://techleads.fyi/category/cloud-paas",
+      "description": "Cloud PaaS technologies and tools"
+    },
+    {
+      "name": "Comment System",
+      "url": "https://techleads.fyi/category/comment-system",
+      "description": "Comment System technologies and tools"
+    },
+    {
+      "name": "Live Stream / Webcast",
+      "url": "https://techleads.fyi/category/live-stream-webcast",
+      "description": "Live Stream / Webcast technologies and tools"
+    },
+    {
+      "name": "Form builders",
+      "url": "https://techleads.fyi/category/form-builders",
+      "description": "Form builders technologies and tools"
+    },
+    {
+      "name": "Caching",
+      "url": "https://techleads.fyi/category/caching",
+      "description": "Caching technologies and tools"
+    },
+    {
+      "name": "Brazilian Agency",
+      "url": "https://techleads.fyi/category/brazilian-agency",
+      "description": "Brazilian Agency technologies and tools"
+    },
+    {
+      "name": "Font scripts",
+      "url": "https://techleads.fyi/category/font-scripts",
+      "description": "Font scripts technologies and tools"
+    },
+    {
+      "name": "Malaysian hosting",
+      "url": "https://techleads.fyi/category/malaysian-hosting",
+      "description": "Malaysian hosting technologies and tools"
+    },
+    {
+      "name": "Tour Site Demo",
+      "url": "https://techleads.fyi/category/tour-site-demo",
+      "description": "Tour Site Demo technologies and tools"
+    },
+    {
+      "name": "Cobrowsing",
+      "url": "https://techleads.fyi/category/cobrowsing",
+      "description": "Cobrowsing technologies and tools"
+    },
+    {
+      "name": "Content Curation",
+      "url": "https://techleads.fyi/category/content-curation",
+      "description": "Content Curation technologies and tools"
+    },
+    {
+      "name": "Slovak hosting",
+      "url": "https://techleads.fyi/category/slovak-hosting",
+      "description": "Slovak hosting technologies and tools"
+    },
+    {
+      "name": "Content curation",
+      "url": "https://techleads.fyi/category/content-curation",
+      "description": "Content curation technologies and tools"
+    },
+    {
+      "name": "Referral marketing",
+      "url": "https://techleads.fyi/category/referral-marketing",
+      "description": "Referral marketing technologies and tools"
+    },
+    {
+      "name": "Norwegian Agency",
+      "url": "https://techleads.fyi/category/norwegian-agency",
+      "description": "Norwegian Agency technologies and tools"
+    },
+    {
+      "name": "AI Bot",
+      "url": "https://techleads.fyi/category/ai-bot",
+      "description": "AI Bot technologies and tools"
+    },
+    {
+      "name": "Vietnamese hosting",
+      "url": "https://techleads.fyi/category/vietnamese-hosting",
+      "description": "Vietnamese hosting technologies and tools"
+    },
+    {
+      "name": "DMARC",
+      "url": "https://techleads.fyi/category/dmarc",
+      "description": "DMARC technologies and tools"
+    },
+    {
+      "name": "Joomla Module",
+      "url": "https://techleads.fyi/category/joomla-module",
+      "description": "Joomla Module technologies and tools"
+    },
+    {
+      "name": "Ad Server",
+      "url": "https://techleads.fyi/category/ad-server",
+      "description": "Ad Server technologies and tools"
+    },
+    {
+      "name": "Cart abandonment",
+      "url": "https://techleads.fyi/category/cart-abandonment",
+      "description": "Cart abandonment technologies and tools"
+    },
+    {
+      "name": "Header Bidding",
+      "url": "https://techleads.fyi/category/header-bidding",
+      "description": "Header Bidding technologies and tools"
+    },
+    {
+      "name": "Ad Blocking",
+      "url": "https://techleads.fyi/category/ad-blocking",
+      "description": "Ad Blocking technologies and tools"
+    },
+    {
+      "name": "Web Hosting Provider Email",
+      "url": "https://techleads.fyi/category/web-hosting-provider-email",
+      "description": "Web Hosting Provider Email technologies and tools"
+    },
+    {
+      "name": "Russian Agency",
+      "url": "https://techleads.fyi/category/russian-agency",
+      "description": "Russian Agency technologies and tools"
+    },
+    {
+      "name": "Magento Theme",
+      "url": "https://techleads.fyi/category/magento-theme",
+      "description": "Magento Theme technologies and tools"
+    },
+    {
+      "name": "Shared Hosting",
+      "url": "https://techleads.fyi/category/shared-hosting",
+      "description": "Shared Hosting technologies and tools"
+    },
+    {
+      "name": "Social Video Platform",
+      "url": "https://techleads.fyi/category/social-video-platform",
+      "description": "Social Video Platform technologies and tools"
+    },
+    {
+      "name": "Retargeting",
+      "url": "https://techleads.fyi/category/retargeting",
+      "description": "Retargeting technologies and tools"
+    },
+    {
+      "name": "Web server extensions",
+      "url": "https://techleads.fyi/category/web-server-extensions",
+      "description": "Web server extensions technologies and tools"
+    },
+    {
+      "name": "Norwegian hosting",
+      "url": "https://techleads.fyi/category/norwegian-hosting",
+      "description": "Norwegian hosting technologies and tools"
+    },
+    {
+      "name": "Portuguese hosting",
+      "url": "https://techleads.fyi/category/portuguese-hosting",
+      "description": "Portuguese hosting technologies and tools"
+    },
+    {
+      "name": "Greek hosting",
+      "url": "https://techleads.fyi/category/greek-hosting",
+      "description": "Greek hosting technologies and tools"
+    },
+    {
+      "name": "Wiki",
+      "url": "https://techleads.fyi/category/wiki",
+      "description": "Wiki technologies and tools"
+    },
+    {
+      "name": "Bookmarking",
+      "url": "https://techleads.fyi/category/bookmarking",
+      "description": "Bookmarking technologies and tools"
+    },
+    {
+      "name": "Czech Agency",
+      "url": "https://techleads.fyi/category/czech-agency",
+      "description": "Czech Agency technologies and tools"
+    },
+    {
+      "name": "Webmail",
+      "url": "https://techleads.fyi/category/webmail",
+      "description": "Webmail technologies and tools"
+    },
+    {
+      "name": "Wikis",
+      "url": "https://techleads.fyi/category/wikis",
+      "description": "Wikis technologies and tools"
+    },
+    {
+      "name": "Livestreaming",
+      "url": "https://techleads.fyi/category/livestreaming",
+      "description": "Livestreaming technologies and tools"
+    },
+    {
+      "name": "Augmented reality",
+      "url": "https://techleads.fyi/category/augmented-reality",
+      "description": "Augmented reality technologies and tools"
+    },
+    {
+      "name": "Finnish hosting",
+      "url": "https://techleads.fyi/category/finnish-hosting",
+      "description": "Finnish hosting technologies and tools"
+    },
+    {
+      "name": "Tag managers",
+      "url": "https://techleads.fyi/category/tag-managers",
+      "description": "Tag managers technologies and tools"
+    },
+    {
+      "name": "Rich text editors",
+      "url": "https://techleads.fyi/category/rich-text-editors",
+      "description": "Rich text editors technologies and tools"
+    },
+    {
+      "name": "Cross border ecommerce",
+      "url": "https://techleads.fyi/category/cross-border-ecommerce",
+      "description": "Cross border ecommerce technologies and tools"
+    },
+    {
+      "name": "Bot Detection",
+      "url": "https://techleads.fyi/category/bot-detection",
+      "description": "Bot Detection technologies and tools"
+    },
+    {
+      "name": "New Zealand hosting",
+      "url": "https://techleads.fyi/category/new-zealand-hosting",
+      "description": "New Zealand hosting technologies and tools"
+    },
+    {
+      "name": "South African hosting",
+      "url": "https://techleads.fyi/category/south-african-hosting",
+      "description": "South African hosting technologies and tools"
+    },
+    {
+      "name": "Video Analytics",
+      "url": "https://techleads.fyi/category/video-analytics",
+      "description": "Video Analytics technologies and tools"
+    },
+    {
+      "name": "Romanian Agency",
+      "url": "https://techleads.fyi/category/romanian-agency",
+      "description": "Romanian Agency technologies and tools"
+    },
+    {
+      "name": "Databases",
+      "url": "https://techleads.fyi/category/databases",
+      "description": "Databases technologies and tools"
+    },
+    {
+      "name": "Polish Agency",
+      "url": "https://techleads.fyi/category/polish-agency",
+      "description": "Polish Agency technologies and tools"
+    },
+    {
+      "name": "Ukrainian hosting",
+      "url": "https://techleads.fyi/category/ukrainian-hosting",
+      "description": "Ukrainian hosting technologies and tools"
+    },
+    {
+      "name": "Portuguese Agency",
+      "url": "https://techleads.fyi/category/portuguese-agency",
+      "description": "Portuguese Agency technologies and tools"
+    },
+    {
+      "name": "Malaysian Agency",
+      "url": "https://techleads.fyi/category/malaysian-agency",
+      "description": "Malaysian Agency technologies and tools"
+    },
+    {
+      "name": "SEO",
+      "url": "https://techleads.fyi/category/seo",
+      "description": "SEO technologies and tools"
+    },
+    {
+      "name": "User onboarding",
+      "url": "https://techleads.fyi/category/user-onboarding",
+      "description": "User onboarding technologies and tools"
+    },
+    {
+      "name": "Cypriot Agency",
+      "url": "https://techleads.fyi/category/cypriot-agency",
+      "description": "Cypriot Agency technologies and tools"
+    },
+    {
+      "name": "Search",
+      "url": "https://techleads.fyi/category/search",
+      "description": "Search technologies and tools"
+    },
+    {
+      "name": "Emirati Agency",
+      "url": "https://techleads.fyi/category/emirati-agency",
+      "description": "Emirati Agency technologies and tools"
+    },
+    {
+      "name": "Bulgarian hosting",
+      "url": "https://techleads.fyi/category/bulgarian-hosting",
+      "description": "Bulgarian hosting technologies and tools"
+    },
+    {
+      "name": "Local Ads",
+      "url": "https://techleads.fyi/category/local-ads",
+      "description": "Local Ads technologies and tools"
+    },
+    {
+      "name": "Thai hosting",
+      "url": "https://techleads.fyi/category/thai-hosting",
+      "description": "Thai hosting technologies and tools"
+    },
+    {
+      "name": "Wildcard",
+      "url": "https://techleads.fyi/category/wildcard",
+      "description": "Wildcard technologies and tools"
+    },
+    {
+      "name": "Enterprise DNS",
+      "url": "https://techleads.fyi/category/enterprise-dns",
+      "description": "Enterprise DNS technologies and tools"
+    },
+    {
+      "name": "Danish hosting",
+      "url": "https://techleads.fyi/category/danish-hosting",
+      "description": "Danish hosting technologies and tools"
+    },
+    {
+      "name": "Hosting panels",
+      "url": "https://techleads.fyi/category/hosting-panels",
+      "description": "Hosting panels technologies and tools"
+    },
+    {
+      "name": "Returns",
+      "url": "https://techleads.fyi/category/returns",
+      "description": "Returns technologies and tools"
+    },
+    {
+      "name": "Singaporean Agency",
+      "url": "https://techleads.fyi/category/singaporean-agency",
+      "description": "Singaporean Agency technologies and tools"
+    },
+    {
+      "name": "Chilean hosting",
+      "url": "https://techleads.fyi/category/chilean-hosting",
+      "description": "Chilean hosting technologies and tools"
+    },
+    {
+      "name": "Bengali hosting",
+      "url": "https://techleads.fyi/category/bengali-hosting",
+      "description": "Bengali hosting technologies and tools"
+    },
+    {
+      "name": "Belgian hosting",
+      "url": "https://techleads.fyi/category/belgian-hosting",
+      "description": "Belgian hosting technologies and tools"
+    },
+    {
+      "name": "Segmentation",
+      "url": "https://techleads.fyi/category/segmentation",
+      "description": "Segmentation technologies and tools"
+    },
+    {
+      "name": "Comment systems",
+      "url": "https://techleads.fyi/category/comment-systems",
+      "description": "Comment systems technologies and tools"
+    },
+    {
+      "name": "Ecommerce frontends",
+      "url": "https://techleads.fyi/category/ecommerce-frontends",
+      "description": "Ecommerce frontends technologies and tools"
+    },
+    {
+      "name": "Japan Agency",
+      "url": "https://techleads.fyi/category/japan-agency",
+      "description": "Japan Agency technologies and tools"
+    },
+    {
+      "name": "Mexican Agency",
+      "url": "https://techleads.fyi/category/mexican-agency",
+      "description": "Mexican Agency technologies and tools"
+    },
+    {
+      "name": "Luxembourg hosting",
+      "url": "https://techleads.fyi/category/luxembourg-hosting",
+      "description": "Luxembourg hosting technologies and tools"
+    },
+    {
+      "name": "Seller JSON",
+      "url": "https://techleads.fyi/category/seller-json",
+      "description": "Seller JSON technologies and tools"
+    },
+    {
+      "name": "Israeli hosting",
+      "url": "https://techleads.fyi/category/israeli-hosting",
+      "description": "Israeli hosting technologies and tools"
+    },
+    {
+      "name": "Reverse proxies",
+      "url": "https://techleads.fyi/category/reverse-proxies",
+      "description": "Reverse proxies technologies and tools"
+    },
+    {
+      "name": "IaaS",
+      "url": "https://techleads.fyi/category/iaas",
+      "description": "IaaS technologies and tools"
+    },
+    {
+      "name": "Mobile frameworks",
+      "url": "https://techleads.fyi/category/mobile-frameworks",
+      "description": "Mobile frameworks technologies and tools"
+    },
+    {
+      "name": "Feature management",
+      "url": "https://techleads.fyi/category/feature-management",
+      "description": "Feature management technologies and tools"
+    },
+    {
+      "name": "Geolocation",
+      "url": "https://techleads.fyi/category/geolocation",
+      "description": "Geolocation technologies and tools"
+    },
+    {
+      "name": "Cryptominers",
+      "url": "https://techleads.fyi/category/cryptominers",
+      "description": "Cryptominers technologies and tools"
+    },
+    {
+      "name": "Danish Agency",
+      "url": "https://techleads.fyi/category/danish-agency",
+      "description": "Danish Agency technologies and tools"
+    },
+    {
+      "name": "South Korean hosting",
+      "url": "https://techleads.fyi/category/south-korean-hosting",
+      "description": "South Korean hosting technologies and tools"
+    },
+    {
+      "name": "Taiwaniese Agency",
+      "url": "https://techleads.fyi/category/taiwaniese-agency",
+      "description": "Taiwaniese Agency technologies and tools"
+    },
+    {
+      "name": "Indonesian Agency",
+      "url": "https://techleads.fyi/category/indonesian-agency",
+      "description": "Indonesian Agency technologies and tools"
+    },
+    {
+      "name": "Singaporean hosting",
+      "url": "https://techleads.fyi/category/singaporean-hosting",
+      "description": "Singaporean hosting technologies and tools"
+    },
+    {
+      "name": "Estonian hosting",
+      "url": "https://techleads.fyi/category/estonian-hosting",
+      "description": "Estonian hosting technologies and tools"
+    },
+    {
+      "name": "Austrian Agency",
+      "url": "https://techleads.fyi/category/austrian-agency",
+      "description": "Austrian Agency technologies and tools"
+    },
+    {
+      "name": "VAT Registration",
+      "url": "https://techleads.fyi/category/vat-registration",
+      "description": "VAT Registration technologies and tools"
+    },
+    {
+      "name": "Thai Agency",
+      "url": "https://techleads.fyi/category/thai-agency",
+      "description": "Thai Agency technologies and tools"
+    },
+    {
+      "name": "Swedish Agency",
+      "url": "https://techleads.fyi/category/swedish-agency",
+      "description": "Swedish Agency technologies and tools"
+    },
+    {
+      "name": "Croatian hosting",
+      "url": "https://techleads.fyi/category/croatian-hosting",
+      "description": "Croatian hosting technologies and tools"
+    },
+    {
+      "name": "Croatian Agency",
+      "url": "https://techleads.fyi/category/croatian-agency",
+      "description": "Croatian Agency technologies and tools"
+    },
+    {
+      "name": "Currency",
+      "url": "https://techleads.fyi/category/currency",
+      "description": "Currency technologies and tools"
+    },
+    {
+      "name": "Slovak Agency",
+      "url": "https://techleads.fyi/category/slovak-agency",
+      "description": "Slovak Agency technologies and tools"
+    },
+    {
+      "name": "Ukrainian Agency",
+      "url": "https://techleads.fyi/category/ukrainian-agency",
+      "description": "Ukrainian Agency technologies and tools"
+    },
+    {
+      "name": "Browser fingerprinting",
+      "url": "https://techleads.fyi/category/browser-fingerprinting",
+      "description": "Browser fingerprinting technologies and tools"
+    },
+    {
+      "name": "Fulfilment",
+      "url": "https://techleads.fyi/category/fulfilment",
+      "description": "Fulfilment technologies and tools"
+    },
+    {
+      "name": "Varnish Server",
+      "url": "https://techleads.fyi/category/varnish-server",
+      "description": "Varnish Server technologies and tools"
+    },
+    {
+      "name": "Lithuanian hosting",
+      "url": "https://techleads.fyi/category/lithuanian-hosting",
+      "description": "Lithuanian hosting technologies and tools"
+    },
+    {
+      "name": "Load balancers",
+      "url": "https://techleads.fyi/category/load-balancers",
+      "description": "Load balancers technologies and tools"
+    },
+    {
+      "name": "DMS",
+      "url": "https://techleads.fyi/category/dms",
+      "description": "DMS technologies and tools"
+    },
+    {
+      "name": "Shipping carriers",
+      "url": "https://techleads.fyi/category/shipping-carriers",
+      "description": "Shipping carriers technologies and tools"
+    },
+    {
+      "name": "Persian hosting",
+      "url": "https://techleads.fyi/category/persian-hosting",
+      "description": "Persian hosting technologies and tools"
+    },
+    {
+      "name": "Argentinian Agency",
+      "url": "https://techleads.fyi/category/argentinian-agency",
+      "description": "Argentinian Agency technologies and tools"
+    },
+    {
+      "name": "Pakistani Agency",
+      "url": "https://techleads.fyi/category/pakistani-agency",
+      "description": "Pakistani Agency technologies and tools"
+    },
+    {
+      "name": "Maltese Agency",
+      "url": "https://techleads.fyi/category/maltese-agency",
+      "description": "Maltese Agency technologies and tools"
+    },
+    {
+      "name": "Finnish Agency",
+      "url": "https://techleads.fyi/category/finnish-agency",
+      "description": "Finnish Agency technologies and tools"
+    },
+    {
+      "name": "Vietnamese Agency",
+      "url": "https://techleads.fyi/category/vietnamese-agency",
+      "description": "Vietnamese Agency technologies and tools"
+    },
+    {
+      "name": "Nigerian Agency",
+      "url": "https://techleads.fyi/category/nigerian-agency",
+      "description": "Nigerian Agency technologies and tools"
+    },
+    {
+      "name": "Cypriot hosting",
+      "url": "https://techleads.fyi/category/cypriot-hosting",
+      "description": "Cypriot hosting technologies and tools"
+    },
+    {
+      "name": "Chinese Agency",
+      "url": "https://techleads.fyi/category/chinese-agency",
+      "description": "Chinese Agency technologies and tools"
+    },
+    {
+      "name": "Argentinian hosting",
+      "url": "https://techleads.fyi/category/argentinian-hosting",
+      "description": "Argentinian hosting technologies and tools"
+    },
+    {
+      "name": "Moldovan hosting",
+      "url": "https://techleads.fyi/category/moldovan-hosting",
+      "description": "Moldovan hosting technologies and tools"
+    },
+    {
+      "name": "Sri Lankan Agency",
+      "url": "https://techleads.fyi/category/sri-lankan-agency",
+      "description": "Sri Lankan Agency technologies and tools"
+    },
+    {
+      "name": "Belarusian hosting",
+      "url": "https://techleads.fyi/category/belarusian-hosting",
+      "description": "Belarusian hosting technologies and tools"
+    },
+    {
+      "name": "Containers",
+      "url": "https://techleads.fyi/category/containers",
+      "description": "Containers technologies and tools"
+    },
+    {
+      "name": "Remote access",
+      "url": "https://techleads.fyi/category/remote-access",
+      "description": "Remote access technologies and tools"
+    },
+    {
+      "name": "SSL/TLS certificate authorities",
+      "url": "https://techleads.fyi/category/ssl-tls-certificate-authorities",
+      "description": "SSL/TLS certificate authorities technologies and tools"
+    },
+    {
+      "name": "Armenian Agency",
+      "url": "https://techleads.fyi/category/armenian-agency",
+      "description": "Armenian Agency technologies and tools"
+    },
+    {
+      "name": "Lebanese Agency",
+      "url": "https://techleads.fyi/category/lebanese-agency",
+      "description": "Lebanese Agency technologies and tools"
+    },
+    {
+      "name": "Serbian Agency",
+      "url": "https://techleads.fyi/category/serbian-agency",
+      "description": "Serbian Agency technologies and tools"
+    },
+    {
+      "name": "Peruvian Agency",
+      "url": "https://techleads.fyi/category/peruvian-agency",
+      "description": "Peruvian Agency technologies and tools"
+    },
+    {
+      "name": "Philippine Agency",
+      "url": "https://techleads.fyi/category/philippine-agency",
+      "description": "Philippine Agency technologies and tools"
+    },
+    {
+      "name": "Philippine hosting",
+      "url": "https://techleads.fyi/category/philippine-hosting",
+      "description": "Philippine hosting technologies and tools"
+    },
+    {
+      "name": "Saint Helenian hosting",
+      "url": "https://techleads.fyi/category/saint-helenian-hosting",
+      "description": "Saint Helenian hosting technologies and tools"
+    },
+    {
+      "name": "South Korean Agency",
+      "url": "https://techleads.fyi/category/south-korean-agency",
+      "description": "South Korean Agency technologies and tools"
+    },
+    {
+      "name": "TLD Redirects",
+      "url": "https://techleads.fyi/category/tld-redirects",
+      "description": "TLD Redirects technologies and tools"
+    },
+    {
+      "name": "Kazakh hosting",
+      "url": "https://techleads.fyi/category/kazakh-hosting",
+      "description": "Kazakh hosting technologies and tools"
+    },
+    {
+      "name": "Emirati hosting",
+      "url": "https://techleads.fyi/category/emirati-hosting",
+      "description": "Emirati hosting technologies and tools"
+    },
+    {
+      "name": "Chilean Agency",
+      "url": "https://techleads.fyi/category/chilean-agency",
+      "description": "Chilean Agency technologies and tools"
+    },
+    {
+      "name": "Slovenian Agency",
+      "url": "https://techleads.fyi/category/slovenian-agency",
+      "description": "Slovenian Agency technologies and tools"
+    },
+    {
+      "name": "Feed readers",
+      "url": "https://techleads.fyi/category/feed-readers",
+      "description": "Feed readers technologies and tools"
+    },
+    {
+      "name": "Network storage",
+      "url": "https://techleads.fyi/category/network-storage",
+      "description": "Network storage technologies and tools"
+    },
+    {
+      "name": "CI",
+      "url": "https://techleads.fyi/category/ci",
+      "description": "CI technologies and tools"
+    },
+    {
+      "name": "Database managers",
+      "url": "https://techleads.fyi/category/database-managers",
+      "description": "Database managers technologies and tools"
+    },
+    {
+      "name": "Icelandic Agency",
+      "url": "https://techleads.fyi/category/icelandic-agency",
+      "description": "Icelandic Agency technologies and tools"
+    },
+    {
+      "name": "Coco Islander hosting",
+      "url": "https://techleads.fyi/category/coco-islander-hosting",
+      "description": "Coco Islander hosting technologies and tools"
+    },
+    {
+      "name": "Tunisian Agency",
+      "url": "https://techleads.fyi/category/tunisian-agency",
+      "description": "Tunisian Agency technologies and tools"
+    },
+    {
+      "name": "Tunisian hosting",
+      "url": "https://techleads.fyi/category/tunisian-hosting",
+      "description": "Tunisian hosting technologies and tools"
+    },
+    {
+      "name": "Mexican hosting",
+      "url": "https://techleads.fyi/category/mexican-hosting",
+      "description": "Mexican hosting technologies and tools"
+    },
+    {
+      "name": "Serbian hosting",
+      "url": "https://techleads.fyi/category/serbian-hosting",
+      "description": "Serbian hosting technologies and tools"
+    },
+    {
+      "name": "Samoan Agency",
+      "url": "https://techleads.fyi/category/samoan-agency",
+      "description": "Samoan Agency technologies and tools"
+    },
+    {
+      "name": "Luxembourg Agency",
+      "url": "https://techleads.fyi/category/luxembourg-agency",
+      "description": "Luxembourg Agency technologies and tools"
+    },
+    {
+      "name": "Taiwaniese hosting",
+      "url": "https://techleads.fyi/category/taiwaniese-hosting",
+      "description": "Taiwaniese hosting technologies and tools"
+    },
+    {
+      "name": "Ghanaian Agency",
+      "url": "https://techleads.fyi/category/ghanaian-agency",
+      "description": "Ghanaian Agency technologies and tools"
+    },
+    {
+      "name": "Turkish Agency",
+      "url": "https://techleads.fyi/category/turkish-agency",
+      "description": "Turkish Agency technologies and tools"
+    },
+    {
+      "name": "Bahamian hosting",
+      "url": "https://techleads.fyi/category/bahamian-hosting",
+      "description": "Bahamian hosting technologies and tools"
+    },
+    {
+      "name": "Mongolian hosting",
+      "url": "https://techleads.fyi/category/mongolian-hosting",
+      "description": "Mongolian hosting technologies and tools"
+    },
+    {
+      "name": "Bulgarian Agency",
+      "url": "https://techleads.fyi/category/bulgarian-agency",
+      "description": "Bulgarian Agency technologies and tools"
+    },
+    {
+      "name": "Latvian hosting",
+      "url": "https://techleads.fyi/category/latvian-hosting",
+      "description": "Latvian hosting technologies and tools"
+    },
+    {
+      "name": "Lithuanian Agency",
+      "url": "https://techleads.fyi/category/lithuanian-agency",
+      "description": "Lithuanian Agency technologies and tools"
+    },
+    {
+      "name": "Ticket booking",
+      "url": "https://techleads.fyi/category/ticket-booking",
+      "description": "Ticket booking technologies and tools"
+    },
+    {
+      "name": "Domain parking",
+      "url": "https://techleads.fyi/category/domain-parking",
+      "description": "Domain parking technologies and tools"
+    },
+    {
+      "name": "Accounting",
+      "url": "https://techleads.fyi/category/accounting",
+      "description": "Accounting technologies and tools"
+    },
+    {
+      "name": "ERP",
+      "url": "https://techleads.fyi/category/erp",
+      "description": "ERP technologies and tools"
+    },
+    {
+      "name": "Saudi Arabian Agency",
+      "url": "https://techleads.fyi/category/saudi-arabian-agency",
+      "description": "Saudi Arabian Agency technologies and tools"
+    },
+    {
+      "name": "Belarusian Agency",
+      "url": "https://techleads.fyi/category/belarusian-agency",
+      "description": "Belarusian Agency technologies and tools"
+    },
+    {
+      "name": "Israeli Agency",
+      "url": "https://techleads.fyi/category/israeli-agency",
+      "description": "Israeli Agency technologies and tools"
+    },
+    {
+      "name": "Bosnia hosting",
+      "url": "https://techleads.fyi/category/bosnia-hosting",
+      "description": "Bosnia hosting technologies and tools"
+    },
+    {
+      "name": "Hong Kong Agency",
+      "url": "https://techleads.fyi/category/hong-kong-agency",
+      "description": "Hong Kong Agency technologies and tools"
+    },
+    {
+      "name": "Moroccan hosting",
+      "url": "https://techleads.fyi/category/moroccan-hosting",
+      "description": "Moroccan hosting technologies and tools"
+    },
+    {
+      "name": "Ethiopian hosting",
+      "url": "https://techleads.fyi/category/ethiopian-hosting",
+      "description": "Ethiopian hosting technologies and tools"
+    },
+    {
+      "name": "Moroccan Agency",
+      "url": "https://techleads.fyi/category/moroccan-agency",
+      "description": "Moroccan Agency technologies and tools"
+    },
+    {
+      "name": "Antiguan hosting",
+      "url": "https://techleads.fyi/category/antiguan-hosting",
+      "description": "Antiguan hosting technologies and tools"
+    },
+    {
+      "name": "Costa Rican Agency",
+      "url": "https://techleads.fyi/category/costa-rican-agency",
+      "description": "Costa Rican Agency technologies and tools"
+    },
+    {
+      "name": "Uruguayan hosting",
+      "url": "https://techleads.fyi/category/uruguayan-hosting",
+      "description": "Uruguayan hosting technologies and tools"
+    },
+    {
+      "name": "Namibian Agency",
+      "url": "https://techleads.fyi/category/namibian-agency",
+      "description": "Namibian Agency technologies and tools"
+    },
+    {
+      "name": "Kenyan hosting",
+      "url": "https://techleads.fyi/category/kenyan-hosting",
+      "description": "Kenyan hosting technologies and tools"
+    },
+    {
+      "name": "Guatemalan hosting",
+      "url": "https://techleads.fyi/category/guatemalan-hosting",
+      "description": "Guatemalan hosting technologies and tools"
+    },
+    {
+      "name": "Egyptian hosting",
+      "url": "https://techleads.fyi/category/egyptian-hosting",
+      "description": "Egyptian hosting technologies and tools"
+    },
+    {
+      "name": "Kuwaiti Agency",
+      "url": "https://techleads.fyi/category/kuwaiti-agency",
+      "description": "Kuwaiti Agency technologies and tools"
+    },
+    {
+      "name": "Icelandic hosting",
+      "url": "https://techleads.fyi/category/icelandic-hosting",
+      "description": "Icelandic hosting technologies and tools"
+    },
+    {
+      "name": "British Virgin Island Agency",
+      "url": "https://techleads.fyi/category/british-virgin-island-agency",
+      "description": "British Virgin Island Agency technologies and tools"
+    },
+    {
+      "name": "Nicaraguan Agency",
+      "url": "https://techleads.fyi/category/nicaraguan-agency",
+      "description": "Nicaraguan Agency technologies and tools"
+    },
+    {
+      "name": "Kyrgyzstani hosting",
+      "url": "https://techleads.fyi/category/kyrgyzstani-hosting",
+      "description": "Kyrgyzstani hosting technologies and tools"
+    },
+    {
+      "name": "Egyptian Agency",
+      "url": "https://techleads.fyi/category/egyptian-agency",
+      "description": "Egyptian Agency technologies and tools"
+    },
+    {
+      "name": "Bermudan Agency",
+      "url": "https://techleads.fyi/category/bermudan-agency",
+      "description": "Bermudan Agency technologies and tools"
+    },
+    {
+      "name": "Guatemalan Agency",
+      "url": "https://techleads.fyi/category/guatemalan-agency",
+      "description": "Guatemalan Agency technologies and tools"
+    },
+    {
+      "name": "Slovenian hosting",
+      "url": "https://techleads.fyi/category/slovenian-hosting",
+      "description": "Slovenian hosting technologies and tools"
+    },
+    {
+      "name": "Libyan Agency",
+      "url": "https://techleads.fyi/category/libyan-agency",
+      "description": "Libyan Agency technologies and tools"
+    },
+    {
+      "name": "Azerbaijani Agency",
+      "url": "https://techleads.fyi/category/azerbaijani-agency",
+      "description": "Azerbaijani Agency technologies and tools"
+    },
+    {
+      "name": "Nepalese Agency",
+      "url": "https://techleads.fyi/category/nepalese-agency",
+      "description": "Nepalese Agency technologies and tools"
+    },
+    {
+      "name": "Pakistani hosting",
+      "url": "https://techleads.fyi/category/pakistani-hosting",
+      "description": "Pakistani hosting technologies and tools"
+    },
+    {
+      "name": "Tanzanian Agency",
+      "url": "https://techleads.fyi/category/tanzanian-agency",
+      "description": "Tanzanian Agency technologies and tools"
+    },
+    {
+      "name": "Hungarian Agency",
+      "url": "https://techleads.fyi/category/hungarian-agency",
+      "description": "Hungarian Agency technologies and tools"
+    },
+    {
+      "name": "South Georgian hosting",
+      "url": "https://techleads.fyi/category/south-georgian-hosting",
+      "description": "South Georgian hosting technologies and tools"
+    },
+    {
+      "name": "Burmese Agency",
+      "url": "https://techleads.fyi/category/burmese-agency",
+      "description": "Burmese Agency technologies and tools"
+    },
+    {
+      "name": "Nepalese hosting",
+      "url": "https://techleads.fyi/category/nepalese-hosting",
+      "description": "Nepalese hosting technologies and tools"
+    },
+    {
+      "name": "Gibraltar Agency",
+      "url": "https://techleads.fyi/category/gibraltar-agency",
+      "description": "Gibraltar Agency technologies and tools"
+    },
+    {
+      "name": "Sri Lankan hosting",
+      "url": "https://techleads.fyi/category/sri-lankan-hosting",
+      "description": "Sri Lankan hosting technologies and tools"
+    },
+    {
+      "name": "Reunion Islander Agency",
+      "url": "https://techleads.fyi/category/reunion-islander-agency",
+      "description": "Reunion Islander Agency technologies and tools"
+    },
+    {
+      "name": "Kazakh Agency",
+      "url": "https://techleads.fyi/category/kazakh-agency",
+      "description": "Kazakh Agency technologies and tools"
+    },
+    {
+      "name": "Albanian Agency",
+      "url": "https://techleads.fyi/category/albanian-agency",
+      "description": "Albanian Agency technologies and tools"
+    },
+    {
+      "name": "Turkmen Agency",
+      "url": "https://techleads.fyi/category/turkmen-agency",
+      "description": "Turkmen Agency technologies and tools"
+    },
+    {
+      "name": "Coco Islander Agency",
+      "url": "https://techleads.fyi/category/coco-islander-agency",
+      "description": "Coco Islander Agency technologies and tools"
+    },
+    {
+      "name": "American Samoan hosting",
+      "url": "https://techleads.fyi/category/american-samoan-hosting",
+      "description": "American Samoan hosting technologies and tools"
+    },
+    {
+      "name": "Ecuadorian hosting",
+      "url": "https://techleads.fyi/category/ecuadorian-hosting",
+      "description": "Ecuadorian hosting technologies and tools"
+    },
+    {
+      "name": "Zimbabwean Agency",
+      "url": "https://techleads.fyi/category/zimbabwean-agency",
+      "description": "Zimbabwean Agency technologies and tools"
+    },
+    {
+      "name": "Rwandan hosting",
+      "url": "https://techleads.fyi/category/rwandan-hosting",
+      "description": "Rwandan hosting technologies and tools"
+    },
+    {
+      "name": "Uzbekistani Agency",
+      "url": "https://techleads.fyi/category/uzbekistani-agency",
+      "description": "Uzbekistani Agency technologies and tools"
+    },
+    {
+      "name": "Irish hosting",
+      "url": "https://techleads.fyi/category/irish-hosting",
+      "description": "Irish hosting technologies and tools"
+    }
+  ],
+  "technologies": []
+}

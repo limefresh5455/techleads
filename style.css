@@ -1,0 +1,136 @@
+:root {
+    --bg-color: #ffffff;
+    --text-primary: #1f2937;
+    --border-color: #e5e7eb;
+    --pill-active-bg: #fcd34d;
+    --pill-active-text: #111827;
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: var(--font-sans);
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    display: flex;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 400px; /* To match the compact screenshot look */
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    height: 90vh; /* Fixed height to allow scrolling inside */
+}
+
+/* Category Pills */
+.categories-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+}
+
+.pill {
+    background-color: #ffffff;
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 0.4rem 0.8rem;
+    border-radius: 9999px;
+    font-size: 0.85rem;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.pill:hover {
+    background-color: #f9fafb;
+}
+
+.pill.active {
+    background-color: var(--pill-active-bg);
+    border-color: var(--pill-active-bg);
+    color: var(--pill-active-text);
+}
+
+/* List Container */
+.list-container {
+    flex: 1;
+    overflow-y: auto;
+    padding-right: 0.5rem;
+}
+
+/* Custom Scrollbar */
+.list-container::-webkit-scrollbar {
+    width: 6px;
+}
+.list-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+.list-container::-webkit-scrollbar-thumb {
+    background: #9ca3af;
+    border-radius: 9999px;
+}
+
+.loading {
+    text-align: center;
+    color: #6b7280;
+    padding: 2rem 0;
+    font-size: 0.9rem;
+}
+
+.tech-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1.25rem;
+}
+
+.tech-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+/* Checkbox */
+.tech-checkbox {
+    width: 16px;
+    height: 16px;
+    border: 1px solid #9ca3af;
+    border-radius: 3px;
+    cursor: pointer;
+    accent-color: var(--text-primary);
+}
+
+/* Icon */
+.tech-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 0.9rem;
+    flex-shrink: 0;
+}
+
+/* Text */
+.tech-name {
+    font-size: 1rem;
+    font-weight: 400;
+    color: #1f2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}

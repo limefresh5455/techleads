@@ -122,6 +122,16 @@ export function searchTechnologies(q) {
   return request(`/api/technologies/search?q=${query}`)
 }
 
+export function fetchTechnologies(q = '', category = '', offset = 0, limit = 200) {
+  const searchParams = new URLSearchParams()
+  if (q) searchParams.append('q', q)
+  if (category && category !== 'all') searchParams.append('category', category)
+  searchParams.append('offset', offset.toString())
+  searchParams.append('limit', limit.toString())
+  
+  return request(`/api/technologies?${searchParams.toString()}`)
+}
+
 export function submitContact(payload) {
   return request('/api/contact', {
     method: 'POST',

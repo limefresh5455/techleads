@@ -236,22 +236,13 @@ def get_landing(db: Session = Depends(get_db)):
     # Full catalog can be 30k+ rows — landing only needs featured/popular chips.
     technologies = (
         db.query(Technology)
-        .filter(
-            or_(
-                Technology.is_popular.is_(True),
-                Technology.is_featured.is_(True),
-                Technology.sort_order < 10_000,
-            )
-        )
         .order_by(Technology.sort_order.asc(), Technology.website_count.desc())
-        .limit(200)
         .all()
     )
     popular_technologies = (
         db.query(Technology)
         .filter(Technology.is_popular.is_(True))
         .order_by(Technology.website_count.desc(), Technology.sort_order.asc())
-        .limit(15)
         .all()
     )
     categories = db.query(Category).order_by(Category.sort_order).all()
@@ -527,6 +518,7 @@ def get_content(db: Session = Depends(get_db)):
 @router.get("/technologies", response_model=list[TechnologyOut])
 def list_technologies(
     q: str = "",
+    category: str = "",
     limit: int = Query(default=200, ge=1, le=2000),
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
@@ -540,6 +532,12 @@ def list_technologies(
                 Technology.slug.ilike(f"%{token}%"),
             )
         )
+    if category.strip() and category.strip() != "all":
+        cat_slug = category.strip()
+        cat = db.query(Category).filter(Category.slug == cat_slug).first()
+        if cat:
+            query = query.filter(Technology.category_id == cat.id)
+            
     return (
         query.order_by(Technology.website_count.desc(), Technology.name.asc())
         .offset(offset)

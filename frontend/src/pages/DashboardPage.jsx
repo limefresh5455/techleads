@@ -6,10 +6,11 @@ import {
   Loader2,
   Search,
 } from 'lucide-react'
-import { detectUrl, exportDashboard, fetchDashboardSearch, fetchWebsiteDetail, searchTechnologies } from '../api'
+import { detectUrl, exportDashboard, fetchDashboardSearch, fetchWebsiteDetail, fetchTechnologies } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
 import SiteDetailsPanel from '../components/SiteDetailsPanel'
 import CreditsPanel from '../components/CreditsPanel'
+import CategoryModal from '../components/CategoryModal'
 
 function TechBadge({ tech }) {
   return (
@@ -46,6 +47,10 @@ export default function DashboardPage() {
   const [analyzing, setAnalyzing] = useState(false)
   const [exporting, setExporting] = useState(false)
   const [remoteTechs, setRemoteTechs] = useState([])
+  const [techOffset, setTechOffset] = useState(0)
+  const [hasMoreTechs, setHasMoreTechs] = useState(true)
+  const [isFetchingTechs, setIsFetchingTechs] = useState(false)
+  const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
 
   const categoryOptions = useMemo(() => {
     const seen = new Set()
@@ -62,7 +67,6 @@ export default function DashboardPage() {
       if (seen.has(cat.slug)) continue
       seen.add(cat.slug)
       top.push({ slug: cat.slug, name: cat.name })
-      if (top.length >= 15) break
     }
 
     // Keep current selection visible if it falls outside the top 15.
@@ -75,46 +79,63 @@ export default function DashboardPage() {
   }, [categories, selectedCategory])
 
   useEffect(() => {
-    const q = techSearch.trim()
-    if (q.length < 2) {
-      setRemoteTechs([])
-      return undefined
-    }
     let cancelled = false
-    const timer = setTimeout(async () => {
+    const load = async () => {
+      setIsFetchingTechs(true)
       try {
-        const rows = await searchTechnologies(q)
-        if (!cancelled) setRemoteTechs(Array.isArray(rows) ? rows : [])
+        const q = techSearch.trim()
+        const rows = await fetchTechnologies(q, selectedCategory, 0, 50)
+        if (!cancelled) {
+          setRemoteTechs(rows)
+          setTechOffset(rows.length)
+          setHasMoreTechs(rows.length === 50)
+        }
       } catch {
-        if (!cancelled) setRemoteTechs([])
+        if (!cancelled) {
+          setRemoteTechs([])
+          setHasMoreTechs(false)
+        }
+      } finally {
+        if (!cancelled) setIsFetchingTechs(false)
       }
-    }, 250)
+    }
+    
+    const timer = setTimeout(load, 300)
     return () => {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [techSearch])
+  }, [techSearch, selectedCategory])
+
+  const loadMoreTechs = useCallback(async () => {
+    if (isFetchingTechs || !hasMoreTechs) return
+    setIsFetchingTechs(true)
+    try {
+      const q = techSearch.trim()
+      const rows = await fetchTechnologies(q, selectedCategory, techOffset, 50)
+      setRemoteTechs(prev => {
+        const existingIds = new Set(prev.map(t => t.id))
+        const newRows = rows.filter(r => !existingIds.has(r.id))
+        return [...prev, ...newRows]
+      })
+      setTechOffset(prev => prev + rows.length)
+      setHasMoreTechs(rows.length === 50)
+    } catch {
+      // ignore
+    } finally {
+      setIsFetchingTechs(false)
+    }
+  }, [techSearch, selectedCategory, techOffset, isFetchingTechs, hasMoreTechs])
 
   const filteredTechnologies = useMemo(() => {
-    const q = techSearch.trim().toLowerCase()
-    // Prefer DB-backed search results so the full techleads.fyi catalog is reachable.
-    let list = q.length >= 2 && remoteTechs.length ? [...remoteTechs] : [...technologies]
-    if (selectedCategory !== 'all') {
-      const cat = categories.find((c) => c.slug === selectedCategory)
-      if (cat) list = list.filter((t) => t.category_id === cat.id)
-    }
-    if (q && !(q.length >= 2 && remoteTechs.length)) {
-      list = list.filter((t) => t.name.toLowerCase().includes(q) || t.slug?.toLowerCase().includes(q))
-    }
-    list.sort((a, b) => {
-      const byCount = (b.website_count || 0) - (a.website_count || 0)
-      if (byCount !== 0) return byCount
-      return (a.sort_order ?? 0) - (b.sort_order ?? 0)
-    })
-    // Keep selected techs visible, then fill with top results (max 15).
-    const selected = list.filter((t) => selectedTechs.includes(t.slug))
-    const rest = list.filter((t) => !selectedTechs.includes(t.slug))
-    const merged = [...selected, ...rest]
+    const list = [...remoteTechs]
+    const selectedObjs = selectedTechs.map(slug => 
+        list.find(t => t.slug === slug) || technologies.find(t => t.slug === slug)
+    ).filter(Boolean)
+    
+    const unselectedList = list.filter(t => !selectedTechs.includes(t.slug))
+    const merged = [...selectedObjs, ...unselectedList]
+    
     const seen = new Set()
     const top = []
     for (const tech of merged) {
@@ -122,10 +143,16 @@ export default function DashboardPage() {
       if (seen.has(key)) continue
       seen.add(key)
       top.push(tech)
-      if (top.length >= 15) break
     }
     return top
-  }, [technologies, categories, selectedCategory, techSearch, remoteTechs, selectedTechs])
+  }, [remoteTechs, selectedTechs, technologies])
+
+  const handleTechScroll = (e) => {
+    const { scrollTop, scrollHeight, clientHeight } = e.target
+    if (scrollHeight - scrollTop - clientHeight < 50) {
+      loadMoreTechs()
+    }
+  }
 
   const loadResults = useCallback(async () => {
     setLoading(true)
@@ -388,6 +415,20 @@ export default function DashboardPage() {
     [selectedTechs, technologies],
   )
 
+  const visibleCategories = useMemo(() => {
+    const sliced = categoryOptions.slice(0, 15)
+    if (selectedCategory !== 'all') {
+      const isVisible = sliced.some((c) => c.slug === selectedCategory)
+      if (!isVisible) {
+        const selectedObj = categoryOptions.find((c) => c.slug === selectedCategory)
+        if (selectedObj) {
+          sliced.push(selectedObj)
+        }
+      }
+    }
+    return sliced
+  }, [categoryOptions, selectedCategory])
+
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-6">
       <form onSubmit={onAnalyzeUrl} className="mb-6 flex max-w-2xl gap-2">
@@ -471,7 +512,7 @@ export default function DashboardPage() {
               onChange={(e) => setTechSearch(e.target.value)}
             />
             <div className="mt-3 flex flex-wrap gap-2">
-              {categoryOptions.map((cat) => (
+              {visibleCategories.map((cat) => (
                 <button
                   key={cat.slug}
                   type="button"
@@ -485,8 +526,17 @@ export default function DashboardPage() {
                   {cat.name}
                 </button>
               ))}
+              {categoryOptions.length > 15 && (
+                <button
+                  type="button"
+                  onClick={() => setIsCategoryModalOpen(true)}
+                  className="rounded-full border border-brand bg-brand px-2.5 py-1 text-xs font-medium text-on-brand hover:opacity-90"
+                >
+                  View More
+                </button>
+              )}
             </div>
-            <div className="mt-3 max-h-72 space-y-1 overflow-y-auto pr-1">
+            <div className="mt-3 max-h-72 space-y-1 overflow-y-auto pr-1" onScroll={handleTechScroll}>
               {filteredTechnologies.map((tech) => {
                 const checked = selectedTechs.includes(tech.slug)
                 return (
@@ -697,6 +747,14 @@ export default function DashboardPage() {
           )}
         </aside>
       </div>
+
+      <CategoryModal
+        isOpen={isCategoryModalOpen}
+        onClose={() => setIsCategoryModalOpen(false)}
+        categoryOptions={categoryOptions}
+        selectedCategory={selectedCategory}
+        onSelectCategory={setSelectedCategory}
+      />
     </div>
   )
 }
