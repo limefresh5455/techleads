@@ -435,3 +435,14 @@ class CustomDataBlock(Base):
     title = Column(String(160), nullable=False)
     description = Column(Text, nullable=False)
     sort_order = Column(Integer, default=0)
+
+
+class OTP(Base):
+    __tablename__ = "otps"
+
+    id = Column(Integer, primary_key=True, index=True)
+    email = Column(String(255), nullable=False, index=True)
+    otp_hash = Column(String(255), nullable=False)
+    expires_at = Column(DateTime(timezone=True), nullable=False)
+    is_verified = Column(Boolean, default=False)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

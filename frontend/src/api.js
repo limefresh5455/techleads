@@ -128,7 +128,7 @@ export function fetchTechnologies(q = '', category = '', offset = 0, limit = 200
   if (category && category !== 'all') searchParams.append('category', category)
   searchParams.append('offset', offset.toString())
   searchParams.append('limit', limit.toString())
-  
+
   return request(`/api/technologies?${searchParams.toString()}`)
 }
 
@@ -164,3 +164,25 @@ export function confirmCheckoutSession(sessionId) {
   const params = new URLSearchParams({ session_id: sessionId })
   return request(`/api/billing/confirm?${params.toString()}`)
 }
+
+export function sendOtp(payload) {
+  return request('/api/auth/send-otp', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function verifyOtp(payload) {
+  return request('/api/auth/verify-otp', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+export function resetPassword(payload) {
+  return request('/api/auth/reset-password', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+

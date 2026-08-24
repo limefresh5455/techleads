@@ -37,6 +37,15 @@ class Settings(BaseSettings):
     crawl_timeout_seconds: int = 15
     crawl_user_agent: str = "TechLeadsBot/1.0 (+https://techleads.ai)"
 
+    # Email (FastAPI-Mail)
+    mail_username: str = ""
+    mail_password: str = ""
+    mail_from: str = "noreply@techleads.ai"
+    mail_port: int = 587
+    mail_server: str = "smtp.gmail.com"
+    mail_starttls: bool = True
+    mail_ssl_tls: bool = False
+
     @field_validator("database_url", mode="before")
     @classmethod
     def normalize_database_url(cls, value: str) -> str:

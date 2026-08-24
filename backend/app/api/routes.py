@@ -36,6 +36,7 @@ from app.models import (
     Technology,
     TrustLogo,
     User,
+    OTP,
     Website,
     WebsiteTechnology,
 )
@@ -69,6 +70,10 @@ from app.schemas import (
     LandingPayload,
     LegalLinkOut,
     LoginRequest,
+    SendOTPRequest,
+    VerifyOTPRequest,
+    ResetPasswordRequest,
+    VerifyOTPResponse,
     NavItemOut,
     PricingPlanOut,
     SignupRequest,
@@ -338,6 +343,110 @@ def login(payload: LoginRequest, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(user)
     return AuthResponse(token=token, user=user)
+
+
+@router.post("/auth/send-otp")
+async def send_otp(payload: SendOTPRequest, db: Session = Depends(get_db)):
+    from datetime import datetime, timedelta, timezone
+    import secrets
+    from app.services.email import send_otp_email
+    
+    email = payload.email.lower().strip()
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+        
+    otp = str(secrets.randbelow(1000000)).zfill(6)
+    
+    # Store OTP
+    otp_record = OTP(
+        email=email,
+        otp_hash=hash_password(otp),
+        expires_at=datetime.now(timezone.utc) + timedelta(minutes=10)
+    )
+    db.add(otp_record)
+    db.commit()
+    
+    # Send email
+    try:
+        await send_otp_email(email_to=email, otp=otp)
+    except Exception as e:
+        db.delete(otp_record)
+        db.commit()
+        print(f"Email Sending Error: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Failed to send email: {str(e)}")
+        
+    return {"message": "OTP sent successfully."}
+
+
+@router.post("/auth/verify-otp", response_model=VerifyOTPResponse)
+def verify_otp(payload: VerifyOTPRequest, db: Session = Depends(get_db)):
+    from datetime import datetime, timezone
+    email = payload.email.lower().strip()
+    
+    otp_records = (
+        db.query(OTP)
+        .filter(OTP.email == email, OTP.is_verified == False)
+        .all()
+    )
+    
+    valid_record = None
+    now = datetime.now(timezone.utc)
+    for record in otp_records:
+        if record.expires_at.tzinfo is None:
+            # handle naive datetime from db if needed
+            record.expires_at = record.expires_at.replace(tzinfo=timezone.utc)
+            
+        if record.expires_at > now:
+            if verify_password(payload.otp, record.otp_hash):
+                valid_record = record
+                break
+                
+    if not valid_record:
+        raise HTTPException(status_code=400, detail="Invalid or expired OTP.")
+        
+    valid_record.is_verified = True
+    db.commit()
+    return VerifyOTPResponse(message="OTP verified successfully.", verified=True)
+
+
+@router.post("/auth/reset-password")
+def reset_password(payload: ResetPasswordRequest, db: Session = Depends(get_db)):
+    from datetime import datetime, timezone
+    email = payload.email.lower().strip()
+
+    otp_record = (
+        db.query(OTP)
+        .filter(
+            OTP.email == email, 
+            OTP.is_verified == True
+        )
+        .first()
+    )
+    
+    if not otp_record:
+        raise HTTPException(status_code=400, detail="No verified OTP found. Please request a new one.")
+        
+    now = datetime.now(timezone.utc)
+    if otp_record.expires_at.tzinfo is None:
+        otp_record.expires_at = otp_record.expires_at.replace(tzinfo=timezone.utc)
+        
+    if otp_record.expires_at < now:
+        db.delete(otp_record)
+        db.commit()
+        raise HTTPException(status_code=400, detail="Reset session has expired. Please request a new OTP.")
+        
+    user = db.query(User).filter(User.email == email).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found.")
+        
+    user.password_hash = hash_password(payload.new_password)
+    
+    # Delete the OTP record (and any other OTPs for this email)
+    db.query(OTP).filter(OTP.email == email).delete()
+    db.commit()
+    
+    return {"message": "Password has been successfully reset."}
 
 
 @router.get("/auth/google")
