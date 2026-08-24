@@ -450,7 +450,7 @@ export default function DashboardPage() {
 
       <div className="grid gap-6 xl:grid-cols-[280px_minmax(0,1fr)_260px]">
         {/* Filters */}
-        <aside className="rounded-2xl border border-border bg-card p-4 shadow-sm">
+        <aside className="self-start rounded-2xl border border-border bg-card p-4 shadow-sm">
           <div className="flex items-center gap-2 text-sm font-semibold text-ink">
             <Filter className="h-4 w-4" />
             Filters
@@ -472,36 +472,7 @@ export default function DashboardPage() {
             </button>
           </form>
 
-          <div className="mt-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Filter mode</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
-              {[
-                { id: 'any', label: 'Match any' },
-                { id: 'all', label: 'Match all' },
-              ].map((mode) => (
-                <button
-                  key={mode.id}
-                  type="button"
-                  onClick={() => {
-                    setMatchMode(mode.id)
-                    setPage(1)
-                  }}
-                  className={`rounded-lg border px-3 py-2 text-sm font-medium ${
-                    matchMode === mode.id
-                      ? 'border-brand bg-brand text-on-brand'
-                      : 'border-border text-ink hover:bg-surface'
-                  }`}
-                >
-                  {mode.label}
-                </button>
-              ))}
-            </div>
-            <p className="mt-2 text-xs text-muted">
-              {matchMode === 'any'
-                ? 'Sites using at least one selected technology.'
-                : 'Sites using all selected technologies.'}
-            </p>
-          </div>
+
 
           <div className="mt-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Technologies</p>
