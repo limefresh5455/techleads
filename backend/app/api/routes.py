@@ -2,7 +2,7 @@ from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from uuid import uuid4
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks
 from fastapi.responses import RedirectResponse
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
@@ -739,7 +739,9 @@ def list_nav(db: Session = Depends(get_db)):
 
 
 @router.post("/contact", response_model=ContactOut, status_code=status.HTTP_201_CREATED)
-def create_contact(payload: ContactCreate, db: Session = Depends(get_db)):
+def create_contact(payload: ContactCreate, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    from app.services.email import send_contact_acknowledgment_email
+
     row = ContactMessage(
         name=payload.name.strip(),
         email=str(payload.email).lower(),
@@ -749,6 +751,15 @@ def create_contact(payload: ContactCreate, db: Session = Depends(get_db)):
     db.add(row)
     db.commit()
     db.refresh(row)
+
+    background_tasks.add_task(
+        send_contact_acknowledgment_email,
+        email_to=row.email,
+        name=row.name,
+        company=row.company_website,
+        message_body=row.message
+    )
+
     return row
 
 
