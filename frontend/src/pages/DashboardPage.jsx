@@ -5,6 +5,7 @@ import {
   Filter,
   Loader2,
   Search,
+  X,
 } from 'lucide-react'
 import { detectUrl, exportDashboard, fetchDashboardSearch, fetchWebsiteDetail, fetchTechnologies } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
@@ -482,12 +483,26 @@ export default function DashboardPage() {
 
           <div className="mt-5">
             <p className="text-xs font-semibold uppercase tracking-wide text-muted">Technologies & Categories</p>
-            <input
-              className="mt-2 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand"
-              placeholder="Search technologies or categories..."
-              value={techSearch}
-              onChange={(e) => setTechSearch(e.target.value)}
-            />
+            <div className="relative mt-2">
+              <input
+                className={`w-full rounded-lg border border-border py-2 pl-3 text-sm outline-none focus:border-brand ${
+                  techSearch ? 'pr-8' : 'pr-3'
+                }`}
+                placeholder="Search technologies or categories..."
+                value={techSearch}
+                onChange={(e) => setTechSearch(e.target.value)}
+              />
+              {techSearch && (
+                <button
+                  type="button"
+                  onClick={() => setTechSearch('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-muted hover:text-ink"
+                  aria-label="Clear search"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
             <div className="mt-3 flex flex-wrap gap-2">
               {visibleCategories.map((cat) => (
                 <button
