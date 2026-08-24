@@ -415,19 +415,25 @@ export default function DashboardPage() {
     [selectedTechs, technologies],
   )
 
+  const filteredCategoryOptions = useMemo(() => {
+    const search = techSearch.trim().toLowerCase()
+    if (!search) return categoryOptions
+    return categoryOptions.filter((cat) => cat.name.toLowerCase().includes(search) || cat.slug === 'all')
+  }, [categoryOptions, techSearch])
+
   const visibleCategories = useMemo(() => {
-    const sliced = categoryOptions.slice(0, 15)
+    const sliced = filteredCategoryOptions.slice(0, 15)
     if (selectedCategory !== 'all') {
       const isVisible = sliced.some((c) => c.slug === selectedCategory)
       if (!isVisible) {
-        const selectedObj = categoryOptions.find((c) => c.slug === selectedCategory)
+        const selectedObj = filteredCategoryOptions.find((c) => c.slug === selectedCategory)
         if (selectedObj) {
           sliced.push(selectedObj)
         }
       }
     }
     return sliced
-  }, [categoryOptions, selectedCategory])
+  }, [filteredCategoryOptions, selectedCategory])
 
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-6">
@@ -475,10 +481,10 @@ export default function DashboardPage() {
 
 
           <div className="mt-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Technologies</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Technologies & Categories</p>
             <input
               className="mt-2 w-full rounded-lg border border-border px-3 py-2 text-sm outline-none focus:border-brand"
-              placeholder="Search technologies..."
+              placeholder="Search technologies or categories..."
               value={techSearch}
               onChange={(e) => setTechSearch(e.target.value)}
             />
@@ -497,7 +503,7 @@ export default function DashboardPage() {
                   {cat.name}
                 </button>
               ))}
-              {categoryOptions.length > 15 && (
+              {filteredCategoryOptions.length > 15 && (
                 <button
                   type="button"
                   onClick={() => setIsCategoryModalOpen(true)}
@@ -521,15 +527,15 @@ export default function DashboardPage() {
                       type="checkbox"
                       checked={checked}
                       onChange={() => toggleTech(tech.slug)}
-                      className="accent-brand"
+                      className="accent-brand shrink-0 mt-0.5"
                     />
                     <span
-                      className="grid h-6 w-6 place-items-center rounded-full text-[10px] font-bold text-white"
+                      className="grid h-6 w-6 shrink-0 place-items-center rounded-full text-[10px] font-bold text-white"
                       style={{ backgroundColor: tech.icon_color }}
                     >
                       {tech.name.slice(0, 1)}
                     </span>
-                    <span className="text-ink">{tech.name}</span>
+                    <span className="text-ink break-words">{tech.name}</span>
                   </label>
                 )
               })}
@@ -607,10 +613,15 @@ export default function DashboardPage() {
                             </div>
                           </td>
                           <td className="px-4 py-3">
-                            <div className="flex flex-wrap gap-1.5">
-                              {row.technologies.map((tech) => (
+                            <div className="flex flex-wrap items-center gap-1.5">
+                              {row.technologies.slice(0, 7).map((tech) => (
                                 <TechBadge key={tech.id} tech={tech} />
                               ))}
+                              {row.technologies.length > 7 && (
+                                <span className="rounded-full bg-surface px-2 py-1 text-[10px] font-semibold text-muted">
+                                  +{row.technologies.length - 7}
+                                </span>
+                              )}
                             </div>
                           </td>
                           <td className="px-4 py-3 font-semibold text-brand">{row.rank}</td>
@@ -722,7 +733,7 @@ export default function DashboardPage() {
       <CategoryModal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
-        categoryOptions={categoryOptions}
+        categoryOptions={filteredCategoryOptions}
         selectedCategory={selectedCategory}
         onSelectCategory={setSelectedCategory}
       />

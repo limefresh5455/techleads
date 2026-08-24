@@ -6,19 +6,19 @@ function TechPill({ name, color, active, onClick }) {
       type="button"
       onClick={onClick}
       title={`Show sites using ${name}`}
-      className={`inline-flex items-center gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm ${
+      className={`inline-flex items-center text-left gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm ${
         active
           ? 'border-brand bg-brand/15 text-ink'
           : 'border-border bg-card text-ink'
       }`}
     >
       <span
-        className="grid h-5 w-5 place-items-center rounded-full text-[9px] font-bold text-ink"
+        className="grid h-5 w-5 shrink-0 place-items-center rounded-full text-[9px] font-bold text-white"
         style={{ backgroundColor: color || '#FFD23F' }}
       >
         {name.slice(0, 1)}
       </span>
-      {name}
+      <span className="break-words">{name}</span>
     </button>
   )
 }
