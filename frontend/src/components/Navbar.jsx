@@ -34,6 +34,7 @@ export default function Navbar() {
   const [open, setOpen] = useState(false)
   const [toolsOpen, setToolsOpen] = useState(false)
   const dropdownRef = useRef(null)
+  const mobileMenuRef = useRef(null)
   const location = useLocation()
 
   useEffect(() => {
@@ -51,6 +52,7 @@ export default function Navbar() {
   useEffect(() => {
     function onDocClick(e) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) setToolsOpen(false)
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) setOpen(false)
     }
     document.addEventListener('mousedown', onDocClick)
     return () => document.removeEventListener('mousedown', onDocClick)
@@ -133,52 +135,62 @@ export default function Navbar() {
           </Link>
         </div>
 
-        <div className="flex items-center gap-2 lg:hidden">
+        <div className="relative flex items-center gap-2 lg:hidden" ref={mobileMenuRef}>
           <ThemeToggle />
           <button
             type="button"
-            className="rounded-lg border border-border p-2 text-ink"
+            className="rounded-lg border border-border p-2 text-ink hover:bg-surface"
             onClick={() => setOpen((v) => !v)}
             aria-label="Toggle menu"
           >
             {open ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
+
+          {open && (
+            <div className="absolute right-0 top-full z-50 mt-2 min-w-[260px] rounded-xl border border-border bg-card p-3 shadow-lg">
+              <div className="flex flex-col gap-1.5">
+                {items.map((item) => (
+                  <div key={item.id} className="mb-1 border-b border-border/50 pb-1.5 last:mb-0 last:border-0 last:pb-0">
+                    <Link to={item.href} className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-surface" onClick={() => setOpen(false)}>
+                      {item.label}
+                    </Link>
+                    {(item.children || []).map((child) => (
+                      <Link key={child.id} to={child.href} className="block rounded-lg px-3 py-1.5 pl-6 text-sm text-muted hover:bg-surface hover:text-ink" onClick={() => setOpen(false)}>
+                        {child.label}
+                      </Link>
+                    ))}
+                  </div>
+                ))}
+                
+                <div className="my-1 h-px w-full bg-border" />
+                
+                {user ? (
+                  <>
+                    <div className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-muted">
+                      Hi, {user.name.split(' ')[0]}
+                    </div>
+                    <button type="button" onClick={() => { setOpen(false); logout(); }} className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30">
+                      Log out
+                    </button>
+                  </>
+                ) : (
+                  <Link to="/login" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-surface">
+                    {content.login_label}
+                  </Link>
+                )}
+                
+                <Link
+                  to={user ? '/dashboard' : '/signup'}
+                  onClick={() => setOpen(false)}
+                  className="mt-1 block rounded-lg bg-brand px-3 py-2 text-center text-sm font-semibold text-on-brand hover:bg-brand-dark"
+                >
+                  {user ? 'Dashboard' : content.nav_cta_label}
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
       </div>
-
-      {open && (
-        <div className="border-t border-border bg-card px-4 py-4 lg:hidden">
-          <div className="flex flex-col gap-1">
-            {items.map((item) => (
-              <div key={item.id}>
-                <Link to={item.href} className="block py-2 text-sm font-medium text-ink">
-                  {item.label}
-                </Link>
-                {(item.children || []).map((child) => (
-                  <Link key={child.id} to={child.href} className="block py-1.5 pl-4 text-sm text-muted">
-                    {child.label}
-                  </Link>
-                ))}
-              </div>
-            ))}
-            {user ? (
-              <button type="button" onClick={logout} className="py-2 text-left text-sm font-semibold">
-                Log out
-              </button>
-            ) : (
-              <Link to="/login" className="py-2 text-sm font-semibold">
-                {content.login_label}
-              </Link>
-            )}
-            <Link
-              to={user ? '/dashboard' : '/signup'}
-              className="mt-2 rounded-lg bg-brand px-4 py-2.5 text-center text-sm font-semibold text-on-brand"
-            >
-              {user ? 'Dashboard' : content.nav_cta_label}
-            </Link>
-          </div>
-        </div>
-      )}
     </header>
   )
 }

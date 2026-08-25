@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Menu, X } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
 import ThemeToggle from './ThemeToggle'
 
@@ -28,12 +28,17 @@ export default function DashboardNavbar() {
   const { data, user, logout } = useSiteData()
   const content = data.content
   const [menuOpen, setMenuOpen] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const menuRef = useRef(null)
+  const mobileMenuRef = useRef(null)
 
   useEffect(() => {
     function onDocClick(e) {
       if (menuRef.current && !menuRef.current.contains(e.target)) {
         setMenuOpen(false)
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(e.target)) {
+        setMobileMenuOpen(false)
       }
     }
     document.addEventListener('mousedown', onDocClick)
@@ -51,6 +56,8 @@ export default function DashboardNavbar() {
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
+          
+          {/* Desktop Right Side Content */}
           <div className="hidden items-center gap-3 lg:flex">
             <Link
               to="/pricing"
@@ -97,13 +104,77 @@ export default function DashboardNavbar() {
                       setMenuOpen(false)
                       logout()
                     }}
-                    className="block w-full rounded-lg px-3 py-2 text-left text-sm text-ink hover:bg-surface"
+                    className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
                   >
                     Log out
                   </button>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Mobile Menu Toggle Button and Dropdown */}
+          <div className="relative lg:hidden" ref={mobileMenuRef}>
+            <button
+              type="button"
+              className="rounded-lg border border-border p-2 text-ink hover:bg-surface"
+              onClick={() => setMobileMenuOpen((v) => !v)}
+              aria-label="Toggle menu"
+            >
+              {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+            
+            {mobileMenuOpen && (
+              <div className="absolute right-0 top-full z-50 mt-2 min-w-[260px] rounded-xl border border-border bg-card p-3 shadow-lg">
+                <div className="flex flex-col gap-1.5">
+                  <div className="flex items-center gap-3 rounded-lg border border-border bg-surface/50 p-2.5">
+                    {user.avatar_url ? (
+                      <img 
+                        src={user.avatar_url} 
+                        alt="" 
+                        className="h-9 w-9 rounded-full object-cover" 
+                        referrerPolicy="no-referrer" 
+                      />
+                    ) : (
+                      <span className="grid h-9 w-9 place-items-center rounded-full bg-brand text-sm font-bold text-on-brand">
+                        {initial}
+                      </span>
+                    )}
+                    <div className="flex flex-col">
+                      <span className="text-sm font-medium text-ink">{user.name}</span>
+                      <span className="text-xs text-muted">{user.credits?.toLocaleString?.() ?? user.credits ?? 0} credits</span>
+                    </div>
+                  </div>
+                  
+                  <Link
+                    to="/pricing"
+                    onClick={() => setMobileMenuOpen(false)}
+                    className="mt-1 block rounded-lg bg-brand px-3 py-2 text-center text-sm font-semibold text-on-brand hover:bg-brand-dark"
+                  >
+                    Upgrade
+                  </Link>
+                  
+                  <Link
+                    to="/account"
+                    className="block rounded-lg px-3 py-2 text-center text-sm font-medium text-ink hover:bg-surface"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Manage account
+                  </Link>
+                  
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setMobileMenuOpen(false)
+                      logout()
+                    }}
+                    className="block w-full rounded-lg px-3 py-2 text-center text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                  >
+                    Log out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

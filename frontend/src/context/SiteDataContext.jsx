@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { fetchLanding } from '../api'
+import { fetchLanding, fetchMe } from '../api'
 
 const empty = {
   content: null,
@@ -52,12 +52,39 @@ export function SiteDataProvider({ children }) {
       })
       .catch(() => setError('Failed to load data from API. Is the FastAPI server running?'))
       .finally(() => setLoading(false))
+
+    const token = localStorage.getItem('tl_token')
+    if (token) {
+      fetchMe()
+        .then((meData) => {
+          if (meData) {
+            setUser((prev) => {
+              const merged = { ...(prev || {}), ...meData }
+              localStorage.setItem('tl_user', JSON.stringify(merged))
+              return merged
+            })
+          }
+        })
+        .catch(err => console.error("Failed to fetch user profile", err))
+    }
   }, [])
 
   const setAuth = useCallback((payload) => {
     localStorage.setItem('tl_token', payload.token)
     localStorage.setItem('tl_user', JSON.stringify(payload.user))
     setUser(payload.user)
+    
+    fetchMe()
+      .then((meData) => {
+        if (meData) {
+          setUser((prev) => {
+            const merged = { ...(prev || {}), ...meData }
+            localStorage.setItem('tl_user', JSON.stringify(merged))
+            return merged
+          })
+        }
+      })
+      .catch(err => console.error("Failed to fetch user profile after login", err))
   }, [])
 
   const updateUserCredits = useCallback((credits) => {
