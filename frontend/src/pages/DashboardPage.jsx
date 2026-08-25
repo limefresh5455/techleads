@@ -197,7 +197,13 @@ export default function DashboardPage() {
       })
     } catch (err) {
       setSiteDetail(null)
-      setError(err.message || 'Failed to load site details')
+      let msg = err.message || 'Failed to load site details'
+      if (msg.toLowerCase().includes('timed out')) {
+        msg = 'The analysis took too long to respond. Please try again.'
+      } else if (msg.includes('AI enrichment failed')) {
+        msg = 'We encountered a temporary issue while analyzing this website. Please try again.'
+      }
+      setError(msg)
     } finally {
       setDetailLoading(false)
       setEnriching(false)
@@ -231,7 +237,13 @@ export default function DashboardPage() {
       setSearchParams({ site: String(result.website.id) })
       await loadResults()
     } catch (err) {
-      setError(err.message || 'Analysis failed')
+      let msg = err.message || 'Analysis failed'
+      if (msg.toLowerCase().includes('timed out')) {
+        msg = 'The analysis took too long to respond. Please try again.'
+      } else if (msg.includes('AI enrichment failed')) {
+        msg = 'We encountered a temporary issue while analyzing this website. Please try again.'
+      }
+      setError(msg)
     } finally {
       setAnalyzing(false)
     }
@@ -430,7 +442,7 @@ export default function DashboardPage() {
   }, [categoryOptions, techSearch])
 
   const visibleCategories = useMemo(() => {
-    const sliced = filteredCategoryOptions.slice(0, 15)
+    const sliced = filteredCategoryOptions.slice(0, 10)
     if (selectedCategory !== 'all') {
       const isVisible = sliced.some((c) => c.slug === selectedCategory)
       if (!isVisible) {
@@ -525,13 +537,28 @@ export default function DashboardPage() {
                   {cat.name}
                 </button>
               ))}
-              {filteredCategoryOptions.length > 15 && (
+              {filteredCategoryOptions.length > 12 && (
                 <button
                   type="button"
                   onClick={() => setIsCategoryModalOpen(true)}
                   className="rounded-full border border-brand bg-brand px-2.5 py-1 text-xs font-medium text-on-brand hover:opacity-90"
                 >
                   View More
+                </button>
+              )}
+              {(domainQuery || techSearch || selectedCategory !== 'all' || selectedTechs.length > 0) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDomainQuery('');
+                    setTechSearch('');
+                    setSelectedCategory('all');
+                    setSelectedTechs([]);
+                    setPage(1);
+                  }}
+                  className="rounded-full border border-red-500/50 bg-red-50 px-2.5 py-1 text-xs font-medium text-red-600 hover:bg-red-100 dark:bg-red-950/30 dark:text-red-400 dark:hover:bg-red-950/50"
+                >
+                  Reset Filters
                 </button>
               )}
             </div>

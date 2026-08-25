@@ -1,8 +1,10 @@
 from concurrent.futures import ThreadPoolExecutor
 from threading import Lock
 from uuid import uuid4
+import csv
+import io
 
-from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks, UploadFile, File
 from fastapi.responses import RedirectResponse
 from sqlalchemy import func, or_
 from sqlalchemy.orm import Session, joinedload
@@ -1192,3 +1194,111 @@ def get_dashboard_website(
             raise HTTPException(status_code=502, detail=f"AI enrichment failed: {exc}") from exc
 
     return _website_detail_out(row)
+
+
+@router.post("/import/csv")
+async def import_csv_data(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if not file.filename.endswith('.csv'):
+        raise HTTPException(status_code=400, detail="Invalid file format. Please upload a CSV file.")
+        
+    content = await file.read()
+    try:
+        decoded = content.decode('utf-8-sig')
+    except UnicodeDecodeError:
+        raise HTTPException(status_code=400, detail="Invalid file encoding. Please upload a UTF-8 encoded CSV.")
+        
+    reader = csv.DictReader(io.StringIO(decoded))
+    
+    stats = {
+        "categories_created": 0,
+        "technologies_created": 0,
+        "websites_created": 0,
+        "websites_updated": 0,
+        "links_created": 0
+    }
+    
+    for row in reader:
+        domain = row.get('Domain', '').strip().lower()
+        tech_name = row.get('Technology Name', '').strip()
+        cat_name = row.get('Category Name', '').strip()
+        
+        if not domain or not tech_name or not cat_name:
+            continue
+            
+        # 1. Category
+        cat_slug = slugify(cat_name)
+        category = db.query(Category).filter(Category.slug == cat_slug).first()
+        if not category:
+            category = Category(name=cat_name, slug=cat_slug)
+            db.add(category)
+            db.commit()
+            db.refresh(category)
+            stats["categories_created"] += 1
+            
+        # 2. Technology
+        tech_slug = slugify(tech_name)
+        technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
+        if not technology:
+            technology = Technology(name=tech_name, slug=tech_slug, category_id=category.id)
+            db.add(technology)
+            db.commit()
+            db.refresh(technology)
+            stats["technologies_created"] += 1
+        elif technology.category_id != category.id:
+            technology.category_id = category.id
+            db.commit()
+            
+        # 3. Website
+        website = db.query(Website).filter(Website.domain == domain).first()
+        title = row.get('Website Title', '').strip()
+        desc = row.get('Website Description', '').strip()
+        
+        if not website:
+            website = Website(domain=domain, title=title, description=desc, category_label=cat_name)
+            db.add(website)
+            db.commit()
+            db.refresh(website)
+            stats["websites_created"] += 1
+        else:
+            updated = False
+            if title and not website.title:
+                website.title = title
+                updated = True
+            if desc and not website.description:
+                website.description = desc
+                updated = True
+            if updated:
+                db.commit()
+                stats["websites_updated"] += 1
+                
+        # 4. Link Website and Technology
+        link = db.query(WebsiteTechnology).filter(
+            WebsiteTechnology.website_id == website.id,
+            WebsiteTechnology.technology_id == technology.id
+        ).first()
+        if not link:
+            link = WebsiteTechnology(website_id=website.id, technology_id=technology.id)
+            db.add(link)
+            db.commit()
+            stats["links_created"] += 1
+            
+    # 5. Update counts
+    technologies = db.query(Technology).all()
+    for tech in technologies:
+        count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == tech.id).count()
+        if tech.website_count != count:
+            tech.website_count = count
+            
+    categories = db.query(Category).all()
+    for cat in categories:
+        count = db.query(Technology).filter(Technology.category_id == cat.id).count()
+        if cat.item_count != count:
+            cat.item_count = count
+            
+    db.commit()
+
+    return {"ok": True, "stats": stats}
