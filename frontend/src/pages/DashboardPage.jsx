@@ -188,6 +188,13 @@ export default function DashboardPage() {
     try {
       const data = await fetchWebsiteDetail(id, { refresh })
       setSiteDetail(data)
+      setResults((prev) => {
+        if (!prev || !prev.items) return prev
+        return {
+          ...prev,
+          items: prev.items.map((item) => (item.id === id ? { ...item, ...data } : item)),
+        }
+      })
     } catch (err) {
       setSiteDetail(null)
       setError(err.message || 'Failed to load site details')
