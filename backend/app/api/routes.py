@@ -1016,6 +1016,15 @@ def dashboard_export(
         
     rows = query.all()
 
+    # The user explicitly requested to ENRICH ALL records before downloading CSV.
+    # Note: This is extremely slow for large datasets and relies on the HTTP connection staying open.
+    for row in rows:
+        try:
+            if not row.enriched_json:
+                refresh_website(db, row, use_techleads_api=True)
+        except Exception:
+            continue
+
     return DashboardExportOut(
         rows=[_website_detail_out(row) for row in rows],
         exported_count=len(rows),
