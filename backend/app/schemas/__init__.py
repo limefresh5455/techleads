@@ -403,8 +403,11 @@ class DashboardSearchOut(BaseModel):
 class DashboardWebsiteDetailOut(BaseModel):
     id: int
     domain: str
+    company_name: str = ""
     title: str
     description: str
+    emails: str = ""
+    country: str = ""
     category_label: str
     subcategory: str = ""
     contact_info: str
@@ -436,6 +439,10 @@ class DashboardWebsiteDetailOut(BaseModel):
     address: str = ""
     instagram_url: str = ""
     youtube_url: str = ""
+    github_url: str = ""
+    tiktok_url: str = ""
+    tech_spend_monthly: float = 0.0
+    tech_spend_annual: float = 0.0
     estimated_traffic_tier: str = ""
     confidence_score: int = 0
     llm_insights: list[str] = []

@@ -37,6 +37,13 @@ def migrate_website_columns() -> None:
         "llm_error": "TEXT DEFAULT ''",
         "llm_provider": "VARCHAR(40) DEFAULT ''",
         "llm_model": "VARCHAR(120) DEFAULT ''",
+        "company_name": "VARCHAR(200) DEFAULT ''",
+        "emails": "TEXT DEFAULT ''",
+        "country": "VARCHAR(120) DEFAULT ''",
+        "github_url": "VARCHAR(255) DEFAULT ''",
+        "tiktok_url": "VARCHAR(255) DEFAULT ''",
+        "tech_spend_monthly": "DOUBLE PRECISION DEFAULT 0.0",
+        "tech_spend_annual": "DOUBLE PRECISION DEFAULT 0.0",
     }
 
     with engine.begin() as conn:

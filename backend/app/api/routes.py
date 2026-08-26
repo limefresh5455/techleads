@@ -970,7 +970,6 @@ def dashboard_export(
     q: str = "",
     technologies: str = "",
     match: str = Query(default="any", pattern="^(any|all)$"),
-    limit: int = Query(default=MAX_EXPORT_ROWS, ge=1, le=MAX_EXPORT_ROWS),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
 ):
@@ -982,10 +981,10 @@ def dashboard_export(
 
     query = _filter_websites_by_technologies(db, query, tech_tokens, match)
 
+    export_limit = None
     if tech_tokens:
         # 1 credit per selected technology
         credits_used = len(tech_tokens) * CREDITS_PER_TECHNOLOGY_EXPORT
-        export_limit = min(limit, MAX_EXPORT_ROWS)
         if user.credits < credits_used:
             raise HTTPException(
                 status_code=402,
@@ -998,7 +997,205 @@ def dashboard_export(
     else:
         # No technology selected → free export of first 10 records only
         credits_used = 0
-        export_limit = min(limit, FREE_RECORD_LIMIT)
+        export_limit = FREE_RECORD_LIMIT
+
+    if credits_used:
+        user.credits -= credits_used
+        db.commit()
+        db.refresh(user)
+
+    query = (
+        query.options(
+            joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+        )
+        .order_by(Website.rank.asc(), Website.sort_order.asc())
+    )
+    
+    if export_limit:
+        query = query.limit(export_limit)
+        
+    rows = query.all()
+
+    return DashboardExportOut(
+        rows=[_website_detail_out(row) for row in rows],
+        exported_count=len(rows),
+        credits_used=credits_used,
+        user_credits=user.credits,
+        free_limit=FREE_RECORD_LIMIT,
+    )
+
+
+def _split_stored_list(value: str | None, *, sep: str | None = None) -> list[str]:
+    raw = (value or "").strip()
+    if not raw:
+        return []
+    if sep:
+        return [part.strip() for part in raw.split(sep) if part.strip()]
+    if "\n" in raw:
+        return [part.strip() for part in raw.split("\n") if part.strip()]
+    if " | " in raw:
+        return [part.strip() for part in raw.split(" | ") if part.strip()]
+    return [part.strip() for part in raw.split(",") if part.strip()]
+
+
+def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
+    import json
+
+    techs = sorted(
+        [link.technology for link in row.technologies],
+        key=lambda tech: tech.sort_order,
+    )
+    primary = [t.name for t in techs]
+    extra = [t.strip() for t in (row.extra_technologies or "").split(",") if t.strip()]
+    all_detected = primary + [t for t in extra if t not in primary]
+    enriched = json.loads(row.enriched_json or "{}") if row.enriched_json else {}
+
+    marketing = _split_stored_list(row.marketing_stack) or enriched.get("marketing_stack") or []
+    analytics = _split_stored_list(row.analytics_tools) or enriched.get("analytics_tools") or []
+    payments = _split_stored_list(row.payment_providers) or enriched.get("payment_providers") or []
+    features = _split_stored_list(row.key_features, sep=" | ") or enriched.get("key_features") or []
+    insights = _split_stored_list(row.llm_insights, sep="\n") or enriched.get("llm_insights") or []
+
+    return DashboardWebsiteDetailOut(
+        id=row.id,
+        domain=row.domain,
+        title=row.title or row.domain,
+        description=row.description or enriched.get("description", ""),
+        category_label=row.category_label or enriched.get("category_label", "Uncategorized"),
+        subcategory=str(getattr(row, "subcategory", None) or enriched.get("subcategory") or ""),
+        contact_info=row.contact_info or enriched.get("contact_info", "No contact information available"),
+        rank=row.rank,
+        technologies=[
+            DashboardTechOut(
+                id=tech.id,
+                name=tech.name,
+                slug=tech.slug,
+                icon=tech.icon,
+                icon_color=tech.icon_color,
+            )
+            for tech in techs
+        ],
+        all_detected_technologies=all_detected,
+        facebook_url=row.facebook_url or enriched.get("facebook_url", ""),
+        twitter_url=row.twitter_url or enriched.get("twitter_url", ""),
+        linkedin_url=row.linkedin_url or enriched.get("linkedin_url", ""),
+        last_crawled_at=row.last_crawled_at.isoformat() if row.last_crawled_at else None,
+        source_url=row.source_url or "",
+        enriched=enriched,
+        llm_used=bool(row.llm_used if row.llm_used is not None else enriched.get("llm_used")),
+        llm_error=str(row.llm_error or enriched.get("llm_error") or ""),
+        llm_provider=str(row.llm_provider or enriched.get("llm_provider") or ""),
+        llm_model=str(row.llm_model or enriched.get("llm_model") or ""),
+        industry=str(row.industry or enriched.get("industry") or ""),
+        company_type=str(row.company_type or enriched.get("company_type") or ""),
+        business_summary=str(row.business_summary or enriched.get("business_summary") or ""),
+        marketing_stack=marketing,
+        analytics_tools=analytics,
+        payment_providers=payments,
+        cms_platform=str(row.cms_platform or enriched.get("cms_platform") or ""),
+        ecommerce_platform=str(row.ecommerce_platform or enriched.get("ecommerce_platform") or ""),
+        hosting_cdn=str(row.hosting_cdn or enriched.get("hosting_cdn") or ""),
+        key_features=features,
+        target_audience=str(row.target_audience or enriched.get("target_audience") or ""),
+        phone=str(row.phone or enriched.get("phone") or ""),
+        address=str(row.address or enriched.get("address") or ""),
+        instagram_url=str(row.instagram_url or enriched.get("instagram_url") or ""),
+        youtube_url=str(row.youtube_url or enriched.get("youtube_url") or ""),
+        estimated_traffic_tier=str(row.estimated_traffic_tier or enriched.get("estimated_traffic_tier") or ""),
+        confidence_score=int(row.confidence_score or enriched.get("confidence_score") or 0),
+        llm_insights=insights,
+    )
+
+
+def _detect_response(website: Website) -> DetectResponse:
+    import json
+
+    signals = json.loads(website.signals_json or "{}")
+    enriched = json.loads(website.enriched_json or "{}")
+    crawl_ms = getattr(website, "_crawl_ms", 0)
+    return DetectResponse(
+        website=_website_detail_out(website),
+        signals=signals,
+        enriched=enriched,
+        crawl_ms=crawl_ms,
+    )
+
+
+@router.post("/detect", response_model=DetectResponse)
+@router.post("/v1/detect", response_model=DetectResponse)
+def detect_website(payload: DetectRequest, db: Session = Depends(get_db)):
+    try:
+        website = detect_and_store(db, payload.url)
+        website = (
+            db.query(Website)
+            .options(
+                joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+            )
+            .filter(Website.id == website.id)
+            .first()
+        )
+        return _detect_response(website)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Detection failed: {exc}") from exc
+
+
+@router.post("/v1/enrich", response_model=list[DetectResponse])
+def enrich_websites(payload: EnrichRequest, db: Session = Depends(get_db)):
+    results: list[DetectResponse] = []
+    for raw_url in payload.urls[:50]:
+        try:
+            website = detect_and_store(db, raw_url)
+            website = (
+                db.query(Website)
+                .options(
+                    joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+                )
+                .filter(Website.id == website.id)
+                .first()
+            )
+            results.append(_detect_response(website))
+        except Exception:
+            continue
+    if not results:
+        raise HTTPException(status_code=400, detail="No URLs could be enriched")
+    return results
+
+
+@router.get("/dashboard/websites/{website_id}", response_model=DashboardWebsiteDetailOut)
+def get_dashboard_website(
+    website_id: int,
+    refresh: bool = Query(False),
+    db: Session = Depends(get_db),
+):
+    row = (
+        db.query(Website)
+        .options(
+            joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+        )
+        .filter(Website.id == website_id)
+        .first()
+    )
+    if not row:
+        raise HTTPException(status_code=404, detail="Website not found")
+
+    if refresh:
+        try:
+            # Explicit Re-enrich / Analyze — use TechLeads.fyi API (1 credit)
+            row = refresh_website(db, row, use_techleads_api=True)
+            row = (
+                db.query(Website)
+                .options(
+                    joinedload(Website.technologies).joinedload(WebsiteTechnology.technology)
+                )
+                .filter(Website.id == website_id)
+                .first()
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=502, detail=f"AI enrichment failed: {exc}") from exc
+
+    return _website_detail_out(row)
 
     if credits_used:
         user.credits -= credits_used
@@ -1211,7 +1408,7 @@ async def import_csv_data(
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="Invalid file encoding. Please upload a UTF-8 encoded CSV.")
         
-    reader = csv.DictReader(io.StringIO(decoded))
+    reader = csv.DictReader(io.StringIO(decoded, newline=''))
     
     stats = {
         "categories_created": 0,
@@ -1220,16 +1417,19 @@ async def import_csv_data(
         "websites_updated": 0,
         "links_created": 0
     }
+
+    import os
+    tech_name = os.path.splitext(file.filename)[0].strip()
     
-    for row in reader:
-        domain = row.get('Domain', '').strip().lower()
-        tech_name = row.get('Technology Name', '').strip()
-        cat_name = row.get('Category Name', '').strip()
-        
-        if not domain or not tech_name or not cat_name:
-            continue
-            
-        # 1. Category
+    if not tech_name:
+        raise HTTPException(status_code=400, detail="Invalid file name.")
+
+    # Get or create Technology
+    tech_slug = slugify(tech_name)
+    technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
+    if not technology:
+        # Create a default category if none
+        cat_name = "Other"
         cat_slug = slugify(cat_name)
         category = db.query(Category).filter(Category.slug == cat_slug).first()
         if not category:
@@ -1239,43 +1439,92 @@ async def import_csv_data(
             db.refresh(category)
             stats["categories_created"] += 1
             
-        # 2. Technology
-        tech_slug = slugify(tech_name)
-        technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
-        if not technology:
-            technology = Technology(name=tech_name, slug=tech_slug, category_id=category.id)
-            db.add(technology)
-            db.commit()
-            db.refresh(technology)
-            stats["technologies_created"] += 1
-        elif technology.category_id != category.id:
-            technology.category_id = category.id
-            db.commit()
+        technology = Technology(name=tech_name, slug=tech_slug, category_id=category.id)
+        db.add(technology)
+        db.commit()
+        db.refresh(technology)
+        stats["technologies_created"] += 1
+    
+    for row in reader:
+        domain = (row.get('Domain') or '').strip().lower()[:160]
+        if not domain:
+            continue
             
-        # 3. Website
+        company_name = (row.get('Company Name') or '').strip()[:200]
+        title = (row.get('Title') or '').strip()[:200]
+        desc = (row.get('Description') or '').strip()
+        emails = (row.get('Emails') or '').strip()
+        country = (row.get('Country') or '').strip()[:120]
+        industry = (row.get('Industry') or '').strip()[:120]
+        linkedin_url = (row.get('Linkedin') or '').strip()[:255]
+        twitter_url = (row.get('Twitter') or '').strip()[:255]
+        facebook_url = (row.get('Facebook') or '').strip()[:255]
+        instagram_url = (row.get('Instagram') or '').strip()[:255]
+        youtube_url = (row.get('Youtube') or '').strip()[:255]
+        github_url = (row.get('Github') or '').strip()[:255]
+        tiktok_url = (row.get('Tiktok') or '').strip()[:255]
+        
+        def parse_float(val):
+            try:
+                # Remove dollar signs and commas
+                clean_val = val.replace('$', '').replace(',', '').strip()
+                return float(clean_val) if clean_val else 0.0
+            except:
+                return 0.0
+
+        tech_spend_monthly = parse_float(row.get('Technology Spend Monthly (USD)', ''))
+        tech_spend_annual = parse_float(row.get('Technology Spend Annual (USD)', ''))
+
+        # Website
         website = db.query(Website).filter(Website.domain == domain).first()
-        title = row.get('Website Title', '').strip()
-        desc = row.get('Website Description', '').strip()
         
         if not website:
-            website = Website(domain=domain, title=title, description=desc, category_label=cat_name)
+            website = Website(
+                domain=domain,
+                company_name=company_name,
+                title=title,
+                description=desc,
+                emails=emails,
+                country=country,
+                industry=industry,
+                linkedin_url=linkedin_url,
+                twitter_url=twitter_url,
+                facebook_url=facebook_url,
+                instagram_url=instagram_url,
+                youtube_url=youtube_url,
+                github_url=github_url,
+                tiktok_url=tiktok_url,
+                tech_spend_monthly=tech_spend_monthly,
+                tech_spend_annual=tech_spend_annual,
+                category_label="Other Categories"
+            )
             db.add(website)
             db.commit()
             db.refresh(website)
             stats["websites_created"] += 1
         else:
             updated = False
-            if title and not website.title:
-                website.title = title
-                updated = True
-            if desc and not website.description:
-                website.description = desc
-                updated = True
+            if company_name and not website.company_name: website.company_name = company_name; updated = True
+            if title and not website.title: website.title = title; updated = True
+            if desc and not website.description: website.description = desc; updated = True
+            if emails and not website.emails: website.emails = emails; updated = True
+            if country and not website.country: website.country = country; updated = True
+            if industry and not website.industry: website.industry = industry; updated = True
+            if linkedin_url and not website.linkedin_url: website.linkedin_url = linkedin_url; updated = True
+            if twitter_url and not website.twitter_url: website.twitter_url = twitter_url; updated = True
+            if facebook_url and not website.facebook_url: website.facebook_url = facebook_url; updated = True
+            if instagram_url and not website.instagram_url: website.instagram_url = instagram_url; updated = True
+            if youtube_url and not website.youtube_url: website.youtube_url = youtube_url; updated = True
+            if github_url and not website.github_url: website.github_url = github_url; updated = True
+            if tiktok_url and not website.tiktok_url: website.tiktok_url = tiktok_url; updated = True
+            if tech_spend_monthly and not website.tech_spend_monthly: website.tech_spend_monthly = tech_spend_monthly; updated = True
+            if tech_spend_annual and not website.tech_spend_annual: website.tech_spend_annual = tech_spend_annual; updated = True
+
             if updated:
                 db.commit()
                 stats["websites_updated"] += 1
                 
-        # 4. Link Website and Technology
+        # Link Website and Technology
         link = db.query(WebsiteTechnology).filter(
             WebsiteTechnology.website_id == website.id,
             WebsiteTechnology.technology_id == technology.id
@@ -1286,7 +1535,7 @@ async def import_csv_data(
             db.commit()
             stats["links_created"] += 1
             
-    # 5. Update counts
+    # Update counts
     technologies = db.query(Technology).all()
     for tech in technologies:
         count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == tech.id).count()
@@ -1300,5 +1549,5 @@ async def import_csv_data(
             cat.item_count = count
             
     db.commit()
-
-    return {"ok": True, "stats": stats}
+    
+    return {"message": "Import successful", "stats": stats}

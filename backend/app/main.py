@@ -39,6 +39,7 @@ def on_startup():
     migrate_user_columns()
     db = SessionLocal()
     try:
-        seed_database(db)
+        # seed_database(db)
+        pass
     finally:
         db.close()

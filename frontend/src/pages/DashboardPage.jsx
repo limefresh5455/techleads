@@ -52,6 +52,7 @@ export default function DashboardPage() {
   const [hasMoreTechs, setHasMoreTechs] = useState(true)
   const [isFetchingTechs, setIsFetchingTechs] = useState(false)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
+  const [techRefreshTick, setTechRefreshTick] = useState(0)
 
   const categoryOptions = useMemo(() => {
     const seen = new Set()
@@ -106,7 +107,7 @@ export default function DashboardPage() {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [techSearch, selectedCategory])
+  }, [techSearch, selectedCategory, techRefreshTick])
 
   const loadMoreTechs = useCallback(async () => {
     if (isFetchingTechs || !hasMoreTechs) return
@@ -195,6 +196,9 @@ export default function DashboardPage() {
           items: prev.items.map((item) => (item.id === id ? { ...item, ...data } : item)),
         }
       })
+      if (refresh) {
+        setTechRefreshTick(t => t + 1)
+      }
     } catch (err) {
       setSiteDetail(null)
       let msg = err.message || 'Failed to load site details'
@@ -235,6 +239,7 @@ export default function DashboardPage() {
       setSelectedId(result.website.id)
       setSiteDetail(result.website)
       setSearchParams({ site: String(result.website.id) })
+      setTechRefreshTick(t => t + 1)
       await loadResults()
     } catch (err) {
       let msg = err.message || 'Analysis failed'
@@ -314,14 +319,10 @@ export default function DashboardPage() {
     setExporting(true)
     setError('')
     try {
-      const limit = selectedTechs.length
-        ? Math.min(results.total_filtered || results.items.length, results.export_limit || 5000)
-        : Math.min(results.items.length, freeLimit)
       const payload = await exportDashboard({
         q: domainQuery,
         technologies: selectedTechs,
         match: matchMode,
-        limit,
       })
 
       const joinList = (value) => (Array.isArray(value) ? value.filter(Boolean).join('; ') : '')
