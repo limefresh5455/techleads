@@ -30,6 +30,7 @@ const SiteDataContext = createContext({
   updateUser: () => {},
   updateUserCredits: () => {},
   logout: () => {},
+  refreshData: () => {},
 })
 
 export function SiteDataProvider({ children }) {
@@ -44,14 +45,17 @@ export function SiteDataProvider({ children }) {
     }
   })
 
-  useEffect(() => {
-    fetchLanding()
+  const refreshData = useCallback(() => {
+    return fetchLanding()
       .then((payload) => {
         setData(payload)
         setError('')
       })
       .catch(() => setError('Failed to load data from API. Is the FastAPI server running?'))
-      .finally(() => setLoading(false))
+  }, [])
+
+  useEffect(() => {
+    refreshData().finally(() => setLoading(false))
 
     const token = localStorage.getItem('tl_token')
     if (token) {
@@ -67,7 +71,7 @@ export function SiteDataProvider({ children }) {
         })
         .catch(err => console.error("Failed to fetch user profile", err))
     }
-  }, [])
+  }, [refreshData])
 
   const setAuth = useCallback((payload) => {
     localStorage.setItem('tl_token', payload.token)
@@ -111,8 +115,18 @@ export function SiteDataProvider({ children }) {
   }, [])
 
   const value = useMemo(
-    () => ({ data, loading, error, user, setAuth, updateUser, updateUserCredits, logout }),
-    [data, loading, error, user, setAuth, updateUser, updateUserCredits, logout],
+    () => ({ data, loading, error, user, setAuth, updateUser, updateUserCredits, logout, refreshData }),
+    [
+      data,
+      loading,
+      error,
+      user,
+      setAuth,
+      updateUser,
+      updateUserCredits,
+      logout,
+      refreshData,
+    ]
   )
 
   return <SiteDataContext.Provider value={value}>{children}</SiteDataContext.Provider>

@@ -18,6 +18,7 @@ from app.core.auth import (
     store_user_token,
 )
 from app.core.database import SessionLocal, get_db
+from app.services.llm_enrichment import categorize_technology
 from app.core.security import hash_password, make_token, verify_password
 from app.models import (
     BlogPost,
@@ -1428,8 +1429,9 @@ async def import_csv_data(
     tech_slug = slugify(tech_name)
     technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
     if not technology:
-        # Create a default category if none
-        cat_name = "Other"
+        # Determine category using AI categorization
+        existing_categories = [c.name for c in db.query(Category).all()]
+        cat_name = categorize_technology(tech_name, existing_categories)
         cat_slug = slugify(cat_name)
         category = db.query(Category).filter(Category.slug == cat_slug).first()
         if not category:

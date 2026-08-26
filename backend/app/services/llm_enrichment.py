@@ -351,3 +351,104 @@ def _compact_signals(signals: dict[str, Any]) -> dict[str, Any]:
         elif isinstance(value, list) and len(value) > 40:
             compact[key] = value[:40]
     return compact
+
+
+_category_cache: dict[str, str] = {}
+
+def categorize_technology(tech_name: str, existing_categories: list[str]) -> str:
+    """Uses LLM to categorize a technology into one of the existing categories."""
+    if tech_name in _category_cache:
+        return _category_cache[tech_name]
+        
+    cfg = _settings()
+    api_key = cfg.openrouter_api_key.strip()
+    if not api_key or not existing_categories:
+        return "Other"
+        
+    standard_hints = [
+        "Ecommerce", "Frontend Framework", "Backend Framework", "Database", 
+        "Analytics", "CRM", "Marketing", "CMS", "Hosting", "Payment", 
+        "Security", "SEO", "Customer Support", "DevOps"
+    ]
+    
+    # Pre-defined mapping for common technologies to avoid API calls and ensure accuracy
+    common_mappings = {
+        "react": "Frontend Framework",
+        "vue.js": "Frontend Framework",
+        "vuejs": "Frontend Framework",
+        "next.js": "Frontend Framework",
+        "nextjs": "Frontend Framework",
+        "wordpress": "CMS",
+        "drupal": "CMS",
+        "joomla": "CMS",
+        "shopify": "Ecommerce",
+        "woocommerce": "Ecommerce",
+        "magento": "Ecommerce",
+        "easy-digital-downloads-v3": "Ecommerce",
+        "google-analytics": "Analytics",
+        "google-tag-manager": "Analytics",
+        "hotjar": "Analytics",
+        "cloudflare": "Security & CDN",
+        "aws": "Hosting",
+        "stripe": "Payment",
+        "paypal": "Payment",
+        "hubspot": "CRM",
+        "salesforce": "CRM",
+        "learndash": "Education / LMS",
+    }
+    
+    clean_tech = tech_name.strip().lower()
+    for key, val in common_mappings.items():
+        if key in clean_tech or clean_tech in key.replace("-", " "):
+            _category_cache[tech_name] = val
+            return val
+            
+    cat_hints = existing_categories if len(existing_categories) > 5 else standard_hints
+    
+    prompt = (
+        f"Categorize the software technology '{tech_name}'. "
+        f"Choose from these categories if possible: {', '.join(cat_hints)}. "
+        "If none fit, invent a short, accurate category name (1-3 words, e.g. 'Web Design', 'Ad Network'). "
+        "Respond with ONLY the exact category name. No extra text, no markdown."
+    )
+    
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json",
+        "HTTP-Referer": cfg.openrouter_http_referer,
+        "X-Title": cfg.openrouter_app_title,
+    }
+    
+    payload = {
+        "model": cfg.openrouter_model,
+        "temperature": 0.1,
+        "max_tokens": 15,
+        "messages": [
+            {
+                "role": "system",
+                "content": "You are a data classification assistant. Respond with ONLY the category name. No quotes, no intro."
+            },
+            {"role": "user", "content": prompt},
+        ],
+    }
+    
+    try:
+        with httpx.Client(timeout=httpx.Timeout(10.0)) as client:
+            response = client.post(OPENROUTER_URL, headers=headers, json=payload)
+        if response.status_code == 200:
+            body = response.json()
+            text = _extract_openrouter_text(body).strip()
+            # Clean up the response in case LLM added quotes
+            text = text.replace('"', '').replace("'", "").strip()
+            
+            # Basic validation
+            if text and len(text) < 40 and "\n" not in text:
+                # Title case it for consistency (e.g. "Frontend Framework")
+                final_cat = text.title()
+                _category_cache[tech_name] = final_cat
+                return final_cat
+    except Exception as e:
+        logger.warning("Categorization failed for %s: %s", tech_name, e)
+        
+    _category_cache[tech_name] = "Other"
+    return "Other"

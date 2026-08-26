@@ -26,7 +26,7 @@ function TechBadge({ tech }) {
 }
 
 export default function DashboardPage() {
-  const { data, updateUserCredits } = useSiteData()
+  const { data, updateUserCredits, refreshData } = useSiteData()
   const [searchParams, setSearchParams] = useSearchParams()
   const technologies = data.technologies || []
   const categories = data.categories || []
@@ -198,6 +198,7 @@ export default function DashboardPage() {
       })
       if (refresh) {
         setTechRefreshTick(t => t + 1)
+        if (refreshData) refreshData()
       }
     } catch (err) {
       setSiteDetail(null)
@@ -240,6 +241,7 @@ export default function DashboardPage() {
       setSiteDetail(result.website)
       setSearchParams({ site: String(result.website.id) })
       setTechRefreshTick(t => t + 1)
+      if (refreshData) refreshData()
       await loadResults()
     } catch (err) {
       let msg = err.message || 'Analysis failed'

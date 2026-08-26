@@ -10,6 +10,7 @@ from app.models import Category, Technology, Website, WebsiteTechnology
 from app.services.crawler import crawl_url
 from app.services.llm_enrichment import enrich_with_llm
 from app.services.signals import extract_signals, signals_to_json
+from app.services.llm_enrichment import categorize_technology
 from app.services.techleads_api import lookup_website, merge_lookup_into_signals, tech_names_from_lookup
 from app.services.url_utils import extract_domain, normalize_url, slugify
 
@@ -168,13 +169,14 @@ def _get_or_create_technology(db: Session, name: str, order: int) -> Technology:
     if row:
         return row
 
-    category = db.query(Category).filter(Category.slug == "other").first()
+    existing_categories = [c.name for c in db.query(Category).all()]
+    cat_name = categorize_technology(clean, existing_categories)
+    cat_slug = slugify(cat_name)
+    category = db.query(Category).filter(Category.slug == cat_slug).first()
     if not category:
-        category = Category(name="Other", slug="other", icon="folder", sort_order=99)
+        category = Category(name=cat_name, slug=cat_slug, icon="folder", sort_order=99)
         db.add(category)
         db.flush()
-    if not category:
-        category = db.query(Category).order_by(Category.sort_order).first()
 
     row = Technology(
         name=clean,
@@ -188,5 +190,10 @@ def _get_or_create_technology(db: Session, name: str, order: int) -> Technology:
         sort_order=1000 + order,
     )
     db.add(row)
+    
+    # Increment item_count for the category since we added a new technology
+    if category:
+        category.item_count = (category.item_count or 0) + 1
+        
     db.flush()
     return row
