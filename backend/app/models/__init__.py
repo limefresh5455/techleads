@@ -15,6 +15,7 @@ class Category(Base):
     sort_order = Column(Integer, default=0)
 
     technologies = relationship("Technology", back_populates="category")
+    websites = relationship("WebsiteCategory", back_populates="category")
 
 
 class Technology(Base):
@@ -91,6 +92,9 @@ class Website(Base):
     technologies = relationship(
         "WebsiteTechnology", back_populates="website", cascade="all, delete-orphan"
     )
+    categories = relationship(
+        "WebsiteCategory", back_populates="website", cascade="all, delete-orphan"
+    )
 
 
 class WebsiteTechnology(Base):
@@ -102,6 +106,31 @@ class WebsiteTechnology(Base):
 
     website = relationship("Website", back_populates="technologies")
     technology = relationship("Technology", back_populates="websites")
+
+
+class WebsiteCategory(Base):
+    __tablename__ = "website_categories"
+
+    id = Column(Integer, primary_key=True, index=True)
+    website_id = Column(Integer, ForeignKey("websites.id"), nullable=False)
+    category_id = Column(Integer, ForeignKey("categories.id"), nullable=False)
+
+    website = relationship("Website", back_populates="categories")
+    category = relationship("Category", back_populates="websites")
+
+
+class ImportJob(Base):
+    __tablename__ = "import_jobs"
+
+    id = Column(String(36), primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    status = Column(String(50), default="pending")  # pending, processing, completed, failed
+    total_websites = Column(Integer, default=0)
+    processed_websites = Column(Integer, default=0)
+    failed_websites = Column(Integer, default=0)
+    errors_json = Column(Text, default="[]")
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    completed_at = Column(DateTime(timezone=True), nullable=True)
 
 
 class PricingPlan(Base):

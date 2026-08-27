@@ -6,7 +6,7 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.models import Category, Technology, Website, WebsiteTechnology
+from app.models import Category, Technology, Website, WebsiteTechnology, WebsiteCategory
 from app.services.crawler import crawl_url
 from app.services.llm_enrichment import enrich_with_llm
 from app.services.signals import extract_signals, signals_to_json
@@ -75,6 +75,18 @@ def detect_and_store(db: Session, raw_url: str, *, use_techleads_api: bool | Non
     db.flush()
 
     db.query(WebsiteTechnology).filter(WebsiteTechnology.website_id == website.id).delete()
+    
+    cat_label = str(enriched.get("category_label") or "").strip()
+    if cat_label and cat_label.lower() != "uncategorized":
+        cat_slug = slugify(cat_label)
+        category = db.query(Category).filter(Category.slug == cat_slug).first()
+        if not category:
+            category = Category(name=cat_label[:50], slug=cat_slug)
+            db.add(category)
+            db.flush()
+        
+        db.query(WebsiteCategory).filter(WebsiteCategory.website_id == website.id).delete()
+        db.add(WebsiteCategory(website_id=website.id, category_id=category.id))
 
     tech_names = list(
         dict.fromkeys(

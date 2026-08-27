@@ -42,6 +42,7 @@ from app.models import (
     OTP,
     Website,
     WebsiteTechnology,
+    ImportJob,
 )
 from app.schemas import (
     AuthResponse,
@@ -1394,8 +1395,52 @@ def get_dashboard_website(
     return _website_detail_out(row)
 
 
+def enrich_imported_websites(job_id: str, website_ids: list[int]):
+    """Background task to enrich newly imported websites and update job status."""
+    from app.core.database import SessionLocal
+    import json
+    db = SessionLocal()
+    try:
+        job = db.query(ImportJob).filter(ImportJob.id == job_id).first()
+        if job:
+            job.status = "processing"
+            db.commit()
+
+        for wid in website_ids:
+            website = db.query(Website).filter(Website.id == wid).first()
+            if website and not website.enriched_json:
+                try:
+                    refresh_website(db, website, use_techleads_api=True)
+                    if job:
+                        job.processed_websites += 1
+                except Exception as e:
+                    print(f"Error enriching website {website.domain}: {e}")
+                    if job:
+                        job.failed_websites += 1
+                        errors = json.loads(job.errors_json or "[]")
+                        errors.append({"domain": website.domain, "error": str(e)})
+                        job.errors_json = json.dumps(errors)
+            
+            if job:
+                db.commit()
+
+        if job:
+            job.status = "completed"
+            job.completed_at = func.now()
+            db.commit()
+    except Exception as exc:
+        print(f"Background task failed: {exc}")
+        if 'job' in locals() and job:
+            job.status = "failed"
+            job.completed_at = func.now()
+            db.commit()
+    finally:
+        db.close()
+
+
 @router.post("/import/csv")
 async def import_csv_data(
+    background_tasks: BackgroundTasks,
     file: UploadFile = File(...),
     db: Session = Depends(get_db),
     user: User = Depends(get_current_user),
@@ -1418,6 +1463,7 @@ async def import_csv_data(
         "websites_updated": 0,
         "links_created": 0
     }
+    imported_website_ids = []
 
     import os
     tech_name = os.path.splitext(file.filename)[0].strip()
@@ -1537,6 +1583,8 @@ async def import_csv_data(
             db.commit()
             stats["links_created"] += 1
             
+        imported_website_ids.append(website.id)
+            
     # Update counts
     technologies = db.query(Technology).all()
     for tech in technologies:
@@ -1552,4 +1600,33 @@ async def import_csv_data(
             
     db.commit()
     
-    return {"message": "Import successful", "stats": stats}
+    job_id = None
+    if imported_website_ids:
+        job_id = str(uuid4())
+        job = ImportJob(
+            id=job_id,
+            user_id=user.id,
+            status="pending",
+            total_websites=len(set(imported_website_ids))
+        )
+        db.add(job)
+        db.commit()
+        background_tasks.add_task(enrich_imported_websites, job_id, list(set(imported_website_ids)))
+    
+    return {"message": "Import successful", "stats": stats, "job_id": job_id}
+
+@router.get("/import/status/{job_id}")
+def get_import_status(job_id: str, db: Session = Depends(get_db)):
+    job = db.query(ImportJob).filter(ImportJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found")
+    
+    import json
+    return {
+        "job_id": job.id,
+        "status": job.status,
+        "total_websites": job.total_websites,
+        "processed_websites": job.processed_websites,
+        "failed_websites": job.failed_websites,
+        "errors": json.loads(job.errors_json or "[]")
+    }
