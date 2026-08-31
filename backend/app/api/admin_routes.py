@@ -1,0 +1,500 @@
+from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.orm import Session
+from sqlalchemy import func
+from typing import List
+
+from app.core.database import get_db
+from app.core.auth import get_current_user
+from app.models import (
+    User, SiteContent, NavItem, Technology, Category, PricingPlan, PlanFeature,
+    FeatureHighlight, DashboardPreview, DetectGroup,
+    FooterColumn, FooterLink, SocialLink, LegalLink, BlogPost, FaqItem, CustomDataBlock
+)
+from app.schemas import (
+    SiteContentOut, SiteContentUpdate,
+    NavItemOut, NavItemCreate, NavItemUpdate,
+    CategoryOut, CategoryCreate, CategoryUpdate,
+    TechnologyOut, TechnologyCreate, TechnologyUpdate,
+    PricingPlanOut, PricingPlanCreate, PricingPlanUpdate,
+    FeatureHighlightOut, FeatureHighlightCreate, FeatureHighlightUpdate,
+    DashboardPreviewOut, DashboardPreviewCreate, DashboardPreviewUpdate,
+    DetectGroupOut, DetectGroupCreate, DetectGroupUpdate,
+    FooterColumnOut, FooterColumnCreate, FooterColumnUpdate,
+    SocialLinkOut, SocialLinkCreate, SocialLinkUpdate,
+    LegalLinkOut, LegalLinkCreate, LegalLinkUpdate,
+    BlogPostOut, BlogPostCreate, BlogPostUpdate,
+    FaqItemOut, FaqItemCreate, FaqItemUpdate,
+    CustomDataBlockOut, CustomDataBlockCreate, CustomDataBlockUpdate
+)
+
+router = APIRouter(prefix="/api/admin", tags=["admin"])
+
+def get_current_admin_user(user: User = Depends(get_current_user)) -> User:
+    if user.role != "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
+    return user
+
+# Helper for CRUD
+def get_or_404(db, model, item_id):
+    item = db.query(model).filter(model.id == item_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail=f"{model.__name__} not found")
+    return item
+
+# --- Site Content ---
+@router.get("/site-content", response_model=SiteContentOut)
+def get_site_content(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    content = db.query(SiteContent).first()
+    if not content:
+        content = SiteContent()
+        db.add(content)
+        db.commit()
+        db.refresh(content)
+    return content
+
+@router.put("/site-content", response_model=SiteContentOut)
+def update_site_content(data: SiteContentUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    content = db.query(SiteContent).first()
+    if not content:
+        content = SiteContent()
+        db.add(content)
+    for k, v in data.dict(exclude_unset=True).items():
+        setattr(content, k, v)
+    db.commit()
+    db.refresh(content)
+    return content
+
+# --- FAQs ---
+@router.get("/faqs", response_model=List[FaqItemOut])
+def get_faqs(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(FaqItem).order_by(FaqItem.sort_order).all()
+
+@router.post("/faqs", response_model=FaqItemOut)
+def create_faq(data: FaqItemCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = FaqItem(**data.dict())
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(FaqItem.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/faqs/{item_id}", response_model=FaqItemOut)
+def update_faq(item_id: int, data: FaqItemUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, FaqItem, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/faqs/{item_id}")
+def delete_faq(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, FaqItem, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- Blog Posts ---
+@router.get("/blog-posts", response_model=List[BlogPostOut])
+def get_blogs(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(BlogPost).order_by(BlogPost.sort_order).all()
+
+@router.post("/blog-posts", response_model=BlogPostOut)
+def create_blog(data: BlogPostCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = BlogPost(**data.dict())
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(BlogPost.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/blog-posts/{item_id}", response_model=BlogPostOut)
+def update_blog(item_id: int, data: BlogPostUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, BlogPost, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/blog-posts/{item_id}")
+def delete_blog(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, BlogPost, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- Social Links ---
+@router.get("/social-links", response_model=List[SocialLinkOut])
+def get_social_links(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(SocialLink).order_by(SocialLink.sort_order).all()
+
+@router.post("/social-links", response_model=SocialLinkOut)
+def create_social_link(data: SocialLinkCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = SocialLink(**data.dict())
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(SocialLink.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/social-links/{item_id}", response_model=SocialLinkOut)
+def update_social_link(item_id: int, data: SocialLinkUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, SocialLink, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/social-links/{item_id}")
+def delete_social_link(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, SocialLink, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- Legal Links ---
+@router.get("/legal-links", response_model=List[LegalLinkOut])
+def get_legal_links(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(LegalLink).order_by(LegalLink.sort_order).all()
+
+@router.post("/legal-links", response_model=LegalLinkOut)
+def create_legal_link(data: LegalLinkCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = LegalLink(**data.dict())
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(LegalLink.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/legal-links/{item_id}", response_model=LegalLinkOut)
+def update_legal_link(item_id: int, data: LegalLinkUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, LegalLink, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/legal-links/{item_id}")
+def delete_legal_link(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, LegalLink, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- Category ---
+@router.get("/categories", response_model=List[CategoryOut])
+def get_categories(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(Category).order_by(Category.sort_order).all()
+
+@router.post("/categories", response_model=CategoryOut)
+def create_category(data: CategoryCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = Category(**data.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/categories/{item_id}", response_model=CategoryOut)
+def update_category(item_id: int, data: CategoryUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, Category, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        if v is not None: setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/categories/{item_id}")
+def delete_category(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, Category, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- Technology ---
+@router.get("/technologies", response_model=List[TechnologyOut])
+def get_technologies(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(Technology).order_by(Technology.sort_order).all()
+
+@router.post("/technologies", response_model=TechnologyOut)
+def create_technology(data: TechnologyCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = Technology(**data.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/technologies/{item_id}", response_model=TechnologyOut)
+def update_technology(item_id: int, data: TechnologyUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, Technology, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        if v is not None: setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/technologies/{item_id}")
+def delete_technology(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, Technology, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- PricingPlan ---
+@router.get("/pricing-plans", response_model=List[PricingPlanOut])
+def get_pricing_plans(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(PricingPlan).order_by(PricingPlan.sort_order).all()
+
+@router.post("/pricing-plans", response_model=PricingPlanOut)
+def create_pricing_plan(data: PricingPlanCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    data_dict = data.dict(exclude={"features"})
+    item = PricingPlan(**data_dict)
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(PricingPlan.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
+    
+    db.add(item)
+    
+    if data.features:
+        for i, f_data in enumerate(data.features):
+            f_dict = f_data.dict(exclude={"sort_order"})
+            item.features.append(PlanFeature(**f_dict, sort_order=i))
+            
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/pricing-plans/{item_id}", response_model=PricingPlanOut)
+def update_pricing_plan(item_id: int, data: PricingPlanUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, PricingPlan, item_id)
+    data_dict = data.dict(exclude={"features"}, exclude_unset=True)
+    for k, v in data_dict.items():
+        if v is not None: setattr(item, k, v)
+        
+    if data.features is not None:
+        item.features = [] # clear existing
+        for i, f_data in enumerate(data.features):
+            f_dict = f_data.dict(exclude={"sort_order"})
+            item.features.append(PlanFeature(**f_dict, sort_order=i))
+            
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/pricing-plans/{item_id}")
+def delete_pricing_plan(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, PricingPlan, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- FeatureHighlight ---
+@router.get("/feature-highlights", response_model=List[FeatureHighlightOut])
+def get_feature_highlights(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(FeatureHighlight).order_by(FeatureHighlight.sort_order).all()
+
+@router.post("/feature-highlights", response_model=FeatureHighlightOut)
+def create_feature_highlight(data: FeatureHighlightCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = FeatureHighlight(**data.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/feature-highlights/{item_id}", response_model=FeatureHighlightOut)
+def update_feature_highlight(item_id: int, data: FeatureHighlightUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, FeatureHighlight, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        if v is not None: setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/feature-highlights/{item_id}")
+def delete_feature_highlight(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, FeatureHighlight, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- DashboardPreview ---
+@router.get("/dashboard-previews", response_model=List[DashboardPreviewOut])
+def get_dashboard_previews(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(DashboardPreview).order_by(DashboardPreview.sort_order).all()
+
+@router.post("/dashboard-previews", response_model=DashboardPreviewOut)
+def create_dashboard_preview(data: DashboardPreviewCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = DashboardPreview(**data.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/dashboard-previews/{item_id}", response_model=DashboardPreviewOut)
+def update_dashboard_preview(item_id: int, data: DashboardPreviewUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, DashboardPreview, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        if v is not None: setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/dashboard-previews/{item_id}")
+def delete_dashboard_preview(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, DashboardPreview, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- DetectGroup ---
+@router.get("/detect-groups", response_model=List[DetectGroupOut])
+def get_detect_groups(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(DetectGroup).order_by(DetectGroup.sort_order).all()
+
+@router.post("/detect-groups", response_model=DetectGroupOut)
+def create_detect_group(data: DetectGroupCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = DetectGroup(**data.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/detect-groups/{item_id}", response_model=DetectGroupOut)
+def update_detect_group(item_id: int, data: DetectGroupUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, DetectGroup, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        if v is not None: setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/detect-groups/{item_id}")
+def delete_detect_group(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, DetectGroup, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+
+
+# --- FooterColumn ---
+@router.get("/footer-columns", response_model=List[FooterColumnOut])
+def get_footer_columns(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(FooterColumn).order_by(FooterColumn.sort_order).all()
+
+@router.post("/footer-columns", response_model=FooterColumnOut)
+def create_footer_column(data: FooterColumnCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    col_dict = data.dict(exclude={"links", "sort_order"})
+    
+    max_order = db.query(func.max(FooterColumn.sort_order)).scalar()
+    order = (max_order or 0) + 1 if data.sort_order == 0 else data.sort_order
+    
+    item = FooterColumn(**col_dict, sort_order=order)
+    db.add(item)
+    db.flush()
+    
+    for i, l_data in enumerate(data.links, 1):
+        l_dict = l_data.dict(exclude={"sort_order", "id"})
+        link = FooterLink(**l_dict, column_id=item.id, sort_order=i)
+        db.add(link)
+        
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/footer-columns/{item_id}", response_model=FooterColumnOut)
+def update_footer_column(item_id: int, data: FooterColumnUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, FooterColumn, item_id)
+    update_data = data.dict(exclude_unset=True, exclude={"links"})
+    for k, v in update_data.items():
+        if v is not None: setattr(item, k, v)
+        
+    if data.links is not None:
+        db.query(FooterLink).filter(FooterLink.column_id == item_id).delete()
+        for i, l_data in enumerate(data.links, 1):
+            l_dict = l_data.dict(exclude={"sort_order", "id"})
+            link = FooterLink(**l_dict, column_id=item.id, sort_order=i)
+            db.add(link)
+            
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/footer-columns/{item_id}")
+def delete_footer_column(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, FooterColumn, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+
+
+# --- CustomDataBlock ---
+@router.get("/custom-data-blocks", response_model=List[CustomDataBlockOut])
+def get_custom_data_blocks(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(CustomDataBlock).order_by(CustomDataBlock.sort_order).all()
+
+@router.post("/custom-data-blocks", response_model=CustomDataBlockOut)
+def create_custom_data_block(data: CustomDataBlockCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = CustomDataBlock(**data.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/custom-data-blocks/{item_id}", response_model=CustomDataBlockOut)
+def update_custom_data_block(item_id: int, data: CustomDataBlockUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, CustomDataBlock, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        if v is not None: setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/custom-data-blocks/{item_id}")
+def delete_custom_data_block(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, CustomDataBlock, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+# --- NavItem ---
+@router.get("/nav-items", response_model=List[NavItemOut])
+def get_nav_items(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(NavItem).order_by(NavItem.sort_order).all()
+
+@router.post("/nav-items", response_model=NavItemOut)
+def create_nav_item(data: NavItemCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = NavItem(**data.dict())
+    db.add(item)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.put("/nav-items/{item_id}", response_model=NavItemOut)
+def update_nav_item(item_id: int, data: NavItemUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, NavItem, item_id)
+    for k, v in data.dict(exclude_unset=True).items():
+        if v is not None: setattr(item, k, v)
+    db.commit()
+    db.refresh(item)
+    return item
+
+@router.delete("/nav-items/{item_id}")
+def delete_nav_item(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, NavItem, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}
+
+

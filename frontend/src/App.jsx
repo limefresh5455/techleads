@@ -9,11 +9,8 @@ import DirectoryPage from './pages/DirectoryPage'
 import BlogPage from './pages/BlogPage'
 import PricingPage from './pages/PricingPage'
 import CustomDataPage from './pages/CustomDataPage'
-import ToolsPage from './pages/ToolsPage'
-import ToolDetectorPage from './pages/ToolDetectorPage'
 import TechnologiesPage from './pages/TechnologiesPage'
 import CategoriesPage from './pages/CategoriesPage'
-import ApiDocsPage from './pages/ApiDocsPage'
 import ContactPage from './pages/ContactPage'
 import LoginPage from './pages/LoginPage'
 import SignupPage from './pages/SignupPage'
@@ -23,17 +20,19 @@ import DashboardPage from './pages/DashboardPage'
 import AccountPage from './pages/AccountPage'
 import LegalPage from './pages/LegalPage'
 
-const DETECTOR_SLUGS = [
-  'shopify-theme-detector',
-  'wordpress-theme-detector',
-  'cms-detector',
-  'shopify-app-detector',
-]
+import AdminRoute from './components/AdminRoute'
+import AdminDashboardPage from './pages/AdminDashboardPage'
+import AdminPlansPage from './pages/AdminPlansPage'
+import AdminBlogPostsPage from './pages/AdminBlogPostsPage'
+import AdminFaqsPage from './pages/AdminFaqsPage'
+import AdminFooterPage from './pages/AdminFooterPage'
+import AdminSocialLinksPage from './pages/AdminSocialLinksPage'
+import AdminNavItemsPage from './pages/AdminNavItemsPage'
+import AdminLegalLinksPage from './pages/AdminLegalLinksPage'
+import AdminCreditPurchasesPage from './pages/AdminCreditPurchasesPage'
+import AdminDashboardPreviewsPage from './pages/AdminDashboardPreviewsPage'
+import AdminFeatureHighlightsPage from './pages/AdminFeatureHighlightsPage'
 
-function ToolsRedirect() {
-  const { slug } = useParams()
-  return <Navigate to={`/${slug}`} replace />
-}
 
 function GetStartedRedirect() {
   const { user } = useSiteData()
@@ -45,6 +44,19 @@ export default function App() {
     <BrowserRouter>
       <SiteDataProvider>
         <Routes>
+          <Route path="admin" element={<AdminRoute />}>
+            <Route index element={<AdminDashboardPage />} />
+            <Route path="credit-purchases" element={<AdminCreditPurchasesPage />} />
+            <Route path="plans" element={<AdminPlansPage />} />
+            <Route path="dashboard-previews" element={<AdminDashboardPreviewsPage />} />
+            <Route path="feature-highlights" element={<AdminFeatureHighlightsPage />} />
+            <Route path="blogs" element={<AdminBlogPostsPage />} />
+            <Route path="faqs" element={<AdminFaqsPage />} />
+            <Route path="nav-items" element={<AdminNavItemsPage />} />
+            <Route path="footer" element={<AdminFooterPage />} />
+            <Route path="social-links" element={<AdminSocialLinksPage />} />
+            <Route path="legal-links" element={<AdminLegalLinksPage />} />
+          </Route>
           <Route
             element={
               <ProtectedRoute>
@@ -63,13 +75,6 @@ export default function App() {
             <Route path="blog" element={<BlogPage />} />
             <Route path="pricing" element={<PricingPage />} />
             <Route path="custom-data" element={<CustomDataPage />} />
-            <Route path="tools" element={<ToolsPage />} />
-            <Route path="tools/:slug" element={<ToolsRedirect />} />
-            {DETECTOR_SLUGS.map((slug) => (
-              <Route key={slug} path={slug} element={<ToolDetectorPage />} />
-            ))}
-            <Route path="api-docs" element={<ApiDocsPage />} />
-            <Route path="developers" element={<Navigate to="/api-docs" replace />} />
             <Route path="contact" element={<ContactPage />} />
             <Route path="contact-us" element={<Navigate to="/contact" replace />} />
             <Route path="login" element={<GuestRoute><LoginPage /></GuestRoute>} />

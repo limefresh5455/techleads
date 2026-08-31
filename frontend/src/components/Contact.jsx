@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { submitContact } from '../api'
 
-export default function Contact({ content, trustLogos = [], showHeader = true }) {
+export default function Contact({ content, showHeader = true }) {
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -38,13 +38,7 @@ export default function Contact({ content, trustLogos = [], showHeader = true })
   return (
     <section id="contact" className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
-        <div className="mb-10 flex flex-wrap items-center justify-center gap-8 opacity-70 grayscale">
-          {trustLogos.map((logo) => (
-            <div key={logo.id} className="text-sm font-bold tracking-wide text-ink/50">
-              {logo.name}
-            </div>
-          ))}
-        </div>
+
 
         <div className="mx-auto max-w-xl">
           {showHeader && (

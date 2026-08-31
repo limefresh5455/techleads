@@ -1,4 +1,5 @@
 from pydantic import BaseModel, EmailStr, Field
+from .admin import *
 
 
 class CategoryOut(BaseModel):
@@ -31,6 +32,7 @@ class TechnologyOut(BaseModel):
 class PlanFeatureOut(BaseModel):
     id: int
     label: str
+    value_text: Optional[str] = None
     included: bool
 
     class Config:
@@ -108,12 +110,7 @@ class DetectGroupOut(BaseModel):
         from_attributes = True
 
 
-class TrustLogoOut(BaseModel):
-    id: int
-    name: str
 
-    class Config:
-        from_attributes = True
 
 
 class FooterLinkOut(BaseModel):
@@ -148,69 +145,6 @@ class LegalLinkOut(BaseModel):
     id: int
     label: str
     href: str
-
-    class Config:
-        from_attributes = True
-
-
-class FreeToolOut(BaseModel):
-    id: int
-    name: str
-    slug: str
-    description: str
-    href: str
-    cta_label: str = "Analyze"
-
-    class Config:
-        from_attributes = True
-
-
-class ToolPopularItemOut(BaseModel):
-    id: int
-    title: str
-    description: str
-
-    class Config:
-        from_attributes = True
-
-
-class ToolFeatureOut(BaseModel):
-    id: int
-    title: str
-    description: str
-
-    class Config:
-        from_attributes = True
-
-
-class ToolFaqOut(BaseModel):
-    id: int
-    question: str
-    answer: str
-
-    class Config:
-        from_attributes = True
-
-
-class FreeToolDetailOut(BaseModel):
-    id: int
-    name: str
-    slug: str
-    description: str
-    href: str
-    cta_label: str
-    popular_title: str
-    popular_subtitle: str
-    features_title: str
-    features_subtitle: str
-    faq_title: str
-    faq_subtitle: str
-    final_cta_title: str
-    final_cta_subtitle: str
-    final_cta_label: str
-    popular_items: list[ToolPopularItemOut] = []
-    features: list[ToolFeatureOut] = []
-    faqs: list[ToolFaqOut] = []
 
     class Config:
         from_attributes = True
@@ -309,6 +243,7 @@ class AuthUserOut(BaseModel):
     credits: int = 0
     avatar_url: str = ""
     auth_provider: str = "email"
+    role: str = "customer"
 
     class Config:
         from_attributes = True
@@ -484,11 +419,11 @@ class LandingPayload(BaseModel):
     feature_highlights: list[FeatureHighlightOut]
     dashboard_previews: list[DashboardPreviewOut]
     detect_groups: list[DetectGroupOut]
-    trust_logos: list[TrustLogoOut]
+
     footer_columns: list[FooterColumnOut]
     social_links: list[SocialLinkOut]
     legal_links: list[LegalLinkOut]
-    free_tools: list[FreeToolOut]
+
     blog_posts: list[BlogPostOut]
     faqs: list[FaqItemOut] = []
     custom_data_blocks: list[CustomDataBlockOut] = []

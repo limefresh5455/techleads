@@ -30,14 +30,14 @@ from app.models import (
     FaqItem,
     FeatureHighlight,
     FooterColumn,
-    FreeTool,
+
     LegalLink,
     NavItem,
     PricingPlan,
     SiteContent,
     SocialLink,
     Technology,
-    TrustLogo,
+
     User,
     OTP,
     Website,
@@ -69,8 +69,7 @@ from app.schemas import (
     FaqItemOut,
     FeatureHighlightOut,
     FooterColumnOut,
-    FreeToolOut,
-    FreeToolDetailOut,
+
     LandingPayload,
     LegalLinkOut,
     LoginRequest,
@@ -84,7 +83,6 @@ from app.schemas import (
     SiteContentOut,
     SocialLinkOut,
     TechnologyOut,
-    TrustLogoOut,
     UpdateProfileRequest,
 )
 from app.services.detect_service import detect_and_store, refresh_website
@@ -278,7 +276,6 @@ def get_landing(db: Session = Depends(get_db)):
     for group in detect_groups:
         group.tags.sort(key=lambda tag: tag.sort_order)
 
-    trust_logos = db.query(TrustLogo).order_by(TrustLogo.sort_order).all()
     footer_columns = (
         db.query(FooterColumn)
         .options(joinedload(FooterColumn.links))
@@ -298,11 +295,10 @@ def get_landing(db: Session = Depends(get_db)):
         feature_highlights=feature_highlights,
         dashboard_previews=dashboard_previews,
         detect_groups=detect_groups,
-        trust_logos=trust_logos,
         footer_columns=footer_columns,
         social_links=db.query(SocialLink).order_by(SocialLink.sort_order).all(),
         legal_links=db.query(LegalLink).order_by(LegalLink.sort_order).all(),
-        free_tools=db.query(FreeTool).order_by(FreeTool.sort_order).all(),
+
         blog_posts=db.query(BlogPost).order_by(BlogPost.sort_order).all(),
         faqs=db.query(FaqItem).order_by(FaqItem.sort_order).all(),
         custom_data_blocks=db.query(CustomDataBlock).order_by(CustomDataBlock.sort_order).all(),
@@ -576,6 +572,7 @@ def _auth_user_out(user: User) -> AuthUserOut:
         credits=user.credits or 0,
         avatar_url=getattr(user, "avatar_url", None) or "",
         auth_provider=provider,
+        role=getattr(user, "role", "customer"),
     )
 
 
@@ -683,31 +680,6 @@ def techleads_lookup(
         return lookup_website(url)
     except Exception as exc:
         raise HTTPException(status_code=502, detail=f"TechLeads lookup failed: {exc}") from exc
-
-
-@router.get("/free-tools", response_model=list[FreeToolOut])
-def list_free_tools(db: Session = Depends(get_db)):
-    return db.query(FreeTool).order_by(FreeTool.sort_order).all()
-
-
-@router.get("/free-tools/{slug}", response_model=FreeToolDetailOut)
-def get_free_tool(slug: str, db: Session = Depends(get_db)):
-    tool = (
-        db.query(FreeTool)
-        .options(
-            joinedload(FreeTool.popular_items),
-            joinedload(FreeTool.features),
-            joinedload(FreeTool.faqs),
-        )
-        .filter(FreeTool.slug == slug)
-        .first()
-    )
-    if not tool:
-        raise HTTPException(status_code=404, detail="Tool not found")
-    tool.popular_items.sort(key=lambda x: x.sort_order)
-    tool.features.sort(key=lambda x: x.sort_order)
-    tool.faqs.sort(key=lambda x: x.sort_order)
-    return tool
 
 
 @router.get("/blog", response_model=list[BlogPostOut])

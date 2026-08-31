@@ -11,11 +11,11 @@ const empty = {
   feature_highlights: [],
   dashboard_previews: [],
   detect_groups: [],
-  trust_logos: [],
+
   footer_columns: [],
   social_links: [],
   legal_links: [],
-  free_tools: [],
+
   blog_posts: [],
   faqs: [],
   custom_data_blocks: [],

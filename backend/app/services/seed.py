@@ -9,7 +9,6 @@ from app.models import (
     FeatureHighlight,
     FooterColumn,
     FooterLink,
-    FreeTool,
     LegalLink,
     NavItem,
     PlanFeature,
@@ -17,10 +16,6 @@ from app.models import (
     SiteContent,
     SocialLink,
     Technology,
-    ToolFaq,
-    ToolFeature,
-    ToolPopularItem,
-    TrustLogo,
     Website,
     WebsiteTechnology,
 )
@@ -33,7 +28,6 @@ def seed_database(db: Session) -> None:
     _sync_branding(db)
     _sync_social_links(db)
     _sync_footer(db)
-    _sync_free_tools(db)
     _sync_blog_posts(db)
     _sync_features(db)
     _sync_detect_groups(db)
@@ -61,26 +55,7 @@ def _sync_nav(db: Session) -> None:
     db.query(NavItem).delete()
     db.flush()
 
-    free_tools = NavItem(label="Free Tools", href="/tools", has_dropdown=True, sort_order=0)
-    db.add(free_tools)
-    db.flush()
-    for i, (label, href) in enumerate(
-        [
-            ("Shopify Theme Detector", "/shopify-theme-detector"),
-            ("WordPress Theme Detector", "/wordpress-theme-detector"),
-            ("CMS Detector", "/cms-detector"),
-            ("Shopify App Detector", "/shopify-app-detector"),
-        ]
-    ):
-        db.add(
-            NavItem(
-                label=label,
-                href=href,
-                has_dropdown=False,
-                parent_id=free_tools.id,
-                sort_order=i,
-            )
-        )
+
 
     for i, (label, href) in enumerate(
         [
@@ -193,13 +168,6 @@ def _sync_footer(db: Session) -> None:
             ("Blog", "/blog"),
             ("Sign Up", "/signup"),
         ],
-        "Our Tools": [
-            ("Website Technology Checker", "/"),
-            ("CMS Detector", "/cms-detector"),
-            ("Shopify Theme Detector", "/shopify-theme-detector"),
-            ("WordPress Theme Detector", "/wordpress-theme-detector"),
-            ("Shopify App Detector", "/shopify-app-detector"),
-        ],
         "Resources": [
             ("Browse by Technology", "/directory"),
             ("Documentation", "/api-docs"),
@@ -226,354 +194,6 @@ def _sync_footer(db: Session) -> None:
         [("Privacy Policy", "/privacy"), ("Terms of Service", "/terms")]
     ):
         db.add(LegalLink(label=label, href=href, sort_order=i))
-
-
-def _sync_free_tools(db: Session) -> None:
-    db.query(ToolFaq).delete()
-    db.query(ToolFeature).delete()
-    db.query(ToolPopularItem).delete()
-    db.query(FreeTool).delete()
-    db.flush()
-
-    tools = [
-        {
-            "name": "Shopify Theme Detector",
-            "slug": "shopify-theme-detector",
-            "description": "Analyze any Shopify store to discover its theme, features, and installed applications",
-            "href": "/shopify-theme-detector",
-            "cta_label": "Detect Theme",
-            "popular_title": "Popular Shopify Themes",
-            "popular_subtitle": "Explore the most popular themes powering successful Shopify stores",
-            "features_title": "Powerful Features",
-            "features_subtitle": "Everything you need to analyze and understand any Shopify store's technology stack",
-            "faq_title": "Frequently Asked Questions",
-            "faq_subtitle": "Everything you need to know about our Shopify Theme Detector",
-            "final_cta_title": "Discover Your Website's Full Technology Stack",
-            "final_cta_subtitle": "Analyze themes, apps, widgets, and more with our complete tech scanner",
-            "final_cta_label": "Scan Your Website Now",
-            "popular": [
-                (
-                    "Dawn",
-                    "Shopify's default theme, optimized for speed and modern commerce. Perfect for large catalogs and multimedia-rich stores.",
-                ),
-                (
-                    "Debut",
-                    "Classic, versatile theme with powerful customization options. Ideal for both small and large product catalogs.",
-                ),
-                (
-                    "Expanse",
-                    "Modern, minimalist design with focus on visual storytelling. Great for fashion, beauty, and lifestyle brands.",
-                ),
-                (
-                    "Motion",
-                    "Premium theme with advanced animations and transitions. Perfect for creating engaging shopping experiences.",
-                ),
-                (
-                    "Sense",
-                    "Elegant theme with advanced product filtering and search capabilities. Ideal for large inventories and multi-category stores.",
-                ),
-                (
-                    "Headless",
-                    "Custom headless Shopify implementations using modern frameworks like Next.js, offering maximum flexibility and performance.",
-                ),
-            ],
-            "features": [
-                (
-                    "Theme Detection",
-                    "Identify themes, including custom and premium ones with high accuracy",
-                ),
-                (
-                    "Feature Detection",
-                    "Analyze key features and functionality in real-time",
-                ),
-                (
-                    "Real-time Results",
-                    "Get instant analysis with detailed breakdown reports",
-                ),
-            ],
-            "faqs": [
-                (
-                    "What is a Shopify Theme Detector?",
-                    "A Shopify Theme Detector is a tool that analyzes Shopify stores to identify their theme, installed applications, and key features. It helps developers, marketers, and store owners understand the technology stack behind any Shopify store.",
-                ),
-                (
-                    "How accurate is the theme detection?",
-                    "Our tool uses advanced pattern matching and signature detection to identify themes with high accuracy. However, custom themes or heavily modified default themes may be reported as 'Custom Theme'.",
-                ),
-                (
-                    "What features can be detected?",
-                    "We can detect various features including product reviews, wishlist functionality, newsletter popups, currency converters, search autocomplete, and live chat implementations.",
-                ),
-                (
-                    "Is it free to use?",
-                    "Yes, the Shopify Theme Detector is completely free to use. You can analyze any number of Shopify stores without any cost.",
-                ),
-            ],
-        },
-        {
-            "name": "WordPress Theme Detector",
-            "slug": "wordpress-theme-detector",
-            "description": "Analyze any WordPress website to discover its theme, plugins, and customizations",
-            "href": "/wordpress-theme-detector",
-            "cta_label": "Analyze Site",
-            "popular_title": "Popular WordPress Themes",
-            "popular_subtitle": "Discover the most widely-used WordPress themes and their features",
-            "features_title": "Key Features",
-            "features_subtitle": "Everything you need to analyze and understand WordPress websites",
-            "faq_title": "Frequently Asked Questions",
-            "faq_subtitle": "Common questions about our WordPress Theme Detector",
-            "final_cta_title": "Reveal the Hidden Technology Stack Powering Any Site",
-            "final_cta_subtitle": "Detect WordPress themes, plugins, features and more with our complete tech scanner",
-            "final_cta_label": "Find out what powers your site",
-            "popular": [
-                (
-                    "Divi",
-                    "A versatile theme with a powerful visual builder, perfect for creating custom designs without coding.",
-                ),
-                (
-                    "Astra",
-                    "Lightweight and fast-loading theme with extensive customization options and starter templates.",
-                ),
-                (
-                    "GeneratePress",
-                    "Performance focused theme with clean code and excellent compatibility with page builders and plugins.",
-                ),
-                (
-                    "OceanWP",
-                    "Feature-rich theme with deep WooCommerce integration and extensive customization options.",
-                ),
-                (
-                    "Kadence",
-                    "Modern theme with advanced header builder and performance optimization features.",
-                ),
-                (
-                    "Blocksy",
-                    "Next-generation theme built for the WordPress block editor with extensive customization options.",
-                ),
-            ],
-            "features": [
-                (
-                    "Theme Detection",
-                    "Identify WordPress themes and child themes with high accuracy",
-                ),
-                (
-                    "Plugin Analysis",
-                    "Discover active plugins and their versions",
-                ),
-                (
-                    "Feature Detection",
-                    "Identify key WordPress features and customizations",
-                ),
-                (
-                    "Security Check",
-                    "Detect security plugins and common protection measures",
-                ),
-            ],
-            "faqs": [
-                (
-                    "What is a WordPress Theme Detector?",
-                    "A WordPress Theme Detector is a tool that analyzes WordPress websites to identify their themes, active plugins, and customizations. It helps developers and site owners understand the technology behind any WordPress website.",
-                ),
-                (
-                    "Can it detect custom themes?",
-                    "Yes, our tool can detect custom themes and will provide information about their structure and features. However, for heavily customized themes, some details may be limited.",
-                ),
-                (
-                    "What information can be detected?",
-                    "Our tool can detect theme names, versions, active plugins, custom post types, widgets, and various WordPress features including security measures and optimization tools.",
-                ),
-                (
-                    "Is it free to use?",
-                    "Yes, the WordPress Theme Detector is completely free to use. You can analyze any number of WordPress websites without any cost.",
-                ),
-            ],
-        },
-        {
-            "name": "CMS Detector",
-            "slug": "cms-detector",
-            "description": "Instantly discover any website's CMS platform, plugins, themes, and integrations",
-            "href": "/cms-detector",
-            "cta_label": "Detect CMS",
-            "popular_title": "Popular CMS Platforms",
-            "popular_subtitle": "Discover the different types of Content Management Systems",
-            "features_title": "Key Features",
-            "features_subtitle": "Everything you need to analyze and understand any website's CMS platform",
-            "faq_title": "Frequently Asked Questions",
-            "faq_subtitle": "Common questions about our CMS Detection tool",
-            "final_cta_title": "Discover Your Website's Full Technology Stack",
-            "final_cta_subtitle": "Check and analyze CMS platforms, plugins, integrations and more with our complete tech detector & scanner",
-            "final_cta_label": "Scan Your Website Now",
-            "popular": [
-                (
-                    "WordPress",
-                    "The world's most popular CMS, perfect for blogs, business sites, and portfolios. Known for its extensive plugin ecosystem.",
-                ),
-                (
-                    "Shopify",
-                    "Popular ecommerce platform designed for businesses of all sizes. Easily build, customize, and manage your online store with powerful tools and integrations.",
-                ),
-                (
-                    "Drupal",
-                    "Highly flexible and secure CMS favored by large organizations and government websites. Excellent for complex content structures.",
-                ),
-                (
-                    "Wix",
-                    "A website builder for creating beautiful websites quickly. Ideal for small businesses, portfolios, and personal projects with drag-and-drop simplicity.",
-                ),
-                (
-                    "Ghost",
-                    "Modern publishing platform built for professional bloggers and content creators. Features a clean, minimalist interface.",
-                ),
-                (
-                    "Headless CMS",
-                    "Modern content management systems that separate content from presentation, ideal for multi-platform content delivery.",
-                ),
-            ],
-            "features": [
-                (
-                    "CMS Detection",
-                    "Identify content management systems with high accuracy",
-                ),
-                (
-                    "Feature Analysis",
-                    "Discover installed plugins and core features",
-                ),
-                (
-                    "Theme Detection",
-                    "Identify themes and templates being used",
-                ),
-                (
-                    "Real-time Analysis",
-                    "Get instant results with detailed breakdown",
-                ),
-            ],
-            "faqs": [
-                (
-                    "What is a CMS Detector & Checker?",
-                    "A CMS Detector & Checker is a tool that analyzes and checks websites to identify their content management system, installed plugins, and key features.",
-                ),
-                (
-                    "Which CMS platforms can be detected?",
-                    "Our tool can detect major CMS platforms including WordPress, Drupal, Joomla, Ghost, and Magento, along with their associated features and plugins.",
-                ),
-                (
-                    "How accurate is our CMS checker?",
-                    "Our tool uses advanced pattern matching and signature detection to check and identify CMS platforms with high accuracy. However, heavily customized installations may affect detection accuracy.",
-                ),
-                (
-                    "Is it free to use?",
-                    "Yes, the CMS Detector is completely free to use.",
-                ),
-            ],
-        },
-        {
-            "name": "Shopify App Detector",
-            "slug": "shopify-app-detector",
-            "description": "Analyze any Shopify store to discover installed apps, widgets, and ecommerce integrations",
-            "href": "/shopify-app-detector",
-            "cta_label": "Detect Apps",
-            "popular_title": "Popular Shopify Apps",
-            "popular_subtitle": "Explore apps commonly found on high-performing Shopify stores",
-            "features_title": "Powerful Features",
-            "features_subtitle": "Everything you need to uncover a Shopify store's app stack",
-            "faq_title": "Frequently Asked Questions",
-            "faq_subtitle": "Everything you need to know about our Shopify App Detector",
-            "final_cta_title": "Uncover Every App Powering a Shopify Store",
-            "final_cta_subtitle": "Detect themes, apps, widgets, and more with our complete tech scanner",
-            "final_cta_label": "Scan Your Website Now",
-            "popular": [
-                (
-                    "Klaviyo",
-                    "Email and SMS marketing platform used by ecommerce brands for automated flows and campaigns.",
-                ),
-                (
-                    "Judge.me",
-                    "Product reviews app that helps stores collect social proof and display ratings on product pages.",
-                ),
-                (
-                    "Recharge",
-                    "Subscription management app for recurring products and membership-style shopping experiences.",
-                ),
-                (
-                    "Gorgias",
-                    "Helpdesk and live chat platform built for Shopify support teams.",
-                ),
-                (
-                    "Privy",
-                    "Popups, banners, and email capture tools for converting visitors into customers.",
-                ),
-                (
-                    "Shopify Flow",
-                    "Automation toolkit for streamlining store operations without custom code.",
-                ),
-            ],
-            "features": [
-                (
-                    "App Detection",
-                    "Identify installed Shopify apps and common third-party widgets",
-                ),
-                (
-                    "Integration Analysis",
-                    "Spot marketing, reviews, chat, and subscription tools in use",
-                ),
-                (
-                    "Real-time Results",
-                    "Get instant analysis with a clear breakdown of detected apps",
-                ),
-            ],
-            "faqs": [
-                (
-                    "What is a Shopify App Detector?",
-                    "A Shopify App Detector analyzes Shopify stores to identify installed applications, widgets, and common ecommerce integrations.",
-                ),
-                (
-                    "How accurate is app detection?",
-                    "We use signature and pattern matching across scripts, markup, and known app footprints. Heavily customized or privately hosted apps may be harder to detect.",
-                ),
-                (
-                    "Is it free to use?",
-                    "Yes, the Shopify App Detector is free to use for website analysis.",
-                ),
-            ],
-        },
-    ]
-
-    for i, tool in enumerate(tools):
-        row = FreeTool(
-            name=tool["name"],
-            slug=tool["slug"],
-            description=tool["description"],
-            href=tool["href"],
-            cta_label=tool["cta_label"],
-            popular_title=tool["popular_title"],
-            popular_subtitle=tool["popular_subtitle"],
-            features_title=tool["features_title"],
-            features_subtitle=tool["features_subtitle"],
-            faq_title=tool["faq_title"],
-            faq_subtitle=tool["faq_subtitle"],
-            final_cta_title=tool["final_cta_title"],
-            final_cta_subtitle=tool["final_cta_subtitle"],
-            final_cta_label=tool["final_cta_label"],
-            sort_order=i,
-        )
-        db.add(row)
-        db.flush()
-        for j, (title, description) in enumerate(tool["popular"]):
-            db.add(
-                ToolPopularItem(
-                    tool_id=row.id, title=title, description=description, sort_order=j
-                )
-            )
-        for j, (title, description) in enumerate(tool["features"]):
-            db.add(
-                ToolFeature(
-                    tool_id=row.id, title=title, description=description, sort_order=j
-                )
-            )
-        for j, (question, answer) in enumerate(tool["faqs"]):
-            db.add(
-                ToolFaq(tool_id=row.id, question=question, answer=answer, sort_order=j)
-            )
 
 
 def _sync_blog_posts(db: Session) -> None:
@@ -814,9 +434,6 @@ def _seed_core(db: Session) -> None:
                 sort_order=order,
             )
         )
-
-    for i, name in enumerate(["G2", "Capterra", "Trustpilot", "Product Hunt"]):
-        db.add(TrustLogo(name=name, sort_order=i))
 
 
 def _seed_features(db: Session) -> None:

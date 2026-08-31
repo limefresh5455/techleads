@@ -6,44 +6,7 @@ import { useSiteData } from '../context/SiteDataContext'
 
 const BULK_QTY_OPTIONS = [1, 5, 10, 25, 100]
 
-const COMPARISON = [
-  {
-    feature: 'Results per search',
-    bulk: 'One-time dataset',
-    growth: 'Unlimited browsing',
-    business: 'Unlimited browsing',
-  },
-  {
-    feature: 'Technologies',
-    bulk: '1, 5, 10, 25, or 100',
-    growth: '5,000 export credits',
-    business: '25,000 export credits',
-  },
-  {
-    feature: 'Enrichment credits',
-    bulk: '1 per technology purchased',
-    growth: '5,000 (prepaid)',
-    business: '25,000 (prepaid)',
-  },
-  {
-    feature: 'CSV Export',
-    bulk: 'Yes',
-    growth: 'Yes',
-    business: 'Yes',
-  },
-  {
-    feature: 'Dashboard tech filters',
-    bulk: 'Yes',
-    growth: 'Yes',
-    business: 'Yes',
-  },
-  {
-    feature: 'Best for',
-    bulk: 'Single / few tech lists',
-    growth: 'Agencies & sales teams',
-    business: 'High-volume teams',
-  },
-]
+// Removed hardcoded COMPARISON
 
 export default function PricingPage() {
   const { data, user, updateUserCredits } = useSiteData()
@@ -103,11 +66,7 @@ export default function PricingPage() {
 
   if (!content) return null
 
-  const bulk = plans.find((p) => p.slug === 'bulk')
-  const growth = plans.find((p) => p.slug === 'growth')
-  const business = plans.find((p) => p.slug === 'business')
-  const ordered = [bulk, growth, business].filter(Boolean)
-  const displayPlans = ordered.length ? ordered : plans.slice(0, 3)
+  const displayPlans = plans
 
   async function buyPlan(plan, quantity = 1) {
     setError('')
@@ -269,21 +228,46 @@ export default function PricingPage() {
             <table className="min-w-full text-left text-sm">
               <thead className="border-b border-border bg-surface/70 text-xs uppercase tracking-wide text-muted">
                 <tr>
-                  <th className="px-4 py-3 font-semibold">Feature</th>
-                  <th className="px-4 py-3 font-semibold">Bulk Purchase</th>
-                  <th className="px-4 py-3 font-semibold">Growth</th>
-                  <th className="px-4 py-3 font-semibold">Business</th>
+                  <th className="px-4 py-3 font-semibold min-w-[200px]">Feature</th>
+                  {displayPlans.map((plan) => (
+                    <th key={plan.id} className="px-4 py-3 font-semibold text-center">{plan.name}</th>
+                  ))}
                 </tr>
               </thead>
               <tbody>
-                {COMPARISON.map((row) => (
-                  <tr key={row.feature} className="border-b border-border last:border-0">
-                    <td className="px-4 py-3 font-medium text-ink">{row.feature}</td>
-                    <td className="px-4 py-3 text-muted">{row.bulk}</td>
-                    <td className="px-4 py-3 text-muted">{row.growth}</td>
-                    <td className="px-4 py-3 text-muted">{row.business}</td>
+                {/* Extract unique feature labels across all plans */}
+                {Array.from(
+                  new Set(displayPlans.flatMap(plan => plan.features?.map(f => f.label) || []))
+                ).map((featureLabel) => (
+                  <tr key={featureLabel} className="border-b border-border last:border-0 hover:bg-canvas/30">
+                    <td className="px-4 py-3 font-medium text-ink">{featureLabel}</td>
+                    {displayPlans.map(plan => {
+                      const planFeature = plan.features?.find(f => f.label === featureLabel)
+                      return (
+                        <td key={plan.id} className="px-4 py-3 text-center">
+                          {planFeature ? (
+                            planFeature.value_text ? (
+                              <span className="text-muted">{planFeature.value_text}</span>
+                            ) : planFeature.included ? (
+                              <Check className="h-5 w-5 text-brand mx-auto" />
+                            ) : (
+                              <span className="text-muted">-</span>
+                            )
+                          ) : (
+                            <span className="text-muted">-</span>
+                          )}
+                        </td>
+                      )
+                    })}
                   </tr>
                 ))}
+                {displayPlans.every(p => !p.features || p.features.length === 0) && (
+                  <tr>
+                    <td colSpan={displayPlans.length + 1} className="px-4 py-8 text-center text-muted">
+                      No comparison features available yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>

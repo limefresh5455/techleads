@@ -28,7 +28,7 @@ export default function Navbar() {
   const { data, user, logout } = useSiteData()
   const content = data.content
   const items = (data.nav_items || []).filter(
-    (item) => item.href !== '/custom-data' && item.label?.toLowerCase() !== 'custom data',
+    (item) => item.href !== '/custom-data' && item.label?.toLowerCase() !== 'custom data' && item.href !== '/tools' && item.label?.toLowerCase() !== 'tools',
   )
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
@@ -87,7 +87,7 @@ export default function Navbar() {
                 {toolsOpen && (
                   <div className="absolute left-0 top-full z-50 mt-2 min-w-64 rounded-xl border border-border bg-card p-2 shadow-lg">
                     <Link to={item.href} className="block rounded-lg px-3 py-2 text-sm font-semibold text-ink hover:bg-surface">
-                      All Free Tools
+                      {item.label}
                     </Link>
                     {(item.children || []).map((child) => (
                       <Link

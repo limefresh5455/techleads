@@ -12,7 +12,7 @@ export default function ContactPage() {
         ctaLabel="Start free trial"
         ctaTo="/signup"
       />
-      <Contact content={data.content} trustLogos={data.trust_logos} showHeader={false} />
+      <Contact content={data.content} showHeader={false} />
     </>
   )
 }

@@ -16,7 +16,7 @@ function authHeaders() {
   return token ? { Authorization: `Bearer ${token}` } : {}
 }
 
-async function request(path, options = {}) {
+export async function request(path, options = {}) {
   const res = await fetch(`${resolveApiBase()}${path}`, {
     headers: {
       'Content-Type': 'application/json',
@@ -112,9 +112,7 @@ export function enrichUrls(urls) {
   })
 }
 
-export function fetchFreeTool(slug) {
-  return request(`/api/free-tools/${encodeURIComponent(slug)}`)
-}
+
 
 export function searchTechnologies(q) {
   const query = encodeURIComponent(q || '')

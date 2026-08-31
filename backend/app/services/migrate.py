@@ -70,3 +70,5 @@ def migrate_user_columns() -> None:
             )
         if "avatar_url" not in existing:
             conn.execute(text("ALTER TABLE users ADD COLUMN avatar_url VARCHAR(500) DEFAULT ''"))
+        if "role" not in existing:
+            conn.execute(text("ALTER TABLE users ADD COLUMN role VARCHAR(50) DEFAULT 'customer'"))

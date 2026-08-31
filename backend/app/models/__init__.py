@@ -141,6 +141,7 @@ class PlanFeature(Base):
     id = Column(Integer, primary_key=True, index=True)
     plan_id = Column(Integer, ForeignKey("pricing_plans.id"), nullable=False)
     label = Column(String(255), nullable=False)
+    value_text = Column(String(255), nullable=True)
     included = Column(Boolean, default=True)
     sort_order = Column(Integer, default=0)
 
@@ -280,12 +281,7 @@ class DetectTag(Base):
     group = relationship("DetectGroup", back_populates="tags")
 
 
-class TrustLogo(Base):
-    __tablename__ = "trust_logos"
 
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(80), nullable=False)
-    sort_order = Column(Integer, default=0)
 
 
 class FooterColumn(Base):
@@ -329,69 +325,6 @@ class LegalLink(Base):
     sort_order = Column(Integer, default=0)
 
 
-class FreeTool(Base):
-    __tablename__ = "free_tools"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(120), nullable=False)
-    slug = Column(String(140), unique=True, nullable=False)
-    description = Column(Text, default="")
-    href = Column(String(160), nullable=False)
-    cta_label = Column(String(80), default="Analyze")
-    popular_title = Column(String(160), default="Popular Items")
-    popular_subtitle = Column(Text, default="")
-    features_title = Column(String(160), default="Key Features")
-    features_subtitle = Column(Text, default="")
-    faq_title = Column(String(160), default="Frequently Asked Questions")
-    faq_subtitle = Column(Text, default="")
-    final_cta_title = Column(String(255), default="")
-    final_cta_subtitle = Column(Text, default="")
-    final_cta_label = Column(String(80), default="Scan Your Website Now")
-    sort_order = Column(Integer, default=0)
-
-    popular_items = relationship(
-        "ToolPopularItem", back_populates="tool", cascade="all, delete-orphan"
-    )
-    features = relationship("ToolFeature", back_populates="tool", cascade="all, delete-orphan")
-    faqs = relationship("ToolFaq", back_populates="tool", cascade="all, delete-orphan")
-
-
-class ToolPopularItem(Base):
-    __tablename__ = "tool_popular_items"
-
-    id = Column(Integer, primary_key=True, index=True)
-    tool_id = Column(Integer, ForeignKey("free_tools.id"), nullable=False)
-    title = Column(String(120), nullable=False)
-    description = Column(Text, default="")
-    sort_order = Column(Integer, default=0)
-
-    tool = relationship("FreeTool", back_populates="popular_items")
-
-
-class ToolFeature(Base):
-    __tablename__ = "tool_features"
-
-    id = Column(Integer, primary_key=True, index=True)
-    tool_id = Column(Integer, ForeignKey("free_tools.id"), nullable=False)
-    title = Column(String(120), nullable=False)
-    description = Column(Text, default="")
-    sort_order = Column(Integer, default=0)
-
-    tool = relationship("FreeTool", back_populates="features")
-
-
-class ToolFaq(Base):
-    __tablename__ = "tool_faqs"
-
-    id = Column(Integer, primary_key=True, index=True)
-    tool_id = Column(Integer, ForeignKey("free_tools.id"), nullable=False)
-    question = Column(String(255), nullable=False)
-    answer = Column(Text, nullable=False)
-    sort_order = Column(Integer, default=0)
-
-    tool = relationship("FreeTool", back_populates="faqs")
-
-
 class BlogPost(Base):
     __tablename__ = "blog_posts"
 
@@ -413,6 +346,7 @@ class User(Base):
     google_sub = Column(String(255), unique=True, nullable=True, index=True)
     avatar_url = Column(String(500), default="")
     credits = Column(Integer, default=0)
+    role = Column(String(50), default="customer")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
