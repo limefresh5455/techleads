@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Plus, Trash2, GripVertical, Edit2 } from 'lucide-react'
+﻿import { useState, useEffect } from 'react'
+import { Plus, Trash2, GripVertical, Edit, X , LayoutTemplate } from 'lucide-react'
 import { adminFooterColumns } from '../adminApi'
 
 export default function AdminFooterPage() {
@@ -86,9 +86,12 @@ export default function AdminFooterPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-ink">Footer Settings</h1>
+    <div className="space-y-6 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
+        <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
+            <LayoutTemplate className="text-brand" />
+            Footer Settings
+        </h1>
         <button
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 bg-brand text-on-brand px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand/90"
@@ -100,7 +103,7 @@ export default function AdminFooterPage() {
       {loading ? (
         <div className="text-muted">Loading...</div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-canvas border-b border-border">
@@ -130,14 +133,14 @@ export default function AdminFooterPage() {
                   <td className="p-4 flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleOpenModal(col)}
-                      className="p-1.5 text-muted hover:text-brand hover:bg-brand/10 rounded"
+                       className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
                       title="Edit"
                     >
-                      <Edit2 size={16} />
+                      <Edit size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(col.id)}
-                      className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 rounded"
+                      className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 size={16} />
@@ -158,12 +161,18 @@ export default function AdminFooterPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-2xl border border-border flex flex-col max-h-[90vh]">
-            <div className="px-6 py-4 border-b border-border shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-lg font-bold text-ink">
                 {editingId === 'new' ? 'Add Column' : 'Edit Column'}
               </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-ink/60 hover:text-ink transition-colors"
+              >
+                <X size={20} />
+              </button>
             </div>
-            
+
             <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-6">
                 <div>
@@ -179,7 +188,7 @@ export default function AdminFooterPage() {
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-border shrink-0">
                     <label className="block text-sm font-medium text-ink">Footer Links</label>
                     <button
                       type="button"
@@ -235,7 +244,7 @@ export default function AdminFooterPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div className="px-6 py-4 border-t border-border flex justify-end gap-3 shrink-0">
                 <button
                   type="button"

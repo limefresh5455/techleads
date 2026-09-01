@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
+from datetime import datetime
 
 class CategoryCreate(BaseModel):
     name: str
@@ -73,7 +74,6 @@ class FeatureHighlightCreate(BaseModel):
     title: str
     description: str
     icon: str = "sparkles"
-    link_label: str = "Learn more"
     variant: str = "card"
     tags: str = ""
     sort_order: int = 0
@@ -82,7 +82,6 @@ class FeatureHighlightUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     icon: Optional[str] = None
-    link_label: Optional[str] = None
     variant: Optional[str] = None
     tags: Optional[str] = None
     sort_order: Optional[int] = None
@@ -244,3 +243,77 @@ class CustomDataBlockUpdate(BaseModel):
     title: Optional[str] = None
     description: Optional[str] = None
     sort_order: Optional[int] = None
+
+class DashboardPreviewOut(BaseModel):
+    id: int
+    domain: str
+    categories: str
+    technologies: str
+    country: str
+    traffic: str
+    ads: str
+    sort_order: int
+
+    class Config:
+        from_attributes = True
+
+class CreditPurchaseOut(BaseModel):
+    id: int
+    plan_slug: str
+    credits: int
+    amount_cents: int
+    currency: str
+    status: str
+    created_at: datetime
+    paid_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class UserOut(BaseModel):
+    id: int
+    name: str
+    email: str
+    role: str
+    credits: int
+    created_at: datetime
+    credit_purchases: List[CreditPurchaseOut] = []
+
+    class Config:
+        from_attributes = True
+
+class UserCreate(BaseModel):
+    name: str
+    email: str
+    role: Optional[str] = 'customer'
+    credits: Optional[int] = 0
+    password: str
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    email: Optional[str] = None
+    role: Optional[str] = None
+    credits: Optional[int] = None
+
+class ContactMessageOut(BaseModel):
+    id: int
+    name: str
+    email: str
+    company_website: str
+    message: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class CustomDataBlockOut(BaseModel):
+    id: int
+    domain: str
+    data: str
+    categories: str = ""
+    sort_order: int = 0
+    
+    class Config:
+        from_attributes = True
+

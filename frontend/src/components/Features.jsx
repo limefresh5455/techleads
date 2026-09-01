@@ -23,13 +23,7 @@ export default function Features({ features = [], content }) {
               </div>
               <h3 className="mt-4 text-xl font-bold text-ink">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{f.description}</p>
-              <Link
-                to="/technologies"
-                className="mt-4 inline-flex items-center gap-1 text-sm font-semibold text-brand hover:gap-2 transition-all"
-              >
-                {f.link_label}
-                <ArrowRight className="h-4 w-4" />
-              </Link>
+
             </div>
           ))}
         </div>

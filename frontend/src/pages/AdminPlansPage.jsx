@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2, CheckCircle, Circle, X } from 'lucide-react'
+﻿import { useState, useEffect } from 'react'
+import { Plus, Edit, Trash2, CheckCircle, Circle, X , CreditCard } from 'lucide-react'
 import { adminPricingPlans } from '../adminApi'
 
 export default function AdminPlansPage() {
@@ -7,15 +7,15 @@ export default function AdminPlansPage() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState(null)
-  
-  const defaultForm = { 
-    name: '', 
-    slug: '', 
-    description: '', 
-    monthly_price: 0, 
-    yearly_price: 0, 
-    credits: 0, 
-    is_popular: false, 
+
+  const defaultForm = {
+    name: '',
+    slug: '',
+    description: '',
+    monthly_price: 0,
+    yearly_price: 0,
+    credits: 0,
+    is_popular: false,
     cta_label: 'Get Started',
     features: []
   }
@@ -88,9 +88,12 @@ export default function AdminPlansPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-ink">Pricing Plans</h1>
+    <div className="space-y-6 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
+        <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
+            <CreditCard className="text-brand" />
+            Pricing Plans
+        </h1>
         <button
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 bg-brand text-on-brand px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand/90"
@@ -102,7 +105,7 @@ export default function AdminPlansPage() {
       {loading ? (
         <div className="text-muted">Loading...</div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-canvas border-b border-border">
@@ -132,22 +135,22 @@ export default function AdminPlansPage() {
                   </td>
                   <td className="p-4 text-center">
                     {plan.is_popular ? (
-                      <CheckCircle className="inline-block text-green-500" size={18} />
+                      <CheckCircle className="inline-block text-green-500" size={16} />
                     ) : (
-                      <Circle className="inline-block text-muted/50" size={18} />
+                      <Circle className="inline-block text-muted/50" size={16} />
                     )}
                   </td>
                   <td className="p-4 flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleOpenModal(plan)}
-                      className="p-1.5 text-muted hover:text-brand hover:bg-brand/10 rounded"
+                       className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
                       title="Edit"
                     >
-                      <Edit2 size={16} />
+                      <Edit size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(plan.id)}
-                      className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 rounded"
+                      className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 size={16} />
@@ -168,15 +171,21 @@ export default function AdminPlansPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-2xl border border-border overflow-hidden max-h-[90vh] flex flex-col">
-            <div className="px-6 py-4 border-b border-border shrink-0">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-lg font-bold text-ink">
                 {editingPlan ? 'Edit Pricing Plan' : 'Add Pricing Plan'}
               </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-ink/60 hover:text-ink transition-colors"
+              >
+                <X size={20} />
+              </button>
             </div>
-            
+
             <div className="overflow-y-auto p-6">
               <form id="planForm" onSubmit={handleSave} className="space-y-6">
-                
+
                 {/* Basic Details */}
                 <div className="space-y-4">
                   <h3 className="text-sm font-semibold uppercase text-muted tracking-wider">Basic Details</h3>
@@ -283,12 +292,12 @@ export default function AdminPlansPage() {
                     </div>
                   </div>
                 </div>
-                
+
                 <hr className="border-border" />
 
                 {/* Plan Features */}
                 <div className="space-y-4">
-                  <div className="flex justify-between items-center">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 mb-6 border-b border-border shrink-0">
                     <h3 className="text-sm font-semibold uppercase text-muted tracking-wider">Features</h3>
                     <button
                       type="button"
@@ -298,7 +307,7 @@ export default function AdminPlansPage() {
                       + Add Feature
                     </button>
                   </div>
-                  
+
                   {formData.features.length === 0 ? (
                     <div className="text-sm text-muted text-center py-4 bg-canvas/50 rounded-lg border border-dashed border-border">
                       No features added yet.
@@ -346,7 +355,7 @@ export default function AdminPlansPage() {
                 </div>
               </form>
             </div>
-            
+
             <div className="px-6 py-4 border-t border-border bg-canvas shrink-0 flex justify-end gap-3 rounded-b-xl">
               <button
                 type="button"

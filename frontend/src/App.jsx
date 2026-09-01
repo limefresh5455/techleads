@@ -28,14 +28,19 @@ import AdminFaqsPage from './pages/AdminFaqsPage'
 import AdminFooterPage from './pages/AdminFooterPage'
 import AdminSocialLinksPage from './pages/AdminSocialLinksPage'
 import AdminNavItemsPage from './pages/AdminNavItemsPage'
+import AdminContactMessagesPage from './pages/AdminContactMessagesPage'
 import AdminLegalLinksPage from './pages/AdminLegalLinksPage'
-import AdminCreditPurchasesPage from './pages/AdminCreditPurchasesPage'
+import AdminUsersPage from './pages/AdminUsersPage'
 import AdminDashboardPreviewsPage from './pages/AdminDashboardPreviewsPage'
 import AdminFeatureHighlightsPage from './pages/AdminFeatureHighlightsPage'
+import AdminSiteContentPage from './pages/AdminSiteContentPage'
 
 
 function GetStartedRedirect() {
   const { user } = useSiteData()
+  if (user && user.role === 'admin') {
+    return <Navigate to="/admin" replace />
+  }
   return <Navigate to={user ? '/dashboard' : '/signup'} replace />
 }
 
@@ -46,8 +51,9 @@ export default function App() {
         <Routes>
           <Route path="admin" element={<AdminRoute />}>
             <Route index element={<AdminDashboardPage />} />
-            <Route path="credit-purchases" element={<AdminCreditPurchasesPage />} />
+            <Route path="users" element={<AdminUsersPage />} />
             <Route path="plans" element={<AdminPlansPage />} />
+            <Route path="site-content" element={<AdminSiteContentPage />} />
             <Route path="dashboard-previews" element={<AdminDashboardPreviewsPage />} />
             <Route path="feature-highlights" element={<AdminFeatureHighlightsPage />} />
             <Route path="blogs" element={<AdminBlogPostsPage />} />
@@ -56,6 +62,8 @@ export default function App() {
             <Route path="footer" element={<AdminFooterPage />} />
             <Route path="social-links" element={<AdminSocialLinksPage />} />
             <Route path="legal-links" element={<AdminLegalLinksPage />} />
+            <Route path="contact-messages" element={<AdminContactMessagesPage />} />
+            <Route path="dashboard-previews" element={<AdminDashboardPreviewsPage />} />
           </Route>
           <Route
             element={

@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react'
-import { Plus, Edit2, Trash2 } from 'lucide-react'
+﻿import { useState, useEffect } from 'react'
+import { Plus, Edit, Trash2, X , Share2 } from 'lucide-react'
 import { adminSocialLinks } from '../adminApi'
 
 export default function AdminSocialLinksPage() {
@@ -57,9 +57,12 @@ export default function AdminSocialLinksPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-ink">Social Links</h1>
+    <div className="space-y-6 max-w-7xl mx-auto w-full">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
+        <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
+          <Share2 className="text-brand" />
+          Social Links
+        </h1>
         <button
           onClick={() => handleOpenModal()}
           className="flex items-center gap-2 bg-brand text-on-brand px-4 py-2 rounded-lg text-sm font-semibold hover:bg-brand/90"
@@ -71,7 +74,7 @@ export default function AdminSocialLinksPage() {
       {loading ? (
         <div className="text-muted">Loading...</div>
       ) : (
-        <div className="bg-surface border border-border rounded-lg overflow-hidden">
+        <div className="bg-surface border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="bg-canvas border-b border-border">
@@ -86,18 +89,18 @@ export default function AdminSocialLinksPage() {
                 <tr key={link.id} className="hover:bg-canvas/50">
                   <td className="p-4 font-medium text-ink">{link.label}</td>
                   <td className="p-4 text-sm text-brand break-all">{link.href}</td>
-                  <td className="p-4 text-sm text-ink">{link.icon_key}</td>
+                  <td className="p-4 text-sm text-muted">{link.icon_key}</td>
                   <td className="p-4 flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleOpenModal(link)}
-                      className="p-1.5 text-muted hover:text-brand hover:bg-brand/10 rounded"
+                      className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
                       title="Edit"
                     >
-                      <Edit2 size={16} />
+                      <Edit size={16} />
                     </button>
                     <button
                       onClick={() => handleDelete(link.id)}
-                      className="p-1.5 text-muted hover:text-red-500 hover:bg-red-500/10 rounded"
+                      className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
                       title="Delete"
                     >
                       <Trash2 size={16} />
@@ -118,10 +121,16 @@ export default function AdminSocialLinksPage() {
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg border border-border overflow-hidden">
-            <div className="px-6 py-4 border-b border-border">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="text-lg font-bold text-ink">
                 {editingLink ? 'Edit Social Link' : 'Add Social Link'}
               </h2>
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="text-ink/60 hover:text-ink transition-colors"
+              >
+                <X size={20} />
+              </button>
             </div>
             <form onSubmit={handleSave} className="p-6 space-y-4">
               <div>
@@ -132,32 +141,36 @@ export default function AdminSocialLinksPage() {
                   value={formData.label}
                   onChange={e => setFormData({ ...formData, label: e.target.value })}
                   className="w-full bg-canvas border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-brand"
-                  placeholder="e.g. Twitter"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink mb-1">URL (href)</label>
                 <input
-                  type="text"
+                  type="url"
                   required
                   value={formData.href}
                   onChange={e => setFormData({ ...formData, href: e.target.value })}
                   className="w-full bg-canvas border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-brand"
-                  placeholder="https://twitter.com/..."
+                  placeholder="https://"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-ink mb-1">Icon Key</label>
-                <input
-                  type="text"
-                  required
+                <select
                   value={formData.icon_key}
                   onChange={e => setFormData({ ...formData, icon_key: e.target.value })}
                   className="w-full bg-canvas border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-brand"
-                  placeholder="e.g. twitter, github, linkedin"
-                />
+                >
+                  <option value="twitter">Twitter / X</option>
+                  <option value="linkedin">LinkedIn</option>
+                  <option value="github">GitHub</option>
+                  <option value="facebook">Facebook</option>
+                  <option value="instagram">Instagram</option>
+                  <option value="youtube">YouTube</option>
+                  <option value="globe">Website (Globe)</option>
+                </select>
               </div>
-              
+
               <div className="pt-4 flex justify-end gap-3">
                 <button
                   type="button"

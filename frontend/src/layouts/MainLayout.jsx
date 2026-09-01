@@ -1,10 +1,14 @@
-import { Outlet } from 'react-router-dom'
+import { Outlet, Navigate } from 'react-router-dom'
 import Navbar from '../components/Navbar'
 import Footer from '../components/Footer'
 import { useSiteData } from '../context/SiteDataContext'
 
 export default function MainLayout() {
-  const { data, loading, error } = useSiteData()
+  const { data, loading, error, user } = useSiteData()
+
+  if (user && user.role === 'admin') {
+    return <Navigate to="/admin" replace />
+  }
 
   if (loading) {
     return (

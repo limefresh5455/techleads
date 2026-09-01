@@ -155,7 +155,6 @@ class FeatureHighlight(Base):
     title = Column(String(160), nullable=False)
     description = Column(Text, nullable=False)
     icon = Column(String(80), default="sparkles")
-    link_label = Column(String(80), default="Learn more")
     variant = Column(String(40), default="card")  # hero | card | banner
     tags = Column(String(255), default="")  # comma-separated
     sort_order = Column(Integer, default=0)
@@ -349,6 +348,7 @@ class User(Base):
     role = Column(String(50), default="customer")
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
+    credit_purchases = relationship("CreditPurchase", back_populates="user", cascade="all, delete-orphan")
 
 class CreditPurchase(Base):
     __tablename__ = "credit_purchases"
@@ -364,6 +364,8 @@ class CreditPurchase(Base):
     status = Column(String(40), default="pending")  # pending | paid | failed
     created_at = Column(DateTime(timezone=True), server_default=func.now())
     paid_at = Column(DateTime(timezone=True), nullable=True)
+
+    user = relationship("User", back_populates="credit_purchases")
 
 
 class UserToken(Base):

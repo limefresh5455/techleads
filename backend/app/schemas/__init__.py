@@ -60,9 +60,8 @@ class FeatureHighlightOut(BaseModel):
     title: str
     description: str
     icon: str
-    link_label: str
     variant: str = "card"
-    tags: list[str] = []
+    tags: str = ""
 
     class Config:
         from_attributes = True
@@ -446,3 +445,4 @@ class ResetPasswordRequest(BaseModel):
 class VerifyOTPResponse(BaseModel):
     message: str
     verified: bool
+

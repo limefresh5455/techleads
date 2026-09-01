@@ -31,18 +31,13 @@ export default function FeatureBento({ content, features = [] }) {
               <h3 className="mt-5 text-2xl font-bold">{hero.title}</h3>
               <p className="mt-3 max-w-xl text-sm leading-relaxed text-ink/75">{hero.description}</p>
               <div className="mt-8 flex flex-wrap gap-2">
-                {(hero.tags || []).map((tag) => (
+                {(typeof hero.tags === 'string' ? hero.tags.split(',').filter(Boolean) : (hero.tags || [])).map((tag) => (
                   <span key={tag} className="rounded-full bg-ink/10 px-3 py-1 text-xs font-medium">
                     {tag}
                   </span>
                 ))}
               </div>
-              <Link
-                to="/directory"
-                className="mt-8 inline-flex rounded-lg bg-inverse px-4 py-2 text-sm font-semibold text-white transition hover:-translate-y-0.5 hover:bg-inverse/90"
-              >
-                {hero.link_label}
-              </Link>
+
             </div>
           )}
 
@@ -63,12 +58,7 @@ export default function FeatureBento({ content, features = [] }) {
                   <h3 className="text-xl font-bold">{banner.title}</h3>
                   <p className="mt-2 max-w-2xl text-sm text-white/70">{banner.description}</p>
                 </div>
-                <Link
-                  to="/directory"
-                  className="shrink-0 rounded-lg bg-brand px-4 py-2.5 text-sm font-semibold text-on-brand shadow-sm shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
-                >
-                  {banner.link_label}
-                </Link>
+
               </div>
             </div>
           )}

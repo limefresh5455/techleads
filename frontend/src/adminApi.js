@@ -28,4 +28,6 @@ export const adminDetectGroups = createCrud('detect-groups')
 export const adminFooterColumns = createCrud('footer-columns')
 
 export const adminCustomDataBlocks = createCrud('custom-data-blocks')
+export const adminUsers = createCrud('users')
 export const adminNavItems = createCrud('nav-items')
+export const adminContactMessages = createCrud('contact-messages')

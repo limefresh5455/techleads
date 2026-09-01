@@ -8,7 +8,7 @@ from app.core.auth import get_current_user
 from app.models import (
     User, SiteContent, NavItem, Technology, Category, PricingPlan, PlanFeature,
     FeatureHighlight, DashboardPreview, DetectGroup,
-    FooterColumn, FooterLink, SocialLink, LegalLink, BlogPost, FaqItem, CustomDataBlock
+    FooterColumn, FooterLink, SocialLink, LegalLink, BlogPost, FaqItem, CustomDataBlock, ContactMessage
 )
 from app.schemas import (
     SiteContentOut, SiteContentUpdate,
@@ -298,6 +298,7 @@ def delete_pricing_plan(item_id: int, db: Session = Depends(get_db), admin: User
     db.commit()
     return {"ok": True}
 
+
 # --- FeatureHighlight ---
 @router.get("/feature-highlights", response_model=List[FeatureHighlightOut])
 def get_feature_highlights(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
@@ -305,7 +306,10 @@ def get_feature_highlights(db: Session = Depends(get_db), admin: User = Depends(
 
 @router.post("/feature-highlights", response_model=FeatureHighlightOut)
 def create_feature_highlight(data: FeatureHighlightCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    item = FeatureHighlight(**data.dict())
+    data_dict = data.dict(exclude={"sort_order"})
+    max_sort = db.query(func.max(FeatureHighlight.sort_order)).scalar()
+    data_dict["sort_order"] = (max_sort or 0) + 1
+    item = FeatureHighlight(**data_dict)
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -314,7 +318,7 @@ def create_feature_highlight(data: FeatureHighlightCreate, db: Session = Depends
 @router.put("/feature-highlights/{item_id}", response_model=FeatureHighlightOut)
 def update_feature_highlight(item_id: int, data: FeatureHighlightUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     item = get_or_404(db, FeatureHighlight, item_id)
-    for k, v in data.dict(exclude_unset=True).items():
+    for k, v in data.dict(exclude_unset=True, exclude={"sort_order"}).items():
         if v is not None: setattr(item, k, v)
     db.commit()
     db.refresh(item)
@@ -334,7 +338,10 @@ def get_dashboard_previews(db: Session = Depends(get_db), admin: User = Depends(
 
 @router.post("/dashboard-previews", response_model=DashboardPreviewOut)
 def create_dashboard_preview(data: DashboardPreviewCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    item = DashboardPreview(**data.dict())
+    max_order = db.query(func.max(DashboardPreview.sort_order)).scalar()
+    order = (max_order or 0) + 1 if data.sort_order == 0 else data.sort_order
+    item_dict = data.dict(exclude={"sort_order"})
+    item = DashboardPreview(**item_dict, sort_order=order)
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -343,7 +350,7 @@ def create_dashboard_preview(data: DashboardPreviewCreate, db: Session = Depends
 @router.put("/dashboard-previews/{item_id}", response_model=DashboardPreviewOut)
 def update_dashboard_preview(item_id: int, data: DashboardPreviewUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     item = get_or_404(db, DashboardPreview, item_id)
-    for k, v in data.dict(exclude_unset=True).items():
+    for k, v in data.dict(exclude_unset=True, exclude={"sort_order"}).items():
         if v is not None: setattr(item, k, v)
     db.commit()
     db.refresh(item)
@@ -496,5 +503,65 @@ def delete_nav_item(item_id: int, db: Session = Depends(get_db), admin: User = D
     db.delete(item)
     db.commit()
     return {"ok": True}
+
+
+
+# Contact Messages
+
+from app.schemas.admin import ContactMessageOut
+
+@router.get('/contact-messages', response_model=List[ContactMessageOut])
+def get_contact_messages(db: Session = Depends(get_db), current_user: User = Depends(get_current_admin_user)):
+    return db.query(ContactMessage).order_by(ContactMessage.created_at.desc()).all()
+
+@router.delete('/contact-messages/{message_id}', status_code=status.HTTP_204_NO_CONTENT)
+def delete_contact_message(message_id: int, db: Session = Depends(get_db), current_user: User = Depends(get_current_admin_user)):
+    message = get_or_404(db, ContactMessage, message_id)
+    db.delete(message)
+    db.commit()
+    return None
+
+
+
+
+# Users
+
+from app.schemas.admin import UserOut, UserCreate, UserUpdate
+from app.core.security import hash_password
+
+@router.get("/users", response_model=List[UserOut])
+def get_users(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    return db.query(User).order_by(User.created_at.desc()).all()
+
+@router.post("/users", response_model=UserOut)
+def create_user(data: UserCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    user_dict = data.dict(exclude={"password"})
+    user = User(**user_dict)
+    if data.password:
+        user.password_hash = hash_password(data.password)
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@router.put("/users/{user_id}", response_model=UserOut)
+def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    user = get_or_404(db, User, user_id)
+    for k, v in data.dict(exclude_unset=True, exclude={"password"}).items():
+        setattr(user, k, v)
+    if data.password:
+        user.password_hash = hash_password(data.password)
+    db.commit()
+    db.refresh(user)
+    return user
+
+@router.delete("/users/{user_id}")
+def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    user = get_or_404(db, User, user_id)
+    db.delete(user)
+    db.commit()
+    return {"ok": True}
+
+
 
 

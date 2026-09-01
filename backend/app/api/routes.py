@@ -97,15 +97,13 @@ router = APIRouter(prefix="/api")
 
 
 def _feature_out(row: FeatureHighlight) -> FeatureHighlightOut:
-    tags = [t.strip() for t in (row.tags or "").split(",") if t.strip()]
     return FeatureHighlightOut(
         id=row.id,
         title=row.title,
         description=row.description,
         icon=row.icon,
-        link_label=row.link_label,
         variant=row.variant or "card",
-        tags=tags,
+        tags=row.tags or "",
     )
 
 
