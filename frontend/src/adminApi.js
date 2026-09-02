@@ -65,3 +65,7 @@ export const adminImports = {
     return data
   }
 }
+
+export const adminDashboard = {
+  getStats: () => request('/api/admin/dashboard-stats')
+}

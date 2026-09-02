@@ -9,8 +9,9 @@ from app.models import (
     User, SiteContent, NavItem, Technology, Category, PricingPlan, PlanFeature,
     FeatureHighlight, DashboardPreview, DetectGroup, DetectTag,
     FooterColumn, FooterLink, SocialLink, LegalLink, BlogPost, FaqItem, CustomDataBlock, ContactMessage,
-    Website, WebsiteTechnology
+    Website, WebsiteTechnology, CreditPurchase
 )
+from datetime import datetime, timedelta
 from app.schemas import (
     SiteContentOut, SiteContentUpdate,
     NavItemOut, NavItemCreate, NavItemUpdate,
@@ -27,7 +28,8 @@ from app.schemas import (
     FaqItemOut, FaqItemCreate, FaqItemUpdate,
     CustomDataBlockOut, CustomDataBlockCreate, CustomDataBlockUpdate,
     WebsiteAdminOut, WebsiteCreate, WebsiteUpdate,
-    PaginatedCategoryOut, PaginatedTechnologyOut, PaginatedWebsiteOut
+    PaginatedCategoryOut, PaginatedTechnologyOut, PaginatedWebsiteOut,
+    AdminDashboardFullOut
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -36,6 +38,86 @@ def get_current_admin_user(user: User = Depends(get_current_user)) -> User:
     if user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
     return user
+
+@router.get("/dashboard-stats", response_model=AdminDashboardFullOut)
+def get_dashboard_stats(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    total_users = db.query(func.count(User.id)).scalar() or 0
+    total_customers = db.query(func.count(User.id)).filter(User.role == "customer").scalar() or 0
+    total_admins = db.query(func.count(User.id)).filter(User.role == "admin").scalar() or 0
+    total_websites = db.query(func.count(Website.id)).scalar() or 0
+    total_technologies = db.query(func.count(Technology.id)).scalar() or 0
+    total_categories = db.query(func.count(Category.id)).scalar() or 0
+    total_messages = db.query(func.count(ContactMessage.id)).scalar() or 0
+
+    total_revenue = db.query(func.sum(CreditPurchase.amount_cents)).filter(CreditPurchase.status == "paid").scalar() or 0
+    active_plans = db.query(func.count(func.distinct(CreditPurchase.user_id))).filter(CreditPurchase.status == "paid").scalar() or 0
+
+    recent_users = db.query(User).order_by(User.created_at.desc()).limit(5).all()
+    recent_signups = [
+        {"name": u.name, "email": u.email, "role": u.role, "created_at": u.created_at.isoformat() if u.created_at else ""}
+        for u in recent_users
+    ]
+
+    recent_contact_messages = db.query(ContactMessage).order_by(ContactMessage.created_at.desc()).limit(5).all()
+    recent_messages = [
+        {"name": m.name, "email": m.email, "message": m.message, "created_at": m.created_at.isoformat() if m.created_at else ""}
+        for m in recent_contact_messages
+    ]
+
+    # Revenue Graph (last 30 days including today)
+    today = datetime.utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+    thirty_days_ago = today - timedelta(days=29) # Total 30 days including today
+    
+    # Simple query fetching recent purchases and grouping in Python
+    purchases = db.query(CreditPurchase).filter(
+        CreditPurchase.status == "paid",
+        CreditPurchase.created_at >= thirty_days_ago
+    ).all()
+
+    from collections import defaultdict
+    revenue_by_date = defaultdict(int)
+    for p in purchases:
+        if p.created_at:
+            date_str = p.created_at.strftime("%Y-%m-%d")
+            revenue_by_date[date_str] += p.amount_cents
+
+    # Generate complete last 30 days list
+    revenue_graph = []
+    for i in range(30):
+        d = thirty_days_ago + timedelta(days=i)
+        date_str = d.strftime("%Y-%m-%d")
+        revenue_graph.append({
+            "date": date_str,
+            "revenue": revenue_by_date.get(date_str, 0)
+        })
+
+    # Plan Distribution (total sales per plan)
+    plan_distribution = []
+    plan_stats = db.query(CreditPurchase.plan_slug, func.count(CreditPurchase.id))\
+        .filter(CreditPurchase.status == "paid")\
+        .group_by(CreditPurchase.plan_slug).all()
+        
+    for plan_slug, count in plan_stats:
+        plan_distribution.append({
+            "name": plan_slug.capitalize(),
+            "value": count
+        })
+
+    return {
+        "total_users": total_users,
+        "total_customers": total_customers,
+        "total_admins": total_admins,
+        "total_websites": total_websites,
+        "total_technologies": total_technologies,
+        "total_categories": total_categories,
+        "total_messages": total_messages,
+        "total_revenue": total_revenue,
+        "active_plans": active_plans,
+        "recent_signups": recent_signups,
+        "recent_messages": recent_messages,
+        "revenue_graph": revenue_graph,
+        "plan_distribution": plan_distribution
+    }
 
 # Helper for CRUD
 def get_or_404(db, model, item_id):

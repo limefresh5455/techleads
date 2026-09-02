@@ -491,3 +491,38 @@ class PaginatedWebsiteOut(BaseModel):
     page: int
     limit: int
     total_pages: int
+
+class AdminRecentSignupOut(BaseModel):
+    name: str
+    email: str
+    role: str
+    created_at: str
+
+class AdminRecentMessageOut(BaseModel):
+    name: str
+    email: str
+    message: str
+    created_at: str
+
+class RevenueGraphDataPoint(BaseModel):
+    date: str
+    revenue: int
+
+class PlanDistributionDataPoint(BaseModel):
+    name: str
+    value: int
+
+class AdminDashboardFullOut(BaseModel):
+    total_users: int
+    total_customers: int
+    total_admins: int
+    total_websites: int
+    total_technologies: int
+    total_revenue: int
+    active_plans: int
+    total_categories: int
+    total_messages: int
+    recent_signups: List[AdminRecentSignupOut]
+    recent_messages: List[AdminRecentMessageOut]
+    revenue_graph: List[RevenueGraphDataPoint]
+    plan_distribution: List[PlanDistributionDataPoint]
