@@ -34,6 +34,12 @@ import AdminUsersPage from './pages/AdminUsersPage'
 import AdminDashboardPreviewsPage from './pages/AdminDashboardPreviewsPage'
 import AdminFeatureHighlightsPage from './pages/AdminFeatureHighlightsPage'
 import AdminSiteContentPage from './pages/AdminSiteContentPage'
+import AdminImportPage from './pages/AdminImportPage'
+import AdminCustomDataBlocksPage from './pages/AdminCustomDataBlocksPage'
+import AdminDetectGroupsPage from './pages/AdminDetectGroupsPage'
+import AdminCategoriesPage from './pages/AdminCategoriesPage'
+import AdminTechnologiesPage from './pages/AdminTechnologiesPage'
+import AdminWebsitesPage from './pages/AdminWebsitesPage'
 
 
 function GetStartedRedirect() {
@@ -63,7 +69,12 @@ export default function App() {
             <Route path="social-links" element={<AdminSocialLinksPage />} />
             <Route path="legal-links" element={<AdminLegalLinksPage />} />
             <Route path="contact-messages" element={<AdminContactMessagesPage />} />
-            <Route path="dashboard-previews" element={<AdminDashboardPreviewsPage />} />
+            <Route path="import" element={<AdminImportPage />} />
+            <Route path="custom-data-blocks" element={<AdminCustomDataBlocksPage />} />
+            <Route path="detect-groups" element={<AdminDetectGroupsPage />} />
+            <Route path="categories" element={<AdminCategoriesPage />} />
+            <Route path="technologies" element={<AdminTechnologiesPage />} />
+            <Route path="websites" element={<AdminWebsitesPage />} />
           </Route>
           <Route
             element={
@@ -97,7 +108,7 @@ export default function App() {
                 <LegalPage
                   title="Privacy Policy"
                   body={[
-                    'TechLeads.Ai collects account and usage information to provide technology detection and lead enrichment services.',
+                    'LeadIntel.Ai collects account and usage information to provide technology detection and lead enrichment services.',
                     'We do not sell personal data. Contact us to request access or deletion of your account information.',
                   ]}
                 />
@@ -109,7 +120,7 @@ export default function App() {
                 <LegalPage
                   title="Terms of Service"
                   body={[
-                    'By using TechLeads.Ai you agree to use the platform lawfully and respect rate limits and API terms.',
+                    'By using LeadIntel.Ai you agree to use the platform lawfully and respect rate limits and API terms.',
                     'Paid plans renew according to the billing cycle selected at checkout unless cancelled.',
                   ]}
                 />

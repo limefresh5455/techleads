@@ -1,9 +1,9 @@
-import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
+﻿import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { 
   LogOut, Home, CreditCard, FileText, 
-  LayoutTemplate, HelpCircle, Share2, Navigation, Shield,
-  ShoppingCart, LayoutDashboard, Sparkles, Users, MessageSquare, Menu, X, Globe
+  LayoutTemplate, HelpCircle, Share2, Navigation, Shield, ShoppingCart, 
+  LayoutDashboard, Sparkles, Users, MessageSquare, Menu, X, Globe, Database, Blocks, ListTree, Folder, Link as LinkIcon
 } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
 import ThemeToggle from '../components/ThemeToggle'
@@ -20,16 +20,22 @@ export default function AdminLayout() {
 
   const links = [
     { to: '/admin', icon: Home, label: 'Dashboard' },
+    { to: '/admin/contact-messages', icon: MessageSquare, label: 'Messages' },
     { to: '/admin/users', icon: Users, label: 'Users' },
+    { to: '/admin/websites', icon: LinkIcon, label: 'Websites' },
+    { to: '/admin/categories', icon: Folder, label: 'Categories' },
+    { to: '/admin/technologies', icon: Globe, label: 'Technologies' },
+    { to: '/admin/import', icon: Database, label: 'Imports' },
     { to: '/admin/plans', icon: CreditCard, label: 'Plans' },
-    { to: '/admin/dashboard-previews', icon: LayoutDashboard, label: 'Dashboard Previews' },
-    { to: '/admin/site-content', icon: Globe, label: 'Site Content' },
-    { to: '/admin/feature-highlights', icon: Sparkles, label: 'Feature Highlights' },
     { to: '/admin/blogs', icon: FileText, label: 'Blogs' },
     { to: '/admin/faqs', icon: HelpCircle, label: 'FAQs' },
-    { to: '/admin/footer', icon: LayoutTemplate, label: 'Footer' },
+    { to: '/admin/dashboard-previews', icon: LayoutDashboard, label: 'Dashboard Previews' },
+    { to: '/admin/feature-highlights', icon: Sparkles, label: 'Feature Highlights' },
+    { to: '/admin/custom-data-blocks', icon: Blocks, label: 'Data Blocks' },
+    { to: '/admin/detect-groups', icon: ListTree, label: 'Detect Groups' },
+    { to: '/admin/site-content', icon: Globe, label: 'Site Content' },
     { to: '/admin/social-links', icon: Share2, label: 'Social Links' },
-    { to: '/admin/contact-messages', icon: MessageSquare, label: 'Messages' },
+    { to: '/admin/footer', icon: LayoutTemplate, label: 'Footer' },
     { to: '/admin/nav-items', icon: Navigation, label: 'Nav Items' },
     { to: '/admin/legal-links', icon: Shield, label: 'Legal Links' },
   ]
@@ -51,15 +57,15 @@ export default function AdminLayout() {
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-brand shadow-sm shadow-brand/30">
               <svg viewBox="0 0 32 32" className="h-4 w-4 text-ink" aria-hidden="true">
                 <path
-                  fill="currentColor"
+                  fill=""
                   d="M16 4.5c-1.2 0-2.2.7-2.6 1.8L8.2 22.1c-.2.6.2 1.2.8 1.2h2.3c.4 0 .8-.3.9-.7l1.1-3.4h6.4l1.1 3.4c.1.4.5.7.9.7h2.3c.6 0 1-.6.8-1.2l-5.2-15.8c-.4-1.1-1.4-1.8-2.6-1.8zm0 5.2 2.4 7.2h-4.8L16 9.7z"
                 />
-                <circle cx="25.2" cy="8.2" r="2.2" fill="currentColor" opacity="0.9" />
+                <circle cx="25.2" cy="8.2" r="2.2" fill="" opacity="0.9" />
               </svg>
             </span>
             <span className="text-base font-extrabold tracking-tight text-ink">
               {data?.content?.brand_name || 'LeadIntel'}
-              <span className="text-brand">{data?.content?.brand_suffix || '.Ai'}</span>
+              <span className="text-brand-dark">{data?.content?.brand_suffix || '.Ai'}</span>
             </span>
           </Link>
           <button className="lg:hidden text-muted hover:text-ink" onClick={() => setSidebarOpen(false)}>
@@ -123,3 +129,7 @@ export default function AdminLayout() {
     </div>
   )
 }
+
+
+
+

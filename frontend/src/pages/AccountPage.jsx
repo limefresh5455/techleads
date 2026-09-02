@@ -119,7 +119,7 @@ export default function AccountPage() {
         <div className="animate-fade-up">
           <p className="text-sm font-semibold uppercase tracking-[0.18em] text-ink/55">Account</p>
           <h1 className="mt-3 max-w-2xl text-4xl font-extrabold tracking-tight text-ink md:text-5xl">
-            TechLeads<span className="text-brand-dark">.Ai</span>
+            LeadIntel<span className="text-brand-dark">.Ai</span>
           </h1>
           <p className="mt-3 max-w-xl text-base text-muted">
             Manage your profile, credits, and sign-in settings in one place.
@@ -143,7 +143,7 @@ export default function AccountPage() {
               )}
               <div className="min-w-0">
                 <h2 className="truncate text-2xl font-extrabold text-ink">
-                  {loadingMe ? 'Loading…' : user.name}
+                  {loadingMe ? 'Loadingâ€¦' : user.name}
                 </h2>
                 <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-muted">
                   <Mail className="h-3.5 w-3.5 shrink-0" />
@@ -181,7 +181,7 @@ export default function AccountPage() {
                 className="inline-flex items-center gap-2 rounded-xl bg-brand px-5 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark disabled:opacity-50"
               >
                 {profileSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                {profileSaving ? 'Saving…' : 'Save changes'}
+                {profileSaving ? 'Savingâ€¦' : 'Save changes'}
               </button>
               {profileMsg ? <p className="text-sm text-emerald-700">{profileMsg}</p> : null}
               {profileError ? <p className="text-sm text-red-600">{profileError}</p> : null}
@@ -262,7 +262,7 @@ export default function AccountPage() {
                     className="inline-flex items-center gap-2 rounded-xl border border-border bg-surface px-5 py-3 text-sm font-semibold text-ink hover:bg-card disabled:opacity-50"
                   >
                     {passwordSaving ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
-                    {passwordSaving ? 'Updating…' : 'Update password'}
+                    {passwordSaving ? 'Updatingâ€¦' : 'Update password'}
                   </button>
                   {passwordMsg ? <p className="text-sm text-emerald-700">{passwordMsg}</p> : null}
                   {passwordError ? <p className="text-sm text-red-600">{passwordError}</p> : null}
@@ -273,7 +273,7 @@ export default function AccountPage() {
             <section className="animate-fade-up flex flex-wrap items-center justify-between gap-3 rounded-[1.75rem] border border-border bg-card/90 px-6 py-5 shadow-sm [animation-delay:260ms]">
               <div>
                 <p className="text-sm font-semibold text-ink">Session</p>
-                <p className="mt-1 text-sm text-muted">Sign out of TechLeads on this device.</p>
+                <p className="mt-1 text-sm text-muted">Sign out of LeadIntel on this device.</p>
               </div>
               <button
                 type="button"
@@ -290,3 +290,7 @@ export default function AccountPage() {
     </div>
   )
 }
+
+
+
+

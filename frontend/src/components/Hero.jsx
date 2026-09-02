@@ -74,7 +74,7 @@ export default function Hero({ content, dashboardPreviews = [] }) {
       <div className="relative mx-auto mt-12 max-w-6xl px-4 lg:px-6">
         <div className="reveal reveal-delay-3 overflow-hidden rounded-2xl border border-border bg-card shadow-xl shadow-brand/15 transition hover:shadow-2xl hover:shadow-brand/20">
           <div className="flex items-center justify-between border-b border-border bg-surface px-4 py-3">
-            <p className="text-sm font-semibold text-ink">TechLeads.Ai Dashboard</p>
+            <p className="text-sm font-semibold text-ink">LeadIntel.Ai Dashboard</p>
             <span className="rounded-full bg-brand/25 px-2.5 py-1 text-xs font-semibold text-on-brand">
               Live
             </span>

@@ -1,4 +1,4 @@
-# Run the TechLeads API using the project virtualenv (not system Python).
+# Run the LeadIntel API using the project virtualenv (not system Python).
 $ErrorActionPreference = "Stop"
 Set-Location $PSScriptRoot
 

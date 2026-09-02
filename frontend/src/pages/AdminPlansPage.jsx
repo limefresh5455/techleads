@@ -91,7 +91,7 @@ export default function AdminPlansPage() {
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
-            <CreditCard className="text-brand" />
+            <CreditCard className="text-brand-dark" />
             Pricing Plans
         </h1>
         <button
@@ -172,7 +172,8 @@ export default function AdminPlansPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-2xl border border-border overflow-hidden max-h-[90vh] flex flex-col">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-              <h2 className="text-lg font-bold text-ink">
+              <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+                <CreditCard className="text-brand-dark" size={24} />
                 {editingPlan ? 'Edit Pricing Plan' : 'Add Pricing Plan'}
               </h2>
               <button

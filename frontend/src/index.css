@@ -6,16 +6,22 @@
   --tl-brand: #ffd23f;
   --tl-brand-dark: #f0c020;
   --tl-brand-soft: #ffd9b8;
+
   --tl-ink: #111111;
   --tl-muted: #6b7280;
+
   --tl-surface: #f7f5f0;
   --tl-border: #e8e6e1;
+
   --tl-page: #ffffff;
   --tl-card: #ffffff;
   --tl-canvas: #f8f9fb;
+
   --tl-hero: #fffbeb;
   --tl-panel: #fff8f4;
+
   --tl-shadow: rgba(17, 17, 17, 0.06);
+
   --tl-inverse: #111111;
 }
 
@@ -23,16 +29,22 @@ html.dark {
   --tl-brand: #ffd23f;
   --tl-brand-dark: #f0c020;
   --tl-brand-soft: #5c4a2a;
+
   --tl-ink: #f4f4f5;
   --tl-muted: #a1a1aa;
+
   --tl-surface: #1c1c1f;
   --tl-border: #2e2e33;
+
   --tl-page: #0f0f12;
   --tl-card: #17171b;
   --tl-canvas: #121216;
+
   --tl-hero: #1a160c;
   --tl-panel: #1a1612;
+
   --tl-shadow: rgba(0, 0, 0, 0.35);
+
   --tl-inverse: #050505;
 }
 
@@ -40,18 +52,26 @@ html.dark {
   --color-brand: var(--tl-brand);
   --color-brand-dark: var(--tl-brand-dark);
   --color-brand-soft: var(--tl-brand-soft);
+
   --color-ink: var(--tl-ink);
   --color-muted: var(--tl-muted);
+
   --color-surface: var(--tl-surface);
   --color-border: var(--tl-border);
+
   --color-page: var(--tl-page);
   --color-card: var(--tl-card);
   --color-canvas: var(--tl-canvas);
+
   --color-hero: var(--tl-hero);
   --color-panel: var(--tl-panel);
+
   --color-inverse: var(--tl-inverse);
+
   --color-on-brand: #111111;
+
   --font-sans: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.6s ease both;
   --animate-float: float 5s ease-in-out infinite;
@@ -59,11 +79,16 @@ html.dark {
   --animate-shine: shine 2.8s ease-in-out infinite;
 }
 
+/* ============================================
+   ANIMATIONS
+   ============================================ */
+
 @keyframes fade-up {
   from {
     opacity: 0;
     transform: translateY(18px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -74,6 +99,7 @@ html.dark {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -84,6 +110,7 @@ html.dark {
   100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -93,6 +120,7 @@ html.dark {
   from {
     transform: translateX(0);
   }
+
   to {
     transform: translateX(-50%);
   }
@@ -103,21 +131,35 @@ html.dark {
   100% {
     background-position: 0% 50%;
   }
+
   50% {
     background-position: 100% 50%;
   }
 }
 
+/* ============================================
+   HTML
+   ============================================ */
+
 html {
   scroll-behavior: smooth;
 }
 
+/* ============================================
+   BODY
+   ============================================ */
+
 body {
   margin: 0;
+
   font-family: var(--font-sans);
+
   color: var(--tl-ink);
+
   background: var(--tl-page);
+
   -webkit-font-smoothing: antialiased;
+
   transition:
     background-color 0.2s ease,
     color 0.2s ease;
@@ -127,32 +169,79 @@ body {
   min-height: 100vh;
 }
 
+/* ============================================
+   BRAND TEXT
+   ============================================ */
+
+/*
+  Light mode:
+  Yellow (#ffd23f) text has poor contrast on
+  white/light backgrounds.
+
+  Therefore text-brand automatically becomes
+  a darker brand color in light mode.
+*/
+
+.text-brand {
+  color: #a66b00 !important;
+}
+
+/*
+  Dark mode:
+  Yellow is readable on dark backgrounds.
+*/
+
+html.dark .text-brand {
+  color: #ffd23f !important;
+}
+
+/* ============================================
+   BRAND BUTTON
+   ============================================ */
+
 /* Uplers-style primary CTA: yellow fill + dark ink */
+
 .btn-brand {
   display: inline-flex;
+
   align-items: center;
   justify-content: center;
+
   gap: 0.5rem;
+
   border-radius: 0.75rem;
+
   background: var(--tl-brand);
+
   color: #111111;
+
   font-weight: 600;
+
   transition:
     background-color 0.2s ease,
     transform 0.2s ease,
     box-shadow 0.2s ease;
-  box-shadow: 0 8px 24px rgba(255, 210, 63, 0.28);
+
+  box-shadow:
+    0 8px 24px rgba(255, 210, 63, 0.28);
 }
 
 .btn-brand:hover {
   background: var(--tl-brand-dark);
+
   transform: translateY(-1px);
-  box-shadow: 0 12px 28px rgba(255, 210, 63, 0.38);
+
+  box-shadow:
+    0 12px 28px rgba(255, 210, 63, 0.38);
 }
 
 .btn-brand:active {
   transform: translateY(0);
 }
+
+/* ============================================
+   CARD HOVER
+   ============================================ */
 
 .card-hover {
   transition:
@@ -162,10 +251,22 @@ body {
 }
 
 .card-hover:hover {
-  border-color: color-mix(in srgb, var(--tl-brand) 55%, var(--tl-border));
-  box-shadow: 0 14px 36px var(--tl-shadow);
+  border-color:
+    color-mix(
+      in srgb,
+      var(--tl-brand) 55%,
+      var(--tl-border)
+    );
+
+  box-shadow:
+    0 14px 36px var(--tl-shadow);
+
   transform: translateY(-3px);
 }
+
+/* ============================================
+   REVEAL ANIMATION
+   ============================================ */
 
 .reveal {
   animation: var(--animate-fade-up);
@@ -183,22 +284,53 @@ body {
   animation-delay: 0.24s;
 }
 
+/* ============================================
+   BRAND GLOW
+   ============================================ */
+
 .brand-glow {
-  background: radial-gradient(ellipse at top, rgba(255, 210, 63, 0.22), transparent 55%);
+  background:
+    radial-gradient(
+      ellipse at top,
+      rgba(255, 210, 63, 0.22),
+      transparent 55%
+    );
 }
 
 html.dark .brand-glow {
-  background: radial-gradient(ellipse at top, rgba(255, 210, 63, 0.12), transparent 55%);
+  background:
+    radial-gradient(
+      ellipse at top,
+      rgba(255, 210, 63, 0.12),
+      transparent 55%
+    );
 }
 
+/* ============================================
+   BRAND PANEL
+   ============================================ */
+
 .brand-panel {
-  background: linear-gradient(135deg, #ffd23f 0%, #ffe07a 48%, #ffd23f 100%);
+  background:
+    linear-gradient(
+      135deg,
+      #ffd23f 0%,
+      #ffe07a 48%,
+      #ffd23f 100%
+    );
+
   background-size: 200% 200%;
+
   animation: var(--animate-shine);
+
   color: #111111;
 }
 
-/* Yellow brand surfaces always use near-black text (readable in light + dark mode) */
+/*
+  Yellow brand surfaces always use near-black text
+  for readability in both light and dark mode.
+*/
+
 .bg-brand,
 .bg-brand-dark,
 .hover\:bg-brand:hover,
@@ -211,21 +343,52 @@ html.dark .brand-glow {
   color: #111111 !important;
 }
 
-.brand-panel :is(h1, h2, h3, h4, h5, p, span, li, label, strong, em, small, div):not(.bg-inverse):not([class*="bg-inverse"]) {
+/*
+  Elements inside brand panel inherit dark text.
+*/
+
+.brand-panel
+  :is(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    p,
+    span,
+    li,
+    label,
+    strong,
+    em,
+    small,
+    div
+  ):not(.bg-inverse):not([class*="bg-inverse"]) {
   color: inherit;
 }
+
+/*
+  Darker muted text inside brand panel.
+*/
 
 .brand-panel :is(.text-ink, .text-muted),
 .brand-panel [class*="text-ink/"] {
   color: rgba(17, 17, 17, 0.78) !important;
 }
 
+/*
+  Dark transparent backgrounds inside brand panel.
+*/
+
 .brand-panel .bg-ink\/10 {
   background-color: rgba(17, 17, 17, 0.1) !important;
+
   color: #111111 !important;
 }
 
-/* Dark CTAs on yellow panels need light/brand text, not inherited black */
+/*
+  Dark CTAs on yellow panels need yellow text.
+*/
+
 .brand-panel :is(a, button).bg-inverse,
 .brand-panel .bg-inverse {
   color: #ffd23f !important;
@@ -236,6 +399,20 @@ html.dark .brand-glow {
   color: #ffe07a !important;
 }
 
+/* ============================================
+   ACCESSIBILITY
+   ============================================ */
+
+:focus-visible {
+  outline: 2px solid var(--tl-brand);
+
+  outline-offset: 2px;
+}
+
+/* ============================================
+   REDUCED MOTION
+   ============================================ */
+
 @media (prefers-reduced-motion: reduce) {
   .reveal,
   .reveal-delay-1,
@@ -244,11 +421,16 @@ html.dark .brand-glow {
   .brand-panel,
   .btn-brand {
     animation: none !important;
+
     transition: none !important;
   }
 
   .btn-brand:hover,
   .card-hover:hover {
     transform: none;
+  }
+
+  html {
+    scroll-behavior: auto;
   }
 }

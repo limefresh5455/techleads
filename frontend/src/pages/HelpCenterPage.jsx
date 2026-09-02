@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import PageHero from '../components/PageHero'
 
 const TOPICS = [
-  'Getting started with TechLeads.Ai',
+  'Getting started with LeadIntel.Ai',
   'How credits and lookups work',
   'Exporting lead lists to CSV',
   'Using the Chrome extension',

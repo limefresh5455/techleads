@@ -89,7 +89,7 @@ export default function AdminFooterPage() {
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
-            <LayoutTemplate className="text-brand" />
+            <LayoutTemplate className="text-brand-dark" />
             Footer Settings
         </h1>
         <button
@@ -162,7 +162,8 @@ export default function AdminFooterPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-2xl border border-border flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
-              <h2 className="text-lg font-bold text-ink">
+              <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+                <LayoutTemplate className="text-brand-dark" size={24} />
                 {editingId === 'new' ? 'Add Column' : 'Edit Column'}
               </h2>
               <button

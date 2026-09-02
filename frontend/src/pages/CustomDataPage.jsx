@@ -14,7 +14,7 @@ export default function CustomDataPage() {
           </h1>
           <p className="mx-auto mt-4 max-w-2xl text-muted">
             Enterprise datasets, API access, lead generation, and white-label solutions — powered by
-            TechLeads.Ai detection engine.
+            LeadIntel.Ai detection engine.
           </p>
           <div className="mt-8 flex flex-wrap justify-center gap-3">
             <Link
@@ -69,8 +69,8 @@ export default function CustomDataPage() {
           </div>
           <p className="mt-6 text-sm text-muted">
             Email us at{' '}
-            <a href="mailto:sales@techleads.ai" className="font-semibold text-brand hover:underline">
-              sales@techleads.ai
+            <a href="mailto:sales@leadintel.ai" className="font-semibold text-brand hover:underline">
+              sales@leadintel.ai
             </a>
           </p>
         </div>

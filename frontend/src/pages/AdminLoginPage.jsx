@@ -15,8 +15,6 @@ export default function AdminLoginPage() {
     try {
       const data = await login(form)
       setAuth(data)
-      // Since it's inside AdminRoute, if successful and they are admin, 
-      // the AdminRoute will automatically re-render and show AdminLayout.
     } catch (err) {
       setError(err.message || 'Login failed')
     } finally {

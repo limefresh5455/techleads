@@ -24,7 +24,7 @@ export default function ProductDetailPage() {
   const { slug } = useParams()
   const detail = DETAILS[slug] || {
     title: 'Product',
-    subtitle: 'Explore TechLeads.Ai products.',
+    subtitle: 'Explore LeadIntel.Ai products.',
   }
 
   return (

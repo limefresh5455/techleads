@@ -16,6 +16,24 @@ class CategoryUpdate(BaseModel):
     item_count: Optional[int] = None
     sort_order: Optional[int] = None
 
+class CategoryOut(BaseModel):
+    id: int
+    name: str
+    slug: str
+    icon: str
+    item_count: int
+    sort_order: int
+
+    class Config:
+        from_attributes = True
+
+class PaginatedCategoryOut(BaseModel):
+    items: List[CategoryOut]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
+
 class TechnologyCreate(BaseModel):
     name: str
     slug: str
@@ -39,6 +57,29 @@ class TechnologyUpdate(BaseModel):
     is_featured: Optional[bool] = None
     is_popular: Optional[bool] = None
     sort_order: Optional[int] = None
+
+class TechnologyOut(BaseModel):
+    id: int
+    name: str
+    slug: str
+    icon: str
+    icon_color: str
+    website_count: int
+    growth_percent: float
+    category_id: Optional[int]
+    is_featured: bool
+    is_popular: bool
+    sort_order: int
+
+    class Config:
+        from_attributes = True
+
+class PaginatedTechnologyOut(BaseModel):
+    items: List[TechnologyOut]
+    total: int
+    page: int
+    limit: int
+    total_pages: int
 
 class PlanFeatureCreate(BaseModel):
     label: str
@@ -118,15 +159,22 @@ class DashboardPreviewUpdate(BaseModel):
     ads: Optional[str] = None
     sort_order: Optional[int] = None
 
+class DetectTagCreate(BaseModel):
+    id: Optional[int] = None
+    label: str
+    sort_order: int = 0
+
 class DetectGroupCreate(BaseModel):
     title: str
     theme: str = "orange"
     sort_order: int = 0
+    tags: List[DetectTagCreate] = []
 
 class DetectGroupUpdate(BaseModel):
     title: Optional[str] = None
     theme: Optional[str] = None
     sort_order: Optional[int] = None
+    tags: Optional[List[DetectTagCreate]] = None
 
 
 
@@ -317,3 +365,64 @@ class CustomDataBlockOut(BaseModel):
     class Config:
         from_attributes = True
 
+
+class DetectTagOut(BaseModel):
+    id: int
+    group_id: int
+    label: str
+    sort_order: int
+
+    class Config:
+        from_attributes = True
+
+class DetectGroupOut(BaseModel):
+    id: int
+    title: str
+    theme: str
+    sort_order: int
+    tags: List[DetectTagOut] = []
+
+    class Config:
+        from_attributes = True
+
+class WebsiteCreate(BaseModel):
+    domain: str
+    company_name: str = ""
+    title: str = ""
+    description: str = ""
+    emails: str = ""
+    country: str = ""
+    category_label: str = "Uncategorized"
+    contact_info: str = "No contact information available"
+    facebook_url: str = ""
+    twitter_url: str = ""
+    linkedin_url: str = ""
+    instagram_url: str = ""
+    youtube_url: str = ""
+    github_url: str = ""
+    tiktok_url: str = ""
+    source_url: str = ""
+    rank: int = 0
+    sort_order: int = 0
+    technology_ids: List[int] = []
+
+class WebsiteUpdate(BaseModel):
+    domain: Optional[str] = None
+    company_name: Optional[str] = None
+    title: Optional[str] = None
+    description: Optional[str] = None
+    emails: Optional[str] = None
+    country: Optional[str] = None
+    category_label: Optional[str] = None
+    contact_info: Optional[str] = None
+    facebook_url: Optional[str] = None
+    twitter_url: Optional[str] = None
+    linkedin_url: Optional[str] = None
+    instagram_url: Optional[str] = None
+    youtube_url: Optional[str] = None
+    github_url: Optional[str] = None
+    tiktok_url: Optional[str] = None
+    source_url: Optional[str] = None
+    rank: Optional[int] = None
+    sort_order: Optional[int] = None
+    technology_ids: Optional[List[int]] = None

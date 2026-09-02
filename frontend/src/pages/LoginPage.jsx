@@ -99,7 +99,7 @@ export default function LoginPage() {
           <p className="text-sm font-semibold uppercase tracking-wider text-ink/70">Login</p>
           <h2 className="mt-3 text-3xl font-extrabold tracking-tight">Technology Insights</h2>
           <p className="mt-3 text-ink/75">
-            Gain access to powerful tech stack insights with your TechLeads.Ai account
+            Gain access to powerful tech stack insights with your LeadIntel.Ai account
           </p>
           <ul className="mt-8 space-y-4">
             {[

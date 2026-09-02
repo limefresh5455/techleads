@@ -10,15 +10,15 @@ function BrandMark({ content }) {
       <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand shadow-sm shadow-brand/30">
         <svg viewBox="0 0 32 32" className="h-5 w-5 text-ink" aria-hidden="true">
           <path
-            fill="currentColor"
+            fill=""
             d="M16 4.5c-1.2 0-2.2.7-2.6 1.8L8.2 22.1c-.2.6.2 1.2.8 1.2h2.3c.4 0 .8-.3.9-.7l1.1-3.4h6.4l1.1 3.4c.1.4.5.7.9.7h2.3c.6 0 1-.6.8-1.2l-5.2-15.8c-.4-1.1-1.4-1.8-2.6-1.8zm0 5.2 2.4 7.2h-4.8L16 9.7z"
           />
-          <circle cx="25.2" cy="8.2" r="2.2" fill="currentColor" opacity="0.9" />
+          <circle cx="25.2" cy="8.2" r="2.2" fill="" opacity="0.9" />
         </svg>
       </span>
       <span className="text-[1.05rem] font-extrabold tracking-tight text-ink">
         {content.brand_name}
-        <span className="text-brand">{content.brand_suffix}</span>
+        <span className="text-brand-dark">{content.brand_suffix}</span>
       </span>
     </Link>
   )

@@ -9,12 +9,14 @@ export default function PageHero({ title, subtitle, ctaLabel = 'Get Started', ct
         {subtitle && (
           <p className="reveal reveal-delay-1 mx-auto mt-4 max-w-2xl text-muted">{subtitle}</p>
         )}
-        <Link
-          to={ctaTo}
-          className="reveal reveal-delay-2 mt-8 inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-on-brand shadow-md shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
-        >
-          {ctaLabel}
-        </Link>
+        {ctaLabel && (
+          <Link
+            to={ctaTo}
+            className="reveal reveal-delay-2 mt-8 inline-flex rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-on-brand shadow-md shadow-brand/30 transition hover:-translate-y-0.5 hover:bg-brand-dark"
+          >
+            {ctaLabel}
+          </Link>
+        )}
       </div>
     </section>
   )

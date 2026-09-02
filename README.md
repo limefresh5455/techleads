@@ -1,6 +1,6 @@
-# TechLeads.ai
+# LeadIntel.ai
 
-React + FastAPI + PostgreSQL landing page matching the TechLeads product design.
+React + FastAPI + PostgreSQL landing page matching the LeadIntel product design.
 
 ## Stack
 

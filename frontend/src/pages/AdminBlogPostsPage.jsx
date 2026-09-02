@@ -60,7 +60,7 @@ export default function AdminBlogPostsPage() {
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
-            <FileText className="text-brand" />
+            <FileText className="text-brand-dark" />
             Blog Posts
         </h1>
         <button
@@ -124,7 +124,8 @@ export default function AdminBlogPostsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg border border-border overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <h2 className="text-lg font-bold text-ink">
+              <h2 className="text-lg font-bold text-ink flex items-center gap-3">
+                <FileText className="text-brand-dark" size={20} />
                 {editingPost ? 'Edit Blog Post' : 'Add Blog Post'}
               </h2>
               <button

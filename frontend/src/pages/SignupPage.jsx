@@ -194,7 +194,7 @@ export default function SignupPage() {
             Technology Insights
           </h2>
           <p className="mt-3 text-ink/75">
-            Create your TechLeads.Ai account and start detecting themes, CMS
+            Create your LeadIntel.Ai account and start detecting themes, CMS
             platforms, and apps in minutes.
           </p>
           <ul className="mt-8 space-y-4">

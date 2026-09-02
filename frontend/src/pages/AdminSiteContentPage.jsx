@@ -59,17 +59,7 @@ const groups = [
       { key: 'enrich_cta', label: 'CTA Button' },
     ]
   },
-  {
-    title: 'API Section',
-    icon: Code,
-    fields: [
-      { key: 'api_eyebrow', label: 'Eyebrow Text' },
-      { key: 'api_title', label: 'Title', type: 'textarea' },
-      { key: 'api_subtitle', label: 'Subtitle', type: 'textarea' },
-      { key: 'api_cta', label: 'CTA Button' },
-      { key: 'api_sample', label: 'API Code Sample', type: 'textarea', rows: 6 },
-    ]
-  },
+
   {
     title: 'Pricing & Calculator',
     icon: Calculator,
@@ -160,7 +150,7 @@ export default function AdminSiteContentPage() {
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
-          <Globe className="text-brand shrink-0" />
+          <Globe className="text-brand-dark shrink-0" />
           <span className="whitespace-nowrap">Site Content</span>
         </h1>
         <button

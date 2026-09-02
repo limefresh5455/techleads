@@ -7,8 +7,9 @@ from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models import (
     User, SiteContent, NavItem, Technology, Category, PricingPlan, PlanFeature,
-    FeatureHighlight, DashboardPreview, DetectGroup,
-    FooterColumn, FooterLink, SocialLink, LegalLink, BlogPost, FaqItem, CustomDataBlock, ContactMessage
+    FeatureHighlight, DashboardPreview, DetectGroup, DetectTag,
+    FooterColumn, FooterLink, SocialLink, LegalLink, BlogPost, FaqItem, CustomDataBlock, ContactMessage,
+    Website, WebsiteTechnology
 )
 from app.schemas import (
     SiteContentOut, SiteContentUpdate,
@@ -24,7 +25,9 @@ from app.schemas import (
     LegalLinkOut, LegalLinkCreate, LegalLinkUpdate,
     BlogPostOut, BlogPostCreate, BlogPostUpdate,
     FaqItemOut, FaqItemCreate, FaqItemUpdate,
-    CustomDataBlockOut, CustomDataBlockCreate, CustomDataBlockUpdate
+    CustomDataBlockOut, CustomDataBlockCreate, CustomDataBlockUpdate,
+    WebsiteAdminOut, WebsiteCreate, WebsiteUpdate,
+    PaginatedCategoryOut, PaginatedTechnologyOut, PaginatedWebsiteOut
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -193,13 +196,35 @@ def delete_legal_link(item_id: int, db: Session = Depends(get_db), admin: User =
     return {"ok": True}
 
 # --- Category ---
-@router.get("/categories", response_model=List[CategoryOut])
-def get_categories(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    return db.query(Category).order_by(Category.sort_order).all()
+@router.get("/categories", response_model=PaginatedCategoryOut)
+def get_categories(
+    page: int = 1, 
+    limit: int = 20, 
+    search: str = "", 
+    db: Session = Depends(get_db), 
+    admin: User = Depends(get_current_admin_user)
+):
+    query = db.query(Category)
+    if search:
+        query = query.filter(Category.name.ilike(f"%{search}%"))
+    
+    total = query.count()
+    items = query.order_by(Category.sort_order).offset((page - 1) * limit).limit(limit).all()
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit if total > 0 else 1
+    }
 
 @router.post("/categories", response_model=CategoryOut)
 def create_category(data: CategoryCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     item = Category(**data.dict())
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(Category.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -221,14 +246,35 @@ def delete_category(item_id: int, db: Session = Depends(get_db), admin: User = D
     db.commit()
     return {"ok": True}
 
-# --- Technology ---
-@router.get("/technologies", response_model=List[TechnologyOut])
-def get_technologies(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    return db.query(Technology).order_by(Technology.sort_order).all()
+@router.get("/technologies", response_model=PaginatedTechnologyOut)
+def get_technologies(
+    page: int = 1, 
+    limit: int = 20, 
+    search: str = "", 
+    db: Session = Depends(get_db), 
+    admin: User = Depends(get_current_admin_user)
+):
+    query = db.query(Technology)
+    if search:
+        query = query.filter(Technology.name.ilike(f"%{search}%"))
+    
+    total = query.count()
+    items = query.order_by(Technology.sort_order).offset((page - 1) * limit).limit(limit).all()
+    
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit if total > 0 else 1
+    }
 
 @router.post("/technologies", response_model=TechnologyOut)
 def create_technology(data: TechnologyCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     item = Technology(**data.dict())
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(Technology.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -370,8 +416,19 @@ def get_detect_groups(db: Session = Depends(get_db), admin: User = Depends(get_c
 
 @router.post("/detect-groups", response_model=DetectGroupOut)
 def create_detect_group(data: DetectGroupCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    item = DetectGroup(**data.dict())
+    col_dict = data.dict(exclude={"tags", "sort_order"})
+    max_order = db.query(func.max(DetectGroup.sort_order)).scalar()
+    order = (max_order or 0) + 1 if data.sort_order == 0 else data.sort_order
+    
+    item = DetectGroup(**col_dict, sort_order=order)
     db.add(item)
+    db.flush()
+    
+    for i, t_data in enumerate(data.tags, 1):
+        t_dict = t_data.dict(exclude={"sort_order", "id"})
+        tag = DetectTag(**t_dict, group_id=item.id, sort_order=i)
+        db.add(tag)
+        
     db.commit()
     db.refresh(item)
     return item
@@ -379,8 +436,17 @@ def create_detect_group(data: DetectGroupCreate, db: Session = Depends(get_db), 
 @router.put("/detect-groups/{item_id}", response_model=DetectGroupOut)
 def update_detect_group(item_id: int, data: DetectGroupUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     item = get_or_404(db, DetectGroup, item_id)
-    for k, v in data.dict(exclude_unset=True).items():
+    update_data = data.dict(exclude_unset=True, exclude={"tags"})
+    for k, v in update_data.items():
         if v is not None: setattr(item, k, v)
+        
+    if data.tags is not None:
+        db.query(DetectTag).filter(DetectTag.group_id == item_id).delete()
+        for i, t_data in enumerate(data.tags, 1):
+            t_dict = t_data.dict(exclude={"sort_order", "id"})
+            tag = DetectTag(**t_dict, group_id=item.id, sort_order=i)
+            db.add(tag)
+            
     db.commit()
     db.refresh(item)
     return item
@@ -454,6 +520,9 @@ def get_custom_data_blocks(db: Session = Depends(get_db), admin: User = Depends(
 @router.post("/custom-data-blocks", response_model=CustomDataBlockOut)
 def create_custom_data_block(data: CustomDataBlockCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     item = CustomDataBlock(**data.dict())
+    if not item.sort_order:
+        max_order = db.query(func.coalesce(func.max(CustomDataBlock.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -483,6 +552,9 @@ def get_nav_items(db: Session = Depends(get_db), admin: User = Depends(get_curre
 @router.post("/nav-items", response_model=NavItemOut)
 def create_nav_item(data: NavItemCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     item = NavItem(**data.dict())
+    if item.sort_order == 0:
+        max_order = db.query(func.coalesce(func.max(NavItem.sort_order), 0)).scalar()
+        item.sort_order = max_order + 1
     db.add(item)
     db.commit()
     db.refresh(item)
@@ -503,7 +575,6 @@ def delete_nav_item(item_id: int, db: Session = Depends(get_db), admin: User = D
     db.delete(item)
     db.commit()
     return {"ok": True}
-
 
 
 # Contact Messages
@@ -562,6 +633,74 @@ def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depen
     db.commit()
     return {"ok": True}
 
+# --- Websites ---
+@router.get("/websites", response_model=PaginatedWebsiteOut)
+def get_websites(
+    page: int = 1, 
+    limit: int = 20, 
+    search: str = "", 
+    db: Session = Depends(get_db), 
+    admin: User = Depends(get_current_admin_user)
+):
+    query = db.query(Website)
+    if search:
+        query = query.filter(Website.domain.ilike(f"%{search}%") | Website.company_name.ilike(f"%{search}%"))
+    
+    total = query.count()
+    items = query.order_by(Website.id.desc()).offset((page - 1) * limit).limit(limit).all()
+    
+    for w in items:
+        w.technology_ids = [t.technology_id for t in w.technologies]
+        
+    return {
+        "items": items,
+        "total": total,
+        "page": page,
+        "limit": limit,
+        "total_pages": (total + limit - 1) // limit if total > 0 else 1
+    }
 
+@router.post("/websites", response_model=WebsiteAdminOut)
+def create_website(data: WebsiteCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    website_dict = data.dict(exclude={"technology_ids", "sort_order"})
+    max_order = db.query(func.max(Website.sort_order)).scalar()
+    order = (max_order or 0) + 1 if data.sort_order == 0 else data.sort_order
+    
+    item = Website(**website_dict, sort_order=order)
+    db.add(item)
+    db.flush()
+    
+    for tech_id in data.technology_ids:
+        wt = WebsiteTechnology(website_id=item.id, technology_id=tech_id)
+        db.add(wt)
+        
+    db.commit()
+    db.refresh(item)
+    item.technology_ids = [t.technology_id for t in item.technologies]
+    return item
 
+@router.put("/websites/{item_id}", response_model=WebsiteAdminOut)
+def update_website(item_id: int, data: WebsiteUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, Website, item_id)
+    update_data = data.dict(exclude_unset=True, exclude={"technology_ids"})
+    
+    for k, v in update_data.items():
+        if v is not None: setattr(item, k, v)
+        
+    if data.technology_ids is not None:
+        db.query(WebsiteTechnology).filter(WebsiteTechnology.website_id == item_id).delete()
+        for tech_id in data.technology_ids:
+            wt = WebsiteTechnology(website_id=item.id, technology_id=tech_id)
+            db.add(wt)
+            
+    db.commit()
+    db.refresh(item)
+    item.technology_ids = [t.technology_id for t in item.technologies]
+    return item
 
+@router.delete("/websites/{item_id}")
+def delete_website(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    item = get_or_404(db, Website, item_id)
+    db.delete(item)
+    db.commit()
+    return {"ok": True}

@@ -106,7 +106,7 @@ export default function AdminUsersPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
-            <Users className="text-brand" />
+            <Users className="text-brand-dark" />
             Users
           </h1>
         </div>
@@ -179,7 +179,7 @@ export default function AdminUsersPage() {
           <div className="bg-card w-full max-w-2xl rounded-xl border border-border shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="text-xl font-bold text-ink flex items-center gap-2">
-                <Users size={24} className="text-brand" />
+                <Users size={24} className="text-brand-dark" />
                 {editingItem ? "Edit User" : "Add User"}
               </h2>
               <button
@@ -240,7 +240,7 @@ export default function AdminUsersPage() {
                       value={formData.password}
                       onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       className="w-full bg-canvas border border-border rounded-lg px-4 py-2.5 text-ink focus:outline-none focus:border-brand"
-                      placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢"
+                      placeholder="password"
                     />
                   </div>
                 )}

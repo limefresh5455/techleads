@@ -75,7 +75,7 @@ export default function AdminFeatureHighlightsPage() {
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <div>
           <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
-            <Sparkles className="text-brand" />
+            <Sparkles className="text-brand-dark" />
             Feature Highlights
           </h1>
         </div>
@@ -136,7 +136,8 @@ export default function AdminFeatureHighlightsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg border border-border overflow-hidden flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <h2 className="text-lg font-bold text-ink">
+              <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+                <Sparkles className="text-brand-dark" size={24} />
                 {editingItem ? 'Edit Highlight' : 'Add Highlight'}
               </h2>
               <button
@@ -178,7 +179,6 @@ export default function AdminFeatureHighlightsPage() {
                       onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
                       className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
                     />
-                    <p className="text-xs text-muted mt-1">Lucide icon name (e.g., sparkles)</p>
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-ink mb-1">Variant</label>

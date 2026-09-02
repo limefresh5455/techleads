@@ -7,7 +7,7 @@ export default function AdminFaqsPage() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingFaq, setEditingFaq] = useState(null)
-  const [formData, setFormData] = useState({ question: '', answer: '', sort_order: 0 })
+  const [formData, setFormData] = useState({ question: '', answer: '' })
 
   useEffect(() => {
     loadFaqs()
@@ -26,7 +26,7 @@ export default function AdminFaqsPage() {
 
   const handleOpenModal = (faq = null) => {
     setEditingFaq(faq)
-    setFormData(faq || { question: '', answer: '', sort_order: 0 })
+    setFormData(faq || { question: '', answer: '' })
     setIsModalOpen(true)
   }
 
@@ -60,7 +60,7 @@ export default function AdminFaqsPage() {
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
         <h1 className="text-2xl font-bold text-ink flex items-center gap-3">
-            <HelpCircle className="text-brand" />
+            <HelpCircle className="text-brand-dark" />
             FAQs
         </h1>
         <button
@@ -79,7 +79,6 @@ export default function AdminFaqsPage() {
             <thead>
               <tr className="bg-canvas border-b border-border">
                 <th className="p-4 text-xs font-semibold text-muted uppercase tracking-wider">Question & Answer</th>
-                <th className="p-4 text-xs font-semibold text-muted uppercase tracking-wider w-32">Order</th>
                 <th className="p-4 text-xs font-semibold text-muted uppercase tracking-wider w-32 text-right">Actions</th>
               </tr>
             </thead>
@@ -90,7 +89,6 @@ export default function AdminFaqsPage() {
                     <div className="font-medium text-ink">{faq.question}</div>
                     <div className="text-sm text-muted mt-1">{faq.answer}</div>
                   </td>
-                  <td className="p-4 text-sm text-ink">{faq.sort_order}</td>
                   <td className="p-4 flex items-center justify-end gap-2">
                     <button
                       onClick={() => handleOpenModal(faq)}
@@ -111,7 +109,7 @@ export default function AdminFaqsPage() {
               ))}
               {faqs.length === 0 && (
                 <tr>
-                  <td colSpan="3" className="p-8 text-center text-muted">No FAQs found.</td>
+                  <td colSpan="2" className="p-8 text-center text-muted">No FAQs found.</td>
                 </tr>
               )}
             </tbody>
@@ -123,7 +121,8 @@ export default function AdminFaqsPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-surface rounded-xl shadow-xl w-full max-w-lg border border-border overflow-hidden">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-              <h2 className="text-lg font-bold text-ink">
+              <h2 className="text-lg font-bold text-ink flex items-center gap-2">
+                <HelpCircle className="text-brand-dark" size={24} />
                 {editingFaq ? 'Edit FAQ' : 'Add FAQ'}
               </h2>
               <button
@@ -151,16 +150,6 @@ export default function AdminFaqsPage() {
                   rows={4}
                   value={formData.answer}
                   onChange={e => setFormData({ ...formData, answer: e.target.value })}
-                  className="w-full bg-canvas border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-brand"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-ink mb-1">Sort Order</label>
-                <input
-                  type="number"
-                  required
-                  value={formData.sort_order}
-                  onChange={e => setFormData({ ...formData, sort_order: parseInt(e.target.value) || 0 })}
                   className="w-full bg-canvas border border-border rounded-lg px-3 py-2 text-ink focus:outline-none focus:border-brand"
                 />
               </div>

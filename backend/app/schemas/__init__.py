@@ -93,7 +93,9 @@ class DashboardPreviewOut(BaseModel):
 
 class DetectTagOut(BaseModel):
     id: int
+    group_id: int
     label: str
+    sort_order: int
 
     class Config:
         from_attributes = True
@@ -103,6 +105,7 @@ class DetectGroupOut(BaseModel):
     id: int
     title: str
     theme: str
+    sort_order: int
     tags: list[DetectTagOut] = []
 
     class Config:
@@ -446,3 +449,45 @@ class VerifyOTPResponse(BaseModel):
     message: str
     verified: bool
 
+
+class WebsiteTechItemOut(BaseModel):
+    id: int
+    name: str
+    icon: str
+
+    class Config:
+        from_attributes = True
+
+class WebsiteAdminOut(BaseModel):
+    id: int
+    domain: str
+    company_name: str
+    title: str
+    description: str
+    emails: str
+    country: str
+    category_label: str
+    contact_info: str
+    facebook_url: str
+    twitter_url: str
+    linkedin_url: str
+    instagram_url: str
+    youtube_url: str
+    github_url: str
+    tiktok_url: str
+    source_url: str
+    rank: int
+    sort_order: int
+    
+    # We will compute technology_ids in the route
+    technology_ids: List[int] = []
+
+    class Config:
+        from_attributes = True
+
+class PaginatedWebsiteOut(BaseModel):
+    items: List[WebsiteAdminOut]
+    total: int
+    page: int
+    limit: int
+    total_pages: int

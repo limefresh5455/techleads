@@ -410,7 +410,7 @@ export default function DashboardPage() {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = 'techleads-export.csv'
+      a.download = 'leadintel-export.csv'
       a.click()
       URL.revokeObjectURL(url)
       setResults((prev) => (prev ? { ...prev, user_credits: payload.user_credits } : prev))

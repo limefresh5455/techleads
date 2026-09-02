@@ -14,7 +14,7 @@ export default function ExtensionsPage() {
         <div className="rounded-2xl border border-border bg-surface p-8">
           <h2 className="text-2xl font-bold text-ink">Chrome Extension</h2>
           <p className="mt-3 text-muted">
-            Install the TechLeads.Ai extension to detect technologies on any page and save leads in one click.
+            Install the LeadIntel.Ai extension to detect technologies on any page and save leads in one click.
           </p>
           <div className="mt-6 flex flex-wrap justify-center gap-3">
             <Link

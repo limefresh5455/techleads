@@ -9,8 +9,7 @@ export default function ContactPage() {
       <PageHero
         title={data.content?.contact_title || 'Contact sales'}
         subtitle={data.content?.contact_subtitle}
-        ctaLabel="Start free trial"
-        ctaTo="/signup"
+        ctaLabel={false}
       />
       <Contact content={data.content} showHeader={false} />
     </>

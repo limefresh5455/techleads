@@ -51,9 +51,8 @@ export default function DirectoryPage() {
     <>
       <PageHero
         title="Directory"
-        subtitle="Browse websites and technologies detected by TechLeads.Ai."
-        ctaLabel="Start for free"
-        ctaTo="/get-started"
+        subtitle="Browse websites and technologies detected by LeadIntel.Ai."
+        ctaLabel={false}
       />
       <section className="mx-auto max-w-7xl px-4 py-14 lg:px-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
