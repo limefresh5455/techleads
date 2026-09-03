@@ -3,6 +3,9 @@ from threading import Lock
 from uuid import uuid4
 import csv
 import io
+import os
+import shutil
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Request, status, BackgroundTasks, UploadFile, File
 from fastapi.responses import RedirectResponse
@@ -537,6 +540,72 @@ def update_me(
     user.name = payload.name.strip()
     db.commit()
     db.refresh(user)
+    return _auth_user_out(user)
+
+
+@router.post("/me/avatar", response_model=AuthUserOut)
+def upload_my_avatar(
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if not file.content_type.startswith("image/"):
+        raise HTTPException(400, "File must be an image")
+    
+    try:
+        from app.services.cloudinary_service import delete_file_from_cloudinary
+        import cloudinary.uploader
+        
+        response = cloudinary.uploader.upload(
+            file.file,
+            folder="techleads/avatars",
+            fetch_format="auto",
+            quality="auto",
+            width=500,
+            height=500,
+            crop="limit"
+        )
+        cloudinary_url = response.get("secure_url", "")
+        if not cloudinary_url:
+            raise HTTPException(500, "Cloudinary upload failed: No secure URL")
+            
+        old_avatar = user.avatar_url
+        user.avatar_url = cloudinary_url
+        db.commit()
+        db.refresh(user)
+        
+        # Delete old avatar
+        if old_avatar:
+            try:
+                from app.services.cloudinary_service import delete_file_from_cloudinary
+                if "res.cloudinary.com" in old_avatar:
+                    delete_file_from_cloudinary(old_avatar)
+            except Exception:
+                pass
+    except Exception as e:
+        raise HTTPException(500, f"Cloudinary upload failed: {str(e)}")
+                
+    return _auth_user_out(user)
+
+
+@router.delete("/me/avatar", response_model=AuthUserOut)
+def remove_my_avatar(
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    old_avatar = user.avatar_url
+    user.avatar_url = None
+    db.commit()
+    db.refresh(user)
+    
+    if old_avatar:
+        try:
+            from app.services.cloudinary_service import delete_file_from_cloudinary
+            if "res.cloudinary.com" in old_avatar:
+                delete_file_from_cloudinary(old_avatar)
+        except Exception:
+            pass
+                
     return _auth_user_out(user)
 
 

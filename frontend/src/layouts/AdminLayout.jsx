@@ -1,9 +1,9 @@
-﻿import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
+import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { 
   LogOut, Home, CreditCard, FileText, 
   LayoutTemplate, HelpCircle, Share2, Navigation, Shield, ShoppingCart, 
-  LayoutDashboard, Sparkles, Users, MessageSquare, Menu, X, Globe, Database, Blocks, ListTree, Folder, Link as LinkIcon
+  LayoutDashboard, Sparkles, Users, MessageSquare, Menu, X, Globe, Database, Blocks, ListTree, Folder, Link as LinkIcon, User, Settings
 } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
 import ThemeToggle from '../components/ThemeToggle'
@@ -93,20 +93,36 @@ export default function AdminLayout() {
           ))}
         </nav>
         <div className="p-4 border-t border-border space-y-2 shrink-0">
-          <div className="flex items-center justify-between px-1">
-            <div className="flex-1 truncate pr-2">
+          <div className="flex items-center gap-3 px-1 group">
+            {user?.avatar_url ? (
+               <img src={user.avatar_url} alt="Avatar" className="w-10 h-10 rounded-full object-cover bg-surface shrink-0" />
+            ) : (
+               <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand shrink-0">
+                 <User size={20} />
+               </div>
+            )}
+            <div className="flex-1 min-w-0">
                <p className="truncate text-sm font-semibold text-ink">{user?.name}</p>
                <p className="truncate text-xs text-muted">{user?.email}</p>
             </div>
-            <ThemeToggle />
+            <Link 
+              to="/admin/profile" 
+              className="p-1.5 text-muted hover:text-ink hover:bg-surface rounded-lg transition-all shrink-0"
+              title="Profile Settings"
+            >
+              <Settings size={18} />
+            </Link>
           </div>
-          <button
-            onClick={handleLogout}
-            className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
-          >
-            <LogOut className="w-5 h-5" />
-            Logout
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={handleLogout}
+              className="flex-1 flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30 transition-colors"
+            >
+              <LogOut className="w-5 h-5 shrink-0" />
+              <span>Logout</span>
+            </button>
+            <ThemeToggle className="shrink-0" />
+          </div>
         </div>
       </aside>
 

@@ -1,6 +1,7 @@
-﻿import { useState, useEffect } from "react";
-import { Plus, Trash2, Save, Edit, X, Users, CreditCard } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
+import { Plus, Trash2, Save, Edit, X, Users, CreditCard, Upload, Loader2 } from "lucide-react";
 import { adminUsers } from "../adminApi";
+import { useSiteData } from "../context/SiteDataContext";
 
 const formatDate = (dateString) => {
   if (!dateString) return '';
@@ -12,17 +13,24 @@ const formatDate = (dateString) => {
 };
 
 export default function AdminUsersPage() {
+  const { user: currentUser, updateUser } = useSiteData();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [editingItem, setEditingItem] = useState(null);
+  
+  const fileInputRef = useRef(null);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const [selectedAvatarFile, setSelectedAvatarFile] = useState(null);
+  const [previewAvatarUrl, setPreviewAvatarUrl] = useState("");
 
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     role: "customer",
     credits: 0,
-    password: ""
+    password: "",
+    avatar_url: ""
   });
 
   useEffect(() => {
@@ -48,7 +56,8 @@ export default function AdminUsersPage() {
         email: item.email,
         role: item.role,
         credits: item.credits,
-        password: ""
+        password: "",
+        avatar_url: item.avatar_url || ""
       });
     } else {
       setFormData({
@@ -56,35 +65,64 @@ export default function AdminUsersPage() {
         email: "",
         role: "customer",
         credits: 0,
-        password: ""
+        password: "",
+        avatar_url: ""
       });
     }
+    setPreviewAvatarUrl("");
+    setSelectedAvatarFile(null);
     setShowModal(true);
   };
 
   const closeModal = () => {
     setShowModal(false);
     setEditingItem(null);
+    setPreviewAvatarUrl("");
+    setSelectedAvatarFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  const handleAvatarUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedAvatarFile(file);
+    setPreviewAvatarUrl(URL.createObjectURL(file));
   };
 
   const handleSave = async () => {
     try {
+      setUploadingAvatar(true);
+      let finalAvatarUrl = formData.avatar_url;
+
+      if (selectedAvatarFile) {
+        const data = await adminUsers.uploadAvatar(selectedAvatarFile);
+        finalAvatarUrl = data.url;
+      }
+
       if (editingItem) {
-        const payload = { ...formData };
+        const payload = { ...formData, avatar_url: finalAvatarUrl };
         delete payload.password;
         await adminUsers.update(editingItem.id, payload);
+        if (currentUser && String(currentUser.id) === String(editingItem.id)) {
+           updateUser({ ...currentUser, ...payload });
+        }
       } else {
         if (!formData.password) {
           alert("Password is required for new users");
+          setUploadingAvatar(false);
           return;
         }
-        await adminUsers.create(formData);
+        await adminUsers.create({ ...formData, avatar_url: finalAvatarUrl });
       }
+      setUploadingAvatar(false);
       closeModal();
       fetchItems();
     } catch (error) {
       console.error("Failed to save user:", error);
       alert("Failed to save user. Check console for details.");
+      setUploadingAvatar(false);
     }
   };
 
@@ -133,14 +171,31 @@ export default function AdminUsersPage() {
           <tbody className="divide-y divide-border">
             {items.map((item) => (
               <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
-                <td className="px-6 py-4 font-medium">{item.name}</td>
+                <td className="px-6 py-4 font-medium">
+                  <div className="flex items-center gap-3">
+                    {item.avatar_url ? (
+                      <img src={item.avatar_url} alt={item.name} className="w-8 h-8 rounded-full object-cover bg-surface shrink-0" />
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold text-xs shrink-0">
+                        {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                      </div>
+                    )}
+                    <span className="truncate">{item.name}</span>
+                  </div>
+                </td>
                 <td className="px-6 py-4">{item.email}</td>
                 <td className="px-6 py-4">
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${item.role === 'admin' ? 'bg-brand/20 text-brand' : 'bg-canvas text-ink/70'}`}>
                     {item.role}
                   </span>
                 </td>
-                <td className="px-6 py-4 font-medium text-brand">{item.credits}</td>
+                <td className="px-6 py-4">
+                  {item.role === 'admin' ? (
+                    <span className="text-muted italic text-xs">N/A</span>
+                  ) : (
+                    <span className="font-medium text-brand">{item.credits}</span>
+                  )}
+                </td>
                 <td className="px-6 py-4 text-ink/60">
                   {formatDate(item.created_at)}
                 </td>
@@ -223,14 +278,61 @@ export default function AdminUsersPage() {
                     <option value="admin">Admin</option>
                   </select>
                 </div>
-                <div className="space-y-1.5">
-                  <label className="text-sm font-medium text-ink">Credits</label>
-                  <input
-                    type="number"
-                    value={formData.credits}
-                    onChange={(e) => setFormData({ ...formData, credits: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2.5 text-ink focus:outline-none focus:border-brand"
-                  />
+                {formData.role !== 'admin' && (
+                  <div className="space-y-1.5">
+                    <label className="text-sm font-medium text-ink">Credits</label>
+                    <input
+                      type="number"
+                      value={formData.credits}
+                      onChange={(e) => setFormData({ ...formData, credits: parseInt(e.target.value) || 0 })}
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2.5 text-ink focus:outline-none focus:border-brand"
+                    />
+                  </div>
+                )}
+                
+                <div className={`space-y-1.5 ${formData.role === 'admin' ? 'col-span-2' : ''}`}>
+                  <label className="text-sm font-medium text-ink">Profile Image</label>
+                  <div className="flex items-center gap-4">
+                    {(previewAvatarUrl || formData.avatar_url) ? (
+                      <div className="relative group">
+                        <img src={previewAvatarUrl || formData.avatar_url} alt="Avatar" className="w-12 h-12 rounded-full object-cover bg-surface" />
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFormData({ ...formData, avatar_url: "" });
+                            setPreviewAvatarUrl("");
+                            setSelectedAvatarFile(null);
+                            if (fileInputRef.current) fileInputRef.current.value = "";
+                          }}
+                          className="absolute -top-1 -right-1 bg-red-500 text-white rounded-full p-0.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                        >
+                          <X size={12} />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 rounded-full bg-brand/10 flex items-center justify-center text-brand">
+                        <Users size={20} />
+                      </div>
+                    )}
+                    
+                    <div className="flex-1">
+                      <input
+                        type="file"
+                        ref={fileInputRef}
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleAvatarUpload}
+                      />
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="flex items-center gap-2 px-3 py-1.5 text-sm font-medium text-brand bg-brand/10 rounded hover:bg-brand/20 transition-colors"
+                      >
+                        <Upload size={16} />
+                        Choose Image
+                      </button>
+                    </div>
+                  </div>
                 </div>
                 {!editingItem && (
                   <div className="space-y-1.5 col-span-2">
@@ -246,7 +348,7 @@ export default function AdminUsersPage() {
                 )}
               </div>
 
-              {editingItem && editingItem.credit_purchases && (
+              {editingItem && editingItem.credit_purchases && formData.role !== 'admin' && (
                 <div>
                   <h3 className="text-lg font-bold text-ink mb-4 flex items-center gap-2">
                     <CreditCard size={20} className="text-brand" />
@@ -301,10 +403,11 @@ export default function AdminUsersPage() {
               </button>
               <button
                 onClick={handleSave}
-                className="flex items-center gap-2 px-6 py-2 bg-brand text-ink rounded-lg font-medium hover:bg-brand/90 transition-colors"
+                disabled={uploadingAvatar}
+                className="flex items-center gap-2 px-6 py-2 bg-brand text-ink rounded-lg font-medium hover:bg-brand/90 transition-colors disabled:opacity-50"
               >
-                <Save size={16} />
-                <span>Save User</span>
+                {uploadingAvatar ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                <span>{uploadingAvatar ? "Saving..." : "Save User"}</span>
               </button>
             </div>
           </div>

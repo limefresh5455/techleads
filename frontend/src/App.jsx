@@ -40,6 +40,7 @@ import AdminDetectGroupsPage from './pages/AdminDetectGroupsPage'
 import AdminCategoriesPage from './pages/AdminCategoriesPage'
 import AdminTechnologiesPage from './pages/AdminTechnologiesPage'
 import AdminWebsitesPage from './pages/AdminWebsitesPage'
+import AdminProfilePage from './pages/AdminProfilePage'
 
 
 function GetStartedRedirect() {
@@ -57,6 +58,7 @@ export default function App() {
         <Routes>
           <Route path="admin" element={<AdminRoute />}>
             <Route index element={<AdminDashboardPage />} />
+            <Route path="profile" element={<AdminProfilePage />} />
             <Route path="users" element={<AdminUsersPage />} />
             <Route path="plans" element={<AdminPlansPage />} />
             <Route path="site-content" element={<AdminSiteContentPage />} />

@@ -324,6 +324,7 @@ class UserOut(BaseModel):
     email: str
     role: str
     credits: int
+    avatar_url: Optional[str] = ""
     created_at: datetime
     credit_purchases: List[CreditPurchaseOut] = []
 
@@ -336,12 +337,15 @@ class UserCreate(BaseModel):
     role: Optional[str] = 'customer'
     credits: Optional[int] = 0
     password: str
+    avatar_url: Optional[str] = ""
 
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[str] = None
     role: Optional[str] = None
     credits: Optional[int] = None
+    password: Optional[str] = None
+    avatar_url: Optional[str] = None
 
 class ContactMessageOut(BaseModel):
     id: int

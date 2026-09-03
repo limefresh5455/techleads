@@ -45,6 +45,11 @@ class Settings(BaseSettings):
     mail_server: str = "smtp.gmail.com"
     mail_starttls: bool = True
     mail_ssl_tls: bool = False
+    
+    # Cloudinary
+    cloudinary_cloud_name: str = ""
+    cloudinary_api_key: str = ""
+    cloudinary_api_secret: str = ""
 
     @field_validator("database_url", mode="before")
     @classmethod

@@ -9,9 +9,11 @@ import {
   Mail,
   Shield,
   UserRound,
+  Camera,
 } from 'lucide-react'
-import { changePassword, fetchMe, updateProfile } from '../api'
+import { changePassword, fetchMe, updateProfile, uploadMyAvatar, removeMyAvatar } from '../api'
 import { useSiteData } from '../context/SiteDataContext'
+import { useRef } from 'react'
 
 const field =
   'mt-1.5 w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none transition focus:border-brand'
@@ -31,6 +33,9 @@ export default function AccountPage() {
   const [passwordSaving, setPasswordSaving] = useState(false)
 
   const [loadingMe, setLoadingMe] = useState(true)
+
+  const fileInputRef = useRef(null)
+  const [uploadingAvatar, setUploadingAvatar] = useState(false)
 
   useEffect(() => {
     let alive = true
@@ -68,6 +73,24 @@ export default function AccountPage() {
       setProfileError(err.message || 'Could not update profile')
     } finally {
       setProfileSaving(false)
+    }
+  }
+
+  async function handleAvatarUpload(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setUploadingAvatar(true);
+    try {
+      const me = await uploadMyAvatar(file);
+      updateUser(me);
+    } catch (err) {
+      alert("Failed to upload image: " + err.message);
+    } finally {
+      setUploadingAvatar(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   }
 
@@ -129,21 +152,27 @@ export default function AccountPage() {
         <div className="mt-10 grid gap-6 lg:grid-cols-[1.05fr_0.95fr]">
           <section className="animate-fade-up rounded-[1.75rem] border border-border bg-card/90 p-6 shadow-sm backdrop-blur md:p-8 [animation-delay:80ms]">
             <div className="flex flex-wrap items-center gap-4">
-              {user.avatar_url ? (
-                <img
-                  src={user.avatar_url}
-                  alt=""
-                  className="h-16 w-16 rounded-2xl object-cover ring-2 ring-brand/40"
-                  referrerPolicy="no-referrer"
-                />
-              ) : (
-                <span className="grid h-16 w-16 place-items-center rounded-2xl bg-brand text-2xl font-extrabold text-on-brand shadow-sm shadow-brand/30">
-                  {initial}
-                </span>
-              )}
+              <div className="relative group cursor-pointer overflow-hidden rounded-2xl" onClick={() => !uploadingAvatar && fileInputRef.current?.click()}>
+                {user.avatar_url ? (
+                  <img
+                    src={user.avatar_url}
+                    alt=""
+                    className={`h-16 w-16 rounded-2xl object-cover ring-2 ring-brand/40 transition-opacity ${uploadingAvatar ? 'opacity-50' : ''}`}
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <span className={`grid h-16 w-16 place-items-center rounded-2xl bg-brand text-2xl font-extrabold text-on-brand shadow-sm shadow-brand/30 transition-opacity ${uploadingAvatar ? 'opacity-50' : ''}`}>
+                    {initial}
+                  </span>
+                )}
+                <div className="absolute inset-0 grid place-items-center opacity-0 group-hover:opacity-100 transition-all bg-black/50 rounded-2xl backdrop-blur-[1px]">
+                  {uploadingAvatar ? <Loader2 className="h-6 w-6 text-white animate-spin" /> : <Camera className="h-6 w-6 text-white/90 drop-shadow-md" />}
+                </div>
+              </div>
+              <input type="file" ref={fileInputRef} className="hidden" accept="image/*" onChange={handleAvatarUpload} />
               <div className="min-w-0">
                 <h2 className="truncate text-2xl font-extrabold text-ink">
-                  {loadingMe ? 'Loadingâ€¦' : user.name}
+                  {loadingMe ? 'Loading...' : user.name}
                 </h2>
                 <p className="mt-1 flex items-center gap-1.5 truncate text-sm text-muted">
                   <Mail className="h-3.5 w-3.5 shrink-0" />

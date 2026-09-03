@@ -21,7 +21,6 @@ OAUTH_PASSWORD_MARKER = "oauth:google"
 
 
 def _google_settings() -> Settings:
-    # Re-read .env so credential updates apply without a full process restart
     return Settings()
 
 
@@ -59,7 +58,6 @@ def make_oauth_state(redirect_path: str = "/dashboard") -> str:
     safe = (redirect_path or "/dashboard").strip() or "/dashboard"
     if not safe.startswith("/"):
         safe = "/dashboard"
-    # path|nonce — callback splits on first |
     return f"{safe}|{nonce}"
 
 
@@ -135,7 +133,7 @@ def upsert_google_user(db: Session, profile: dict) -> tuple[User, str]:
             user.google_sub = google_sub
         if profile.get("name") and (not user.name or user.name == email.split("@")[0]):
             user.name = profile["name"]
-        if profile.get("picture"):
+        if profile.get("picture") and not user.avatar_url:
             user.avatar_url = profile["picture"]
         # Keep existing password_hash if they registered with email
         if not user.password_hash:

@@ -37,7 +37,31 @@ export const adminContactMessages = {
 export const adminWebsites = createCrud('websites')
 
 export const adminCustomDataBlocks = createCrud('custom-data-blocks')
-export const adminUsers = createCrud('users')
+export const adminUsers = {
+  ...createCrud('users'),
+  uploadAvatar: async (file) => {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const token = localStorage.getItem('tl_token')
+    const host = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || ''
+    const url = host ? `${host}/api/admin/upload-avatar` : '/api/admin/upload-avatar'
+
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        ...(token ? { Authorization: `Bearer ${token}` } : {})
+      },
+      body: formData
+    })
+    
+    const data = await res.json()
+    if (!res.ok) {
+      throw new Error(data?.detail || 'Avatar upload failed')
+    }
+    return data
+  }
+}
 
 export const adminImports = {
   importTechnologies: () => request('/api/technologies/import-techleads', { method: 'POST' }),

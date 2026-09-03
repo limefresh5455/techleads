@@ -1,5 +1,5 @@
-﻿import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, X, Loader2, Folder, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Edit, Trash2, X, Loader2, Folder, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { adminCategories } from '../adminApi'
 
 export default function AdminCategoriesPage() {
@@ -43,13 +43,7 @@ export default function AdminCategoriesPage() {
     setPage(1)
   }
 
-  const handleOpenNew = () => {
-    setFormData({ name: '', slug: '', icon: 'folder', sort_order: 0, item_count: 0 })
-    setEditingId('new')
-    setIsModalOpen(true)
-  }
-
-  const handleOpenEdit = (item) => {
+  const handleOpenView = (item) => {
     setFormData({
       name: item.name,
       slug: item.slug,
@@ -59,24 +53,6 @@ export default function AdminCategoriesPage() {
     })
     setEditingId(item.id)
     setIsModalOpen(true)
-  }
-
-  const handleSave = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      if (editingId === 'new') {
-        await adminCategories.create(formData)
-      } else {
-        await adminCategories.update(editingId, formData)
-      }
-      setIsModalOpen(false)
-      fetchData()
-    } catch (err) {
-      alert('Error: ' + err.message)
-    } finally {
-      setSaving(false)
-    }
   }
 
   const handleDelete = async (id) => {
@@ -104,13 +80,6 @@ export default function AdminCategoriesPage() {
           <Folder className="text-brand-dark shrink-0" />
           <span className="whitespace-nowrap">Categories</span>
         </h1>
-        <button
-          onClick={handleOpenNew}
-          className="flex items-center justify-center gap-2 w-fit bg-brand text-on-brand px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors"
-        >
-          <Plus size={16} />
-          Add Category
-        </button>
       </div>
 
       {error && (
@@ -155,11 +124,11 @@ export default function AdminCategoriesPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleOpenEdit(item)}
+                        onClick={() => handleOpenView(item)}
                         className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                        title="Edit"
+                        title="View Details"
                       >
-                        <Edit size={16} />
+                        <Eye size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
@@ -212,7 +181,7 @@ export default function AdminCategoriesPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-lg font-bold text-ink flex items-center gap-2">
                 <Folder className="text-brand-dark" />
-                {editingId === 'new' ? 'Add Category' : 'Edit Category'}
+                Category Details
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -222,18 +191,16 @@ export default function AdminCategoriesPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4">
                 
                 <div>
                   <label className="block text-sm font-medium text-ink mb-1">Name</label>
                   <input
                     type="text"
-                    required
+                    readOnly
                     value={formData.name}
-                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                    placeholder="e.g. Analytics"
+                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                   />
                 </div>
 
@@ -241,11 +208,9 @@ export default function AdminCategoriesPage() {
                   <label className="block text-sm font-medium text-ink mb-1">Slug</label>
                   <input
                     type="text"
-                    required
+                    readOnly
                     value={formData.slug}
-                    onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                    placeholder="e.g. analytics"
+                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                   />
                 </div>
 
@@ -253,10 +218,9 @@ export default function AdminCategoriesPage() {
                   <label className="block text-sm font-medium text-ink mb-1">Icon (Lucide name)</label>
                   <input
                     type="text"
+                    readOnly
                     value={formData.icon}
-                    onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                    placeholder="e.g. folder"
+                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                   />
                 </div>
 
@@ -268,18 +232,10 @@ export default function AdminCategoriesPage() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 text-sm font-medium text-ink bg-surface border border-border rounded-lg hover:bg-border/50 transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-on-brand bg-brand rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50"
-                >
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {editingId === 'new' ? 'Create Category' : 'Save Changes'}
+                  Close
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

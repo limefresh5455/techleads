@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.orm import Session
 from sqlalchemy import func
 from typing import List
@@ -700,19 +700,43 @@ def create_user(data: UserCreate, db: Session = Depends(get_db), admin: User = D
 @router.put("/users/{user_id}", response_model=UserOut)
 def update_user(user_id: int, data: UserUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     user = get_or_404(db, User, user_id)
+    old_avatar = user.avatar_url
+    new_avatar = getattr(data, "avatar_url", None)
+    
     for k, v in data.dict(exclude_unset=True, exclude={"password"}).items():
         setattr(user, k, v)
     if data.password:
         user.password_hash = hash_password(data.password)
+        
     db.commit()
     db.refresh(user)
+    
+    if new_avatar is not None and old_avatar != new_avatar and old_avatar:
+        try:
+            from app.services.cloudinary_service import delete_file_from_cloudinary
+            if "res.cloudinary.com" in old_avatar:
+                delete_file_from_cloudinary(old_avatar)
+        except Exception:
+            pass
+            
     return user
 
 @router.delete("/users/{user_id}")
 def delete_user(user_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     user = get_or_404(db, User, user_id)
+    old_avatar = user.avatar_url
+    
     db.delete(user)
     db.commit()
+    
+    if old_avatar:
+        try:
+            from app.services.cloudinary_service import delete_file_from_cloudinary
+            if "res.cloudinary.com" in old_avatar:
+                delete_file_from_cloudinary(old_avatar)
+        except Exception:
+            pass
+            
     return {"ok": True}
 
 # --- Websites ---
@@ -786,3 +810,28 @@ def delete_website(item_id: int, db: Session = Depends(get_db), admin: User = De
     db.delete(item)
     db.commit()
     return {"ok": True}
+
+@router.post('/upload-avatar')
+async def upload_avatar(
+    file: UploadFile = File(...),
+    admin: User = Depends(get_current_admin_user)
+):
+    from app.services.cloudinary_service import upload_file_to_cloudinary
+    import cloudinary.uploader
+    try:
+        response = cloudinary.uploader.upload(
+            file.file,
+            folder="techleads/avatars",
+            fetch_format="auto",
+            quality="auto",
+            width=500,
+            height=500,
+            crop="limit"
+        )
+        cloudinary_url = response.get("secure_url", "")
+        if not cloudinary_url:
+            raise Exception("No secure URL returned")
+        return {'url': cloudinary_url}
+    except Exception as e:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=500, detail=f"Cloudinary upload failed: {str(e)}")

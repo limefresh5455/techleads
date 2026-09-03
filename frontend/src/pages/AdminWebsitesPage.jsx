@@ -1,5 +1,5 @@
-﻿import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, X, Loader2, Link as LinkIcon, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Edit, Trash2, X, Loader2, Link as LinkIcon, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { adminWebsites, adminTechnologies } from '../adminApi'
 import SearchableDropdown from '../components/SearchableDropdown'
 
@@ -59,13 +59,7 @@ export default function AdminWebsitesPage() {
     setPage(1)
   }
 
-  const handleOpenNew = () => {
-    setFormData({ ...defaultForm })
-    setEditingId('new')
-    setIsModalOpen(true)
-  }
-
-  const handleOpenEdit = (item) => {
+  const handleOpenView = (item) => {
     setFormData({
       domain: item.domain || '',
       title: item.title || '',
@@ -89,24 +83,6 @@ export default function AdminWebsitesPage() {
     })
     setEditingId(item.id)
     setIsModalOpen(true)
-  }
-
-  const handleSave = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      if (editingId === 'new') {
-        await adminWebsites.create(formData)
-      } else {
-        await adminWebsites.update(editingId, formData)
-      }
-      setIsModalOpen(false)
-      fetchData()
-    } catch (err) {
-      alert('Error: ' + err.message)
-    } finally {
-      setSaving(false)
-    }
   }
 
   const handleDelete = async (id) => {
@@ -145,13 +121,6 @@ export default function AdminWebsitesPage() {
           <LinkIcon className="text-brand-dark shrink-0" />
           <span className="whitespace-nowrap">Websites</span>
         </h1>
-        <button
-          onClick={handleOpenNew}
-          className="flex items-center justify-center gap-2 w-fit bg-brand text-on-brand px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors"
-        >
-          <Plus size={16} />
-          Add Website
-        </button>
       </div>
 
       {error && (
@@ -196,11 +165,11 @@ export default function AdminWebsitesPage() {
                   <td className="px-6 py-4">
                     <div className="flex items-center justify-end gap-2">
                       <button
-                        onClick={() => handleOpenEdit(item)}
+                        onClick={() => handleOpenView(item)}
                         className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                        title="Edit"
+                        title="View Details"
                       >
-                        <Edit size={16} />
+                        <Eye size={16} />
                       </button>
                       <button
                         onClick={() => handleDelete(item.id)}
@@ -253,7 +222,7 @@ export default function AdminWebsitesPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-lg font-bold text-ink flex items-center gap-2">
                 <LinkIcon className="text-brand-dark" size={24} />
-                {editingId === 'new' ? 'Add Website' : 'Edit Website'}
+                Website Details
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -263,7 +232,7 @@ export default function AdminWebsitesPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-6">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -271,21 +240,18 @@ export default function AdminWebsitesPage() {
                     <label className="block text-sm font-medium text-ink mb-1">Domain</label>
                     <input
                       type="text"
-                      required
+                      readOnly
                       value={formData.domain}
-                      onChange={(e) => setFormData({ ...formData, domain: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                      placeholder="e.g. example.com"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-ink mb-1">Title</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.title}
-                      onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                      placeholder="e.g. Example Inc."
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                 </div>
@@ -295,18 +261,18 @@ export default function AdminWebsitesPage() {
                     <label className="block text-sm font-medium text-ink mb-1">Company Name</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.company_name}
-                      onChange={(e) => setFormData({ ...formData, company_name: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-ink mb-1">Category Label</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.category_label}
-                      onChange={(e) => setFormData({ ...formData, category_label: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                 </div>
@@ -315,9 +281,9 @@ export default function AdminWebsitesPage() {
                   <label className="block text-sm font-medium text-ink mb-1">Description</label>
                   <textarea
                     rows={3}
+                    readOnly
                     value={formData.description}
-                    onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
+                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                   />
                 </div>
 
@@ -326,18 +292,18 @@ export default function AdminWebsitesPage() {
                     <label className="block text-sm font-medium text-ink mb-1">Emails (comma separated)</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.emails}
-                      onChange={(e) => setFormData({ ...formData, emails: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-ink mb-1">Country</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.country}
-                      onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                 </div>
@@ -346,9 +312,9 @@ export default function AdminWebsitesPage() {
                   <label className="block text-sm font-medium text-ink mb-1">Contact Info</label>
                   <textarea
                     rows={2}
+                    readOnly
                     value={formData.contact_info}
-                    onChange={(e) => setFormData({ ...formData, contact_info: e.target.value })}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
+                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                   />
                 </div>
 
@@ -357,72 +323,72 @@ export default function AdminWebsitesPage() {
                     <label className="block text-xs font-medium text-muted mb-1">Facebook URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.facebook_url}
-                      onChange={(e) => setFormData({ ...formData, facebook_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">Twitter URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.twitter_url}
-                      onChange={(e) => setFormData({ ...formData, twitter_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">LinkedIn URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.linkedin_url}
-                      onChange={(e) => setFormData({ ...formData, linkedin_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">Instagram URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.instagram_url}
-                      onChange={(e) => setFormData({ ...formData, instagram_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">YouTube URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.youtube_url}
-                      onChange={(e) => setFormData({ ...formData, youtube_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">GitHub URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.github_url}
-                      onChange={(e) => setFormData({ ...formData, github_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-xs font-medium text-muted mb-1">TikTok URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.tiktok_url}
-                      onChange={(e) => setFormData({ ...formData, tiktok_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div className="sm:col-span-2">
                     <label className="block text-xs font-medium text-muted mb-1">Source URL</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.source_url}
-                      onChange={(e) => setFormData({ ...formData, source_url: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
+                      className="w-full bg-canvas border border-border rounded-lg px-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                 </div>
@@ -431,9 +397,9 @@ export default function AdminWebsitesPage() {
                   <label className="block text-sm font-medium text-ink mb-1">Rank</label>
                   <input
                     type="number"
+                    readOnly
                     value={formData.rank}
-                    onChange={(e) => setFormData({ ...formData, rank: parseInt(e.target.value) || 0 })}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
+                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                   />
                 </div>
 
@@ -446,15 +412,8 @@ export default function AdminWebsitesPage() {
                       const tech = technologies.find(t => t.id === techId)
                       if (!tech) return null
                       return (
-                        <div key={tech.id} className="flex items-center gap-1 bg-surface border border-border px-2.5 py-1 rounded-full text-sm text-ink">
+                        <div key={tech.id} className="flex items-center gap-1 bg-surface border border-border px-2.5 py-1 rounded-full text-sm text-ink opacity-80">
                           <span>{tech.name}</span>
-                          <button
-                            type="button"
-                            onClick={() => handleTechToggle(tech.id)}
-                            className="text-muted hover:text-red-500 transition-colors"
-                          >
-                            <X size={14} />
-                          </button>
                         </div>
                       )
                     })}
@@ -462,42 +421,6 @@ export default function AdminWebsitesPage() {
                       <span className="text-sm text-muted">No technologies selected.</span>
                     )}
                   </div>
-
-                  {/* Add Technology Dropdown */}
-                  <SearchableDropdown
-                    options={technologies
-                      .filter(tech => !formData.technology_ids.includes(tech.id))
-                      .map(tech => ({ value: tech.id, label: tech.name }))}
-                    value=""
-                    onChange={(val) => {
-                      if (val) {
-                        handleTechToggle(parseInt(val))
-                      }
-                    }}
-                    placeholder="+ Add a technology..."
-                    createNewText="+ Create New Technology"
-                    onCreateNew={async (techName) => {
-                      try {
-                        const slug = techName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-                        
-                        const newTech = await adminTechnologies.create({ 
-                          name: techName, 
-                          slug: slug, 
-                          icon: 'globe', 
-                          icon_color: '#FF6B35',
-                          is_featured: false,
-                          is_popular: false,
-                          sort_order: 0
-                        });
-                        
-                        handleTechToggle(newTech.id);
-                        
-                        fetchData();
-                      } catch (err) {
-                        alert("Failed to create technology: " + err.message);
-                      }
-                    }}
-                  />
                 </div>
 
               </div>
@@ -508,18 +431,10 @@ export default function AdminWebsitesPage() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 text-sm font-medium text-ink bg-surface border border-border rounded-lg hover:bg-border/50 transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-on-brand bg-brand rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50"
-                >
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {editingId === 'new' ? 'Create Website' : 'Save Changes'}
+                  Close
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}

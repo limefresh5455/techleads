@@ -68,6 +68,35 @@ export function updateProfile({ name }) {
   })
 }
 
+export async function uploadMyAvatar(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  const token = localStorage.getItem('tl_token')
+  const host = (import.meta.env.VITE_API_URL || '').replace(/\/$/, '') || ''
+  const url = host ? `${host}/api/me/avatar` : '/api/me/avatar'
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers: {
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
+    body: formData
+  })
+  
+  const data = await res.json()
+  if (!res.ok) {
+    throw new Error(data?.detail || 'Avatar upload failed')
+  }
+  return data
+}
+
+export function removeMyAvatar() {
+  return request('/api/me/avatar', {
+    method: 'DELETE',
+  })
+}
+
 export function changePassword({ current_password, new_password }) {
   return request('/api/me/password', {
     method: 'POST',

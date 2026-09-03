@@ -1,5 +1,5 @@
-﻿import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, X, Loader2, Globe, Search, ChevronLeft, ChevronRight } from 'lucide-react'
+import { useState, useEffect } from 'react'
+import { Plus, Edit, Trash2, X, Loader2, Globe, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
 import { adminTechnologies, adminCategories } from '../adminApi'
 import SearchableDropdown from '../components/SearchableDropdown'
 
@@ -52,17 +52,7 @@ export default function AdminTechnologiesPage() {
     setPage(1)
   }
 
-  const handleOpenNew = () => {
-    setFormData({ 
-      name: '', slug: '', icon: 'globe', icon_color: '#FF6B35', 
-      category_id: categories.length > 0 ? categories[0].id : '', 
-      is_featured: true, is_popular: false, sort_order: 0, website_count: 0
-    })
-    setEditingId('new')
-    setIsModalOpen(true)
-  }
-
-  const handleOpenEdit = (item) => {
+  const handleOpenView = (item) => {
     setFormData({
       name: item.name,
       slug: item.slug,
@@ -76,25 +66,6 @@ export default function AdminTechnologiesPage() {
     })
     setEditingId(item.id)
     setIsModalOpen(true)
-  }
-
-  const handleSave = async (e) => {
-    e.preventDefault()
-    setSaving(true)
-    try {
-      const payload = { ...formData, category_id: formData.category_id ? parseInt(formData.category_id) : null }
-      if (editingId === 'new') {
-        await adminTechnologies.create(payload)
-      } else {
-        await adminTechnologies.update(editingId, payload)
-      }
-      setIsModalOpen(false)
-      fetchData()
-    } catch (err) {
-      alert('Error: ' + err.message)
-    } finally {
-      setSaving(false)
-    }
   }
 
   const handleDelete = async (id) => {
@@ -122,13 +93,6 @@ export default function AdminTechnologiesPage() {
           <Globe className="text-brand-dark shrink-0" />
           <span className="whitespace-nowrap">Technologies</span>
         </h1>
-        <button
-          onClick={handleOpenNew}
-          className="flex items-center justify-center gap-2 w-fit bg-brand text-on-brand px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors"
-        >
-          <Plus size={16} />
-          Add Technology
-        </button>
       </div>
 
       {error && (
@@ -178,11 +142,11 @@ export default function AdminTechnologiesPage() {
                     <td className="px-6 py-4">
                       <div className="flex items-center justify-end gap-2">
                         <button
-                          onClick={() => handleOpenEdit(item)}
+                          onClick={() => handleOpenView(item)}
                           className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                          title="Edit"
+                          title="View Details"
                         >
-                          <Edit size={16} />
+                          <Eye size={16} />
                         </button>
                         <button
                           onClick={() => handleDelete(item.id)}
@@ -236,7 +200,7 @@ export default function AdminTechnologiesPage() {
             <div className="flex items-center justify-between px-6 py-4 border-b border-border shrink-0">
               <h2 className="text-lg font-bold text-ink flex items-center gap-2">
                 <Globe className="text-brand-dark" size={24} />
-                {editingId === 'new' ? 'Add Technology' : 'Edit Technology'}
+                Technology Details
               </h2>
               <button
                 onClick={() => setIsModalOpen(false)}
@@ -246,7 +210,7 @@ export default function AdminTechnologiesPage() {
               </button>
             </div>
 
-            <form onSubmit={handleSave} className="flex flex-col flex-1 overflow-hidden">
+            <div className="flex flex-col flex-1 overflow-hidden">
               <div className="p-6 overflow-y-auto flex-1 space-y-4">
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -254,22 +218,18 @@ export default function AdminTechnologiesPage() {
                     <label className="block text-sm font-medium text-ink mb-1">Name</label>
                     <input
                       type="text"
-                      required
+                      readOnly
                       value={formData.name}
-                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                      placeholder="e.g. React"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-ink mb-1">Slug</label>
                     <input
                       type="text"
-                      required
+                      readOnly
                       value={formData.slug}
-                      onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                      placeholder="e.g. react"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                 </div>
@@ -279,60 +239,47 @@ export default function AdminTechnologiesPage() {
                     <label className="block text-sm font-medium text-ink mb-1">Icon (Lucide name)</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.icon}
-                      onChange={(e) => setFormData({ ...formData, icon: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                      placeholder="e.g. globe"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                   <div>
                     <label className="block text-sm font-medium text-ink mb-1">Icon Color (Hex)</label>
                     <input
                       type="text"
+                      readOnly
                       value={formData.icon_color}
-                      onChange={(e) => setFormData({ ...formData, icon_color: e.target.value })}
-                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand"
-                      placeholder="e.g. #FF6B35"
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
                 </div>
 
                 <div>
                   <label className="block text-sm font-medium text-ink mb-1">Category</label>
-                  <SearchableDropdown
-                    options={categories.map(cat => ({ value: cat.id, label: cat.name }))}
-                    value={formData.category_id}
-                    onChange={(val) => setFormData({ ...formData, category_id: val })}
-                    placeholder="Select a category..."
-                    createNewText="+ Create New Category"
-                    onCreateNew={async (catName) => {
-                      try {
-                        const slug = catName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
-                        const newCat = await adminCategories.create({ name: catName, slug: slug, icon: 'folder', sort_order: 0, item_count: 0 });
-                        setCategories(prev => [...prev, newCat]);
-                        setFormData(prev => ({ ...prev, category_id: newCat.id }));
-                      } catch (err) {
-                        alert("Failed to create category: " + err.message);
-                      }
-                    }}
+                  <input
+                    type="text"
+                    readOnly
+                    value={categories.find(c => c.id === formData.category_id)?.name || 'None'}
+                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                   />
                 </div>
 
                 <div className="flex gap-6 pt-2">
-                  <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm text-ink cursor-pointer opacity-80 pointer-events-none">
                     <input
                       type="checkbox"
+                      readOnly
                       checked={formData.is_featured}
-                      onChange={(e) => setFormData({ ...formData, is_featured: e.target.checked })}
                       className="w-4 h-4 rounded border-border text-brand focus:ring-brand"
                     />
                     Featured
                   </label>
-                  <label className="flex items-center gap-2 text-sm text-ink cursor-pointer">
+                  <label className="flex items-center gap-2 text-sm text-ink cursor-pointer opacity-80 pointer-events-none">
                     <input
                       type="checkbox"
+                      readOnly
                       checked={formData.is_popular}
-                      onChange={(e) => setFormData({ ...formData, is_popular: e.target.checked })}
                       className="w-4 h-4 rounded border-border text-brand focus:ring-brand"
                     />
                     Popular
@@ -347,18 +294,10 @@ export default function AdminTechnologiesPage() {
                   onClick={() => setIsModalOpen(false)}
                   className="px-4 py-2 text-sm font-medium text-ink bg-surface border border-border rounded-lg hover:bg-border/50 transition-colors"
                 >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-on-brand bg-brand rounded-lg hover:bg-brand/90 transition-colors disabled:opacity-50"
-                >
-                  {saving && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {editingId === 'new' ? 'Create Technology' : 'Save Changes'}
+                  Close
                 </button>
               </div>
-            </form>
+            </div>
           </div>
         </div>
       )}
