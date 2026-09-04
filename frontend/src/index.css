@@ -1,4 +1,4 @@
-@import "tailwindcss";
+@import 'tailwindcss';
 
 @custom-variant dark (&:where(.dark, .dark *));
 
@@ -70,7 +70,7 @@ html.dark {
 
   --color-on-brand: #111111;
 
-  --font-sans: "Plus Jakarta Sans", "Segoe UI", sans-serif;
+  --font-sans: 'Plus Jakarta Sans', 'Segoe UI', sans-serif;
 
   --animate-fade-up: fade-up 0.7s cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-fade-in: fade-in 0.6s ease both;
@@ -222,8 +222,7 @@ html.dark .text-brand {
     transform 0.2s ease,
     box-shadow 0.2s ease;
 
-  box-shadow:
-    0 8px 24px rgba(255, 210, 63, 0.28);
+  box-shadow: 0 8px 24px rgba(255, 210, 63, 0.28);
 }
 
 .btn-brand:hover {
@@ -231,8 +230,7 @@ html.dark .text-brand {
 
   transform: translateY(-1px);
 
-  box-shadow:
-    0 12px 28px rgba(255, 210, 63, 0.38);
+  box-shadow: 0 12px 28px rgba(255, 210, 63, 0.38);
 }
 
 .btn-brand:active {
@@ -251,15 +249,9 @@ html.dark .text-brand {
 }
 
 .card-hover:hover {
-  border-color:
-    color-mix(
-      in srgb,
-      var(--tl-brand) 55%,
-      var(--tl-border)
-    );
+  border-color: color-mix(in srgb, var(--tl-brand) 55%, var(--tl-border));
 
-  box-shadow:
-    0 14px 36px var(--tl-shadow);
+  box-shadow: 0 14px 36px var(--tl-shadow);
 
   transform: translateY(-3px);
 }
@@ -289,21 +281,11 @@ html.dark .text-brand {
    ============================================ */
 
 .brand-glow {
-  background:
-    radial-gradient(
-      ellipse at top,
-      rgba(255, 210, 63, 0.22),
-      transparent 55%
-    );
+  background: radial-gradient(ellipse at top, rgba(255, 210, 63, 0.22), transparent 55%);
 }
 
 html.dark .brand-glow {
-  background:
-    radial-gradient(
-      ellipse at top,
-      rgba(255, 210, 63, 0.12),
-      transparent 55%
-    );
+  background: radial-gradient(ellipse at top, rgba(255, 210, 63, 0.12), transparent 55%);
 }
 
 /* ============================================
@@ -311,13 +293,7 @@ html.dark .brand-glow {
    ============================================ */
 
 .brand-panel {
-  background:
-    linear-gradient(
-      135deg,
-      #ffd23f 0%,
-      #ffe07a 48%,
-      #ffd23f 100%
-    );
+  background: linear-gradient(135deg, #ffd23f 0%, #ffe07a 48%, #ffd23f 100%);
 
   background-size: 200% 200%;
 
@@ -348,21 +324,9 @@ html.dark .brand-glow {
 */
 
 .brand-panel
-  :is(
-    h1,
-    h2,
-    h3,
-    h4,
-    h5,
-    p,
-    span,
-    li,
-    label,
-    strong,
-    em,
-    small,
-    div
-  ):not(.bg-inverse):not([class*="bg-inverse"]) {
+  :is(h1, h2, h3, h4, h5, p, span, li, label, strong, em, small, div):not(.bg-inverse):not(
+    [class*='bg-inverse']
+  ) {
   color: inherit;
 }
 
@@ -371,7 +335,7 @@ html.dark .brand-glow {
 */
 
 .brand-panel :is(.text-ink, .text-muted),
-.brand-panel [class*="text-ink/"] {
+.brand-panel [class*='text-ink/'] {
   color: rgba(17, 17, 17, 0.78) !important;
 }
 

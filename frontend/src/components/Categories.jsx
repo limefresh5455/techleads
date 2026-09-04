@@ -1,7 +1,26 @@
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Icon, formatCount } from './icons'
+import Pagination from './Pagination'
+import { usePagination } from '../utils/pagination'
+import { ITEMS_PER_PAGE } from '../constants'
 
-export default function Categories({ categories = [], content, showHeader = true }) {
+export default function Categories({
+  categories = [],
+  content,
+  showHeader = true,
+  enableSearch = false,
+}) {
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    if (!enableSearch || !search) return categories
+    return categories.filter((c) => c.name.toLowerCase().includes(search.toLowerCase()))
+  }, [categories, search, enableSearch])
+
+  const pagination = usePagination(filtered, ITEMS_PER_PAGE)
+  const displayData = enableSearch ? pagination.currentData() : categories
+
   if (!content) return null
 
   return (
@@ -16,8 +35,23 @@ export default function Categories({ categories = [], content, showHeader = true
           </div>
         )}
 
-        <div className={`${showHeader ? 'mt-10' : ''} grid gap-4 sm:grid-cols-2 lg:grid-cols-3`}>
-          {categories.map((cat) => (
+        {enableSearch && (
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-xl font-bold text-ink">All Categories</h2>
+            <input
+              type="text"
+              placeholder="Search categories..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full sm:w-64 rounded-lg border border-border bg-card px-4 py-2 text-sm text-ink placeholder-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            />
+          </div>
+        )}
+
+        <div
+          className={`${showHeader && !enableSearch ? 'mt-10' : ''} grid gap-4 sm:grid-cols-2 lg:grid-cols-3`}
+        >
+          {displayData.map((cat) => (
             <Link
               key={cat.id}
               to="/categories"
@@ -33,6 +67,12 @@ export default function Categories({ categories = [], content, showHeader = true
             </Link>
           ))}
         </div>
+
+        {enableSearch && (
+          <div className="mt-8">
+            <Pagination {...pagination} />
+          </div>
+        )}
       </div>
     </section>
   )

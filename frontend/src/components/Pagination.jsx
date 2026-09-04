@@ -1,7 +1,7 @@
-import React from "react";
+import React from 'react'
 
 export default function Pagination({ currentPage, totalPages, next, prev }) {
-  if (totalPages <= 1) return null;
+  if (totalPages <= 1) return null
 
   return (
     <div className="flex items-center justify-between border-t border-border mt-8 pt-4">
@@ -23,5 +23,5 @@ export default function Pagination({ currentPage, totalPages, next, prev }) {
         Next
       </button>
     </div>
-  );
+  )
 }

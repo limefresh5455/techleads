@@ -15,7 +15,9 @@ export default function Enrichment({ content }) {
     <section className="bg-surface py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         <div className="mx-auto max-w-3xl text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{content.enrich_eyebrow}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+            {content.enrich_eyebrow}
+          </p>
           <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
             {content.enrich_title}
           </h2>
@@ -28,7 +30,10 @@ export default function Enrichment({ content }) {
               <p className="text-sm font-semibold text-ink">prospects.csv</p>
               <p className="text-xs text-muted">5 rows · Column: domain</p>
             </div>
-            <button type="button" className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-on-brand">
+            <button
+              type="button"
+              className="rounded-lg bg-brand px-3 py-1.5 text-xs font-semibold text-on-brand"
+            >
               Enrich 5 rows
             </button>
           </div>
@@ -52,7 +57,9 @@ export default function Enrichment({ content }) {
               </tbody>
             </table>
           </div>
-          <div className="border-t border-border px-4 py-3 text-xs text-muted">0 / 5 enriched · Download CSV</div>
+          <div className="border-t border-border px-4 py-3 text-xs text-muted">
+            0 / 5 enriched · Download CSV
+          </div>
         </div>
 
         <div className="mt-8 text-center">

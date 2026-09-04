@@ -5,9 +5,9 @@ export default function SearchableDropdown({
   options,
   value,
   onChange,
-  placeholder = "Select...",
+  placeholder = 'Select...',
   onCreateNew,
-  createNewText = "+ Create New"
+  createNewText = '+ Create New',
 }) {
   const [isOpen, setIsOpen] = useState(false)
   const [search, setSearch] = useState('')
@@ -27,11 +27,11 @@ export default function SearchableDropdown({
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
-  const filteredOptions = options.filter(opt => 
+  const filteredOptions = options.filter((opt) =>
     opt.label.toLowerCase().includes(search.toLowerCase())
   )
 
-  const selectedOption = options.find(opt => opt.value === value)
+  const selectedOption = options.find((opt) => opt.value === value)
 
   const handleCreate = async () => {
     if (!newValue.trim()) return
@@ -45,7 +45,7 @@ export default function SearchableDropdown({
 
   return (
     <div className="relative w-full" ref={dropdownRef}>
-      <div 
+      <div
         className="flex items-center justify-between w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink cursor-pointer hover:border-brand transition-colors"
         onClick={() => {
           setIsOpen(!isOpen)
@@ -56,7 +56,10 @@ export default function SearchableDropdown({
         <span className={selectedOption ? 'text-ink' : 'text-muted'}>
           {selectedOption ? selectedOption.label : placeholder}
         </span>
-        <ChevronDown size={18} className={`text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <ChevronDown
+          size={18}
+          className={`text-muted transition-transform ${isOpen ? 'rotate-180' : ''}`}
+        />
       </div>
 
       {isOpen && (
@@ -68,8 +71,8 @@ export default function SearchableDropdown({
                 type="text"
                 autoFocus
                 value={newValue}
-                onChange={e => setNewValue(e.target.value)}
-                onKeyDown={e => {
+                onChange={(e) => setNewValue(e.target.value)}
+                onKeyDown={(e) => {
                   if (e.key === 'Enter') {
                     e.preventDefault()
                     handleCreate()
@@ -104,11 +107,11 @@ export default function SearchableDropdown({
                   autoFocus
                   placeholder="Search..."
                   value={search}
-                  onChange={e => setSearch(e.target.value)}
+                  onChange={(e) => setSearch(e.target.value)}
                   className="w-full bg-canvas border border-border rounded-md pl-8 pr-3 py-1.5 text-sm text-ink focus:outline-none focus:border-brand"
                 />
               </div>
-              
+
               <div className="overflow-y-auto flex-1 p-1">
                 {onCreateNew && (
                   <button
@@ -122,7 +125,7 @@ export default function SearchableDropdown({
                 )}
 
                 {filteredOptions.length > 0 ? (
-                  filteredOptions.map(opt => (
+                  filteredOptions.map((opt) => (
                     <button
                       key={opt.value}
                       type="button"
@@ -137,9 +140,7 @@ export default function SearchableDropdown({
                     </button>
                   ))
                 ) : (
-                  <div className="px-3 py-4 text-center text-sm text-muted">
-                    No results found
-                  </div>
+                  <div className="px-3 py-4 text-center text-sm text-muted">No results found</div>
                 )}
               </div>
             </div>
@@ -149,5 +150,3 @@ export default function SearchableDropdown({
     </div>
   )
 }
-
-

@@ -7,9 +7,7 @@ function TechPill({ name, color, active, onClick }) {
       onClick={onClick}
       title={`Show sites using ${name}`}
       className={`inline-flex items-center text-left gap-1.5 rounded-lg border px-2.5 py-1.5 text-xs font-medium transition hover:-translate-y-0.5 hover:border-brand hover:shadow-sm ${
-        active
-          ? 'border-brand bg-brand/15 text-ink'
-          : 'border-border bg-card text-ink'
+        active ? 'border-brand bg-brand/15 text-ink' : 'border-border bg-card text-ink'
       }`}
     >
       <span
@@ -159,7 +157,9 @@ export default function SiteDetailsPanel({
               <span className="text-muted">Rank</span>
               <span className="font-bold text-brand">{site.rank}</span>
               {site.confidence_score > 0 ? (
-                <span className="ml-auto text-xs text-muted">Confidence {site.confidence_score}%</span>
+                <span className="ml-auto text-xs text-muted">
+                  Confidence {site.confidence_score}%
+                </span>
               ) : null}
             </div>
             <div className="flex items-center gap-2">
@@ -224,7 +224,9 @@ export default function SiteDetailsPanel({
         ) : null}
 
         <Section title="Primary Technologies">
-          <p className="mt-1 text-[11px] text-muted">Click a technology to filter the sites table</p>
+          <p className="mt-1 text-[11px] text-muted">
+            Click a technology to filter the sites table
+          </p>
           <div className="mt-2 flex flex-wrap gap-2">
             {site.technologies?.length ? (
               site.technologies.map((tech) => (
@@ -243,7 +245,9 @@ export default function SiteDetailsPanel({
         </Section>
 
         <Section title="All Detected Technologies">
-          <p className="mt-1 text-[11px] text-muted">Click a technology to filter the sites table</p>
+          <p className="mt-1 text-[11px] text-muted">
+            Click a technology to filter the sites table
+          </p>
           <ChipList
             items={site.all_detected_technologies}
             variant="brand"

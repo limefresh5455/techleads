@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useSiteData } from '../context/SiteDataContext'
-import AdminLoginPage from '../pages/AdminLoginPage'
+import { AdminLoginPage } from '../pages'
 import AdminLayout from '../layouts/AdminLayout'
 
 export default function AdminRoute() {
@@ -26,9 +26,13 @@ export default function AdminRoute() {
       <div className="flex h-screen flex-col items-center justify-center bg-page text-ink font-sans p-4">
         <h1 className="text-3xl font-bold tracking-tight">Unauthorized</h1>
         <p className="mt-3 text-muted text-center max-w-md">
-          You do not have permission to access the admin portal. If you believe this is an error, please contact support.
+          You do not have permission to access the admin portal. If you believe this is an error,
+          please contact support.
         </p>
-        <Link to="/" className="mt-6 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark transition-colors">
+        <Link
+          to="/"
+          className="mt-6 rounded-xl bg-brand px-6 py-3 text-sm font-semibold text-on-brand hover:bg-brand-dark transition-colors"
+        >
           Return to Home
         </Link>
       </div>

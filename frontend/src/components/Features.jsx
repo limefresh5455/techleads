@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ArrowRight, Puzzle } from 'lucide-react'
+import { Puzzle } from 'lucide-react'
 import { Icon } from './icons'
 
 export default function Features({ features = [], content }) {
@@ -23,7 +23,6 @@ export default function Features({ features = [], content }) {
               </div>
               <h3 className="mt-4 text-xl font-bold text-ink">{f.title}</h3>
               <p className="mt-2 text-sm leading-relaxed text-muted">{f.description}</p>
-
             </div>
           ))}
         </div>

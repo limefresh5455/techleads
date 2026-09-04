@@ -56,7 +56,7 @@ export default function DashboardNavbar() {
 
         <div className="flex items-center gap-3">
           <ThemeToggle />
-          
+
           {/* Desktop Right Side Content */}
           <div className="hidden items-center gap-3 lg:flex">
             <Link
@@ -86,7 +86,9 @@ export default function DashboardNavbar() {
                     {initial}
                   </span>
                 )}
-                <span className="max-w-[120px] truncate text-sm font-medium text-ink">{user.name}</span>
+                <span className="max-w-[120px] truncate text-sm font-medium text-ink">
+                  {user.name}
+                </span>
                 <ChevronDown className="h-4 w-4 text-muted" />
               </button>
               {menuOpen && (
@@ -123,17 +125,17 @@ export default function DashboardNavbar() {
             >
               {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
             </button>
-            
+
             {mobileMenuOpen && (
               <div className="absolute right-0 top-full z-50 mt-2 min-w-[260px] rounded-xl border border-border bg-card p-3 shadow-lg">
                 <div className="flex flex-col gap-1.5">
                   <div className="flex items-center gap-3 rounded-lg border border-border bg-surface/50 p-2.5">
                     {user.avatar_url ? (
-                      <img 
-                        src={user.avatar_url} 
-                        alt="" 
-                        className="h-9 w-9 rounded-full object-cover" 
-                        referrerPolicy="no-referrer" 
+                      <img
+                        src={user.avatar_url}
+                        alt=""
+                        className="h-9 w-9 rounded-full object-cover"
+                        referrerPolicy="no-referrer"
                       />
                     ) : (
                       <span className="grid h-9 w-9 place-items-center rounded-full bg-brand text-sm font-bold text-on-brand">
@@ -142,10 +144,12 @@ export default function DashboardNavbar() {
                     )}
                     <div className="flex flex-col">
                       <span className="text-sm font-medium text-ink">{user.name}</span>
-                      <span className="text-xs text-muted">{user.credits?.toLocaleString?.() ?? user.credits ?? 0} credits</span>
+                      <span className="text-xs text-muted">
+                        {user.credits?.toLocaleString?.() ?? user.credits ?? 0} credits
+                      </span>
                     </div>
                   </div>
-                  
+
                   <Link
                     to="/pricing"
                     onClick={() => setMobileMenuOpen(false)}
@@ -153,7 +157,7 @@ export default function DashboardNavbar() {
                   >
                     Upgrade
                   </Link>
-                  
+
                   <Link
                     to="/account"
                     className="block rounded-lg px-3 py-2 text-center text-sm font-medium text-ink hover:bg-surface"
@@ -161,7 +165,7 @@ export default function DashboardNavbar() {
                   >
                     Manage account
                   </Link>
-                  
+
                   <button
                     type="button"
                     onClick={() => {

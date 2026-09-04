@@ -28,7 +28,11 @@ export default function Navbar() {
   const { data, user, logout } = useSiteData()
   const content = data.content
   const items = (data.nav_items || []).filter(
-    (item) => item.href !== '/custom-data' && item.label?.toLowerCase() !== 'custom data' && item.href !== '/tools' && item.label?.toLowerCase() !== 'tools',
+    (item) =>
+      item.href !== '/custom-data' &&
+      item.label?.toLowerCase() !== 'custom data' &&
+      item.href !== '/tools' &&
+      item.label?.toLowerCase() !== 'tools'
   )
   const [scrolled, setScrolled] = useState(false)
   const [open, setOpen] = useState(false)
@@ -86,7 +90,10 @@ export default function Navbar() {
                 </button>
                 {toolsOpen && (
                   <div className="absolute left-0 top-full z-50 mt-2 min-w-64 rounded-xl border border-border bg-card p-2 shadow-lg">
-                    <Link to={item.href} className="block rounded-lg px-3 py-2 text-sm font-semibold text-ink hover:bg-surface">
+                    <Link
+                      to={item.href}
+                      className="block rounded-lg px-3 py-2 text-sm font-semibold text-ink hover:bg-surface"
+                    >
                       {item.label}
                     </Link>
                     {(item.children || []).map((child) => (
@@ -105,7 +112,7 @@ export default function Navbar() {
               <NavLink key={item.id} to={item.href} className={linkClass}>
                 {item.label}
               </NavLink>
-            ),
+            )
           )}
         </nav>
 
@@ -150,35 +157,58 @@ export default function Navbar() {
             <div className="absolute right-0 top-full z-50 mt-2 min-w-[260px] rounded-xl border border-border bg-card p-3 shadow-lg">
               <div className="flex flex-col gap-1.5">
                 {items.map((item) => (
-                  <div key={item.id} className="mb-1 border-b border-border/50 pb-1.5 last:mb-0 last:border-0 last:pb-0">
-                    <Link to={item.href} className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-surface" onClick={() => setOpen(false)}>
+                  <div
+                    key={item.id}
+                    className="mb-1 border-b border-border/50 pb-1.5 last:mb-0 last:border-0 last:pb-0"
+                  >
+                    <Link
+                      to={item.href}
+                      className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-surface"
+                      onClick={() => setOpen(false)}
+                    >
                       {item.label}
                     </Link>
                     {(item.children || []).map((child) => (
-                      <Link key={child.id} to={child.href} className="block rounded-lg px-3 py-1.5 pl-6 text-sm text-muted hover:bg-surface hover:text-ink" onClick={() => setOpen(false)}>
+                      <Link
+                        key={child.id}
+                        to={child.href}
+                        className="block rounded-lg px-3 py-1.5 pl-6 text-sm text-muted hover:bg-surface hover:text-ink"
+                        onClick={() => setOpen(false)}
+                      >
                         {child.label}
                       </Link>
                     ))}
                   </div>
                 ))}
-                
+
                 <div className="my-1 h-px w-full bg-border" />
-                
+
                 {user ? (
                   <>
                     <div className="px-3 py-1.5 text-xs font-medium uppercase tracking-wider text-muted">
                       Hi, {user.name.split(' ')[0]}
                     </div>
-                    <button type="button" onClick={() => { setOpen(false); logout(); }} className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOpen(false)
+                        logout()
+                      }}
+                      className="block w-full rounded-lg px-3 py-2 text-left text-sm font-medium text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/30"
+                    >
                       Log out
                     </button>
                   </>
                 ) : (
-                  <Link to="/login" onClick={() => setOpen(false)} className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-surface">
+                  <Link
+                    to="/login"
+                    onClick={() => setOpen(false)}
+                    className="block rounded-lg px-3 py-2 text-sm font-medium text-ink hover:bg-surface"
+                  >
                     {content.login_label}
                   </Link>
                 )}
-                
+
                 <Link
                   to={user ? '/dashboard' : '/signup'}
                   onClick={() => setOpen(false)}

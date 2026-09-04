@@ -8,7 +8,9 @@ export default function PopularTechnologies({ content, technologies = [] }) {
     <section className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
         <div className="text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">{content.popular_eyebrow}</p>
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand">
+            {content.popular_eyebrow}
+          </p>
           <h2 className="mt-3 text-3xl font-extrabold tracking-tight text-ink md:text-4xl">
             {content.popular_title}
           </h2>

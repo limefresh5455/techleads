@@ -1,6 +1,6 @@
 import { Outlet } from 'react-router-dom'
-import DashboardNavbar from '../components/DashboardNavbar'
-import Footer from '../components/Footer'
+import { DashboardNavbar } from '../components'
+import { Footer } from '../components'
 import { useSiteData } from '../context/SiteDataContext'
 
 export default function DashboardLayout() {

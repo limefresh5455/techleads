@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { submitContact } from '../api'
+import { submitContact } from '../services'
 
 export default function Contact({ content, showHeader = true }) {
   const [form, setForm] = useState({
@@ -38,8 +38,6 @@ export default function Contact({ content, showHeader = true }) {
   return (
     <section id="contact" className="bg-card py-16 md:py-20">
       <div className="mx-auto max-w-7xl px-4 lg:px-6">
-
-
         <div className="mx-auto max-w-xl">
           {showHeader && (
             <div className="text-center">

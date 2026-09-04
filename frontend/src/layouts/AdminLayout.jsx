@@ -1,12 +1,32 @@
 import { Outlet, Link, NavLink, useNavigate } from 'react-router-dom'
 import { useState } from 'react'
-import { 
-  LogOut, Home, CreditCard, FileText, 
-  LayoutTemplate, HelpCircle, Share2, Navigation, Shield, ShoppingCart, 
-  LayoutDashboard, Sparkles, Users, MessageSquare, Menu, X, Globe, Database, Blocks, ListTree, Folder, Link as LinkIcon, User, Settings
+import {
+  LogOut,
+  Home,
+  CreditCard,
+  FileText,
+  LayoutTemplate,
+  HelpCircle,
+  Share2,
+  Navigation,
+  Shield,
+  LayoutDashboard,
+  Sparkles,
+  Users,
+  MessageSquare,
+  Menu,
+  X,
+  Globe,
+  Database,
+  Blocks,
+  ListTree,
+  Folder,
+  Link as LinkIcon,
+  User,
+  Settings,
 } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
-import ThemeToggle from '../components/ThemeToggle'
+import { ThemeToggle } from '../components'
 
 export default function AdminLayout() {
   const { logout, user, data } = useSiteData()
@@ -44,16 +64,22 @@ export default function AdminLayout() {
     <div className="flex h-screen bg-canvas overflow-hidden relative">
       {/* Mobile overlay */}
       {sidebarOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-40 bg-black/50 lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-card flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 w-64 border-r border-border bg-card flex flex-col transform transition-transform duration-200 ease-in-out lg:translate-x-0 lg:static ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}
+      >
         <div className="h-16 flex items-center px-6 border-b border-border justify-between lg:justify-start shrink-0">
-          <Link to="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setSidebarOpen(false)}>
+          <Link
+            to="/"
+            className="flex items-center gap-2.5 shrink-0"
+            onClick={() => setSidebarOpen(false)}
+          >
             <span className="grid h-8 w-8 place-items-center rounded-xl bg-brand shadow-sm shadow-brand/30">
               <svg viewBox="0 0 32 32" className="h-4 w-4 text-ink" aria-hidden="true">
                 <path
@@ -68,7 +94,10 @@ export default function AdminLayout() {
               <span className="text-brand-dark">{data?.content?.brand_suffix || '.Ai'}</span>
             </span>
           </Link>
-          <button className="lg:hidden text-muted hover:text-ink" onClick={() => setSidebarOpen(false)}>
+          <button
+            className="lg:hidden text-muted hover:text-ink"
+            onClick={() => setSidebarOpen(false)}
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -95,18 +124,22 @@ export default function AdminLayout() {
         <div className="p-4 border-t border-border space-y-2 shrink-0">
           <div className="flex items-center gap-3 px-1 group">
             {user?.avatar_url ? (
-               <img src={user.avatar_url} alt="Avatar" className="w-10 h-10 rounded-full object-cover bg-surface shrink-0" />
+              <img
+                src={user.avatar_url}
+                alt="Avatar"
+                className="w-10 h-10 rounded-full object-cover bg-surface shrink-0"
+              />
             ) : (
-               <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand shrink-0">
-                 <User size={20} />
-               </div>
+              <div className="w-10 h-10 rounded-full bg-brand/10 flex items-center justify-center text-brand shrink-0">
+                <User size={20} />
+              </div>
             )}
             <div className="flex-1 min-w-0">
-               <p className="truncate text-sm font-semibold text-ink">{user?.name}</p>
-               <p className="truncate text-xs text-muted">{user?.email}</p>
+              <p className="truncate text-sm font-semibold text-ink">{user?.name}</p>
+              <p className="truncate text-xs text-muted">{user?.email}</p>
             </div>
-            <Link 
-              to="/admin/profile" 
+            <Link
+              to="/admin/profile"
               className="p-1.5 text-muted hover:text-ink hover:bg-surface rounded-lg transition-all shrink-0"
               title="Profile Settings"
             >
@@ -145,7 +178,3 @@ export default function AdminLayout() {
     </div>
   )
 }
-
-
-
-

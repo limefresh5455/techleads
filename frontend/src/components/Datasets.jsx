@@ -1,8 +1,27 @@
+import { useState, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 import { Icon, formatCount } from './icons'
+import Pagination from './Pagination'
+import { usePagination } from '../utils/pagination'
+import { ITEMS_PER_PAGE } from '../constants'
 
-export default function Datasets({ technologies = [], content, showHeader = true }) {
+export default function Datasets({
+  technologies = [],
+  content,
+  showHeader = true,
+  enableSearch = false,
+}) {
+  const [search, setSearch] = useState('')
+
+  const filtered = useMemo(() => {
+    if (!enableSearch || !search) return technologies
+    return technologies.filter((t) => t.name.toLowerCase().includes(search.toLowerCase()))
+  }, [technologies, search, enableSearch])
+
+  const pagination = usePagination(filtered, ITEMS_PER_PAGE)
+  const displayData = enableSearch ? pagination.currentData() : technologies
+
   if (!content) return null
 
   return (
@@ -17,8 +36,23 @@ export default function Datasets({ technologies = [], content, showHeader = true
           </div>
         )}
 
-        <div className={`${showHeader ? 'mt-10' : ''} grid gap-4 sm:grid-cols-2 lg:grid-cols-3`}>
-          {technologies.map((tech) => (
+        {enableSearch && (
+          <div className="mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <h2 className="text-xl font-bold text-ink">All Technologies</h2>
+            <input
+              type="text"
+              placeholder="Search technologies..."
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="w-full sm:w-64 rounded-lg border border-border bg-surface px-4 py-2 text-sm text-ink placeholder-muted focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand"
+            />
+          </div>
+        )}
+
+        <div
+          className={`${showHeader && !enableSearch ? 'mt-10' : ''} grid gap-4 sm:grid-cols-2 lg:grid-cols-3`}
+        >
+          {displayData.map((tech) => (
             <Link
               key={tech.id}
               to="/technologies"
@@ -46,14 +80,22 @@ export default function Datasets({ technologies = [], content, showHeader = true
           ))}
         </div>
 
-        <div className="mt-10 text-center">
-          <Link
-            to="/technologies"
-            className="inline-flex rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
-          >
-            {content.datasets_cta}
-          </Link>
-        </div>
+        {enableSearch && (
+          <div className="mt-8">
+            <Pagination {...pagination} />
+          </div>
+        )}
+
+        {!enableSearch && (
+          <div className="mt-10 text-center">
+            <Link
+              to="/technologies"
+              className="inline-flex rounded-xl border border-border bg-card px-6 py-3 text-sm font-semibold text-ink hover:border-brand hover:text-brand"
+            >
+              {content.datasets_cta}
+            </Link>
+          </div>
+        )}
       </div>
     </section>
   )

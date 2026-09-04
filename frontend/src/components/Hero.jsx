@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Loader2, Search } from 'lucide-react'
-import { detectUrl } from '../api'
+import { detectUrl } from '../services'
 import { useSiteData } from '../context/SiteDataContext'
 
 export default function Hero({ content, dashboardPreviews = [] }) {
@@ -92,7 +92,10 @@ export default function Hero({ content, dashboardPreviews = [] }) {
               </thead>
               <tbody>
                 {dashboardPreviews.map((row) => (
-                  <tr key={row.id} className="border-t border-border/70 transition hover:bg-brand/5">
+                  <tr
+                    key={row.id}
+                    className="border-t border-border/70 transition hover:bg-brand/5"
+                  >
                     <td className="px-4 py-3 font-medium text-ink">{row.domain}</td>
                     <td className="px-4 py-3 text-muted">{row.categories}</td>
                     <td className="px-4 py-3 text-muted">{row.technologies}</td>

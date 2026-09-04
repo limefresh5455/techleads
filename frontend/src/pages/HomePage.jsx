@@ -1,9 +1,9 @@
-import Hero from '../components/Hero'
-import PopularTechnologies from '../components/PopularTechnologies'
-import FeatureBento from '../components/FeatureBento'
-import WhatWeDetect from '../components/WhatWeDetect'
-import Enrichment from '../components/Enrichment'
-import FinalCta from '../components/FinalCta'
+import { Hero } from '../components'
+import { PopularTechnologies } from '../components'
+import { FeatureBento } from '../components'
+import { WhatWeDetect } from '../components'
+import { Enrichment } from '../components'
+import { FinalCta } from '../components'
 import { useSiteData } from '../context/SiteDataContext'
 
 export default function HomePage() {

@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { MessageCircle } from 'lucide-react'
+// import { MessageCircle } from 'lucide-react'
 import { useSiteData } from '../context/SiteDataContext'
 
 const SOCIAL_PATHS = {
@@ -11,12 +11,7 @@ const SOCIAL_PATHS = {
     'M12 7.2A4.8 4.8 0 1 0 12 16.8 4.8 4.8 0 0 0 12 7.2zm0 7.9A3.1 3.1 0 1 1 12 8.9a3.1 3.1 0 0 1 0 6.2zm5.1-8.2a1.1 1.1 0 1 1-2.2 0 1.1 1.1 0 0 1 2.2 0zM12 3.5c-2.3 0-2.6 0-3.5.1-.9 0-1.5.2-2 .4a4 4 0 0 0-1.5 1 4 4 0 0 0-1 1.5c-.2.5-.3 1.1-.4 2-.1.9-.1 1.2-.1 3.5s0 2.6.1 3.5c0 .9.2 1.5.4 2a4 4 0 0 0 1 1.5 4 4 0 0 0 1.5 1c.5.2 1.1.3 2 .4.9.1 1.2.1 3.5.1s2.6 0 3.5-.1c.9 0 1.5-.2 2-.4a4 4 0 0 0 1.5-1 4 4 0 0 0 1-1.5c.2-.5.3-1.1.4-2 .1-.9.1-1.2.1-3.5s0-2.6-.1-3.5c0-.9-.2-1.5-.4-2a4 4 0 0 0-1-1.5 4 4 0 0 0-1.5-1c-.5-.2-1.1-.3-2-.4-.9-.1-1.2-.1-3.5-.1zm0 1.5c2.3 0 2.5 0 3.4.1.8 0 1.2.2 1.5.3.4.1.6.3.9.6.3.3.5.5.6.9.1.3.3.7.3 1.5.1.9.1 1.1.1 3.4s0 2.5-.1 3.4c0 .8-.2 1.2-.3 1.5-.1.4-.3.6-.6.9-.3.3-.5.5-.9.6-.3.1-.7.3-1.5.3-.9.1-1.1.1-3.4.1s-2.5 0-3.4-.1c-.8 0-1.2-.2-1.5-.3-.4-.1-.6-.3-.9-.6-.3-.3-.5-.5-.6-.9-.1-.3-.3-.7-.3-1.5-.1-.9-.1-1.1-.1-3.4s0-2.5.1-3.4c0-.8.2-1.2.3-1.5.1-.4.3-.6.6-.9.3-.3.5-.5.9-.6.3-.1.7-.3 1.5-.3.9-.1 1.1-.1 3.4-.1z',
 }
 
-export default function Footer({
-  content,
-  footerColumns = [],
-  socialLinks = [],
-  legalLinks = [],
-}) {
+export default function Footer({ content, footerColumns = [], socialLinks = [], legalLinks = [] }) {
   const { user } = useSiteData()
   if (!content) return null
 
@@ -52,7 +47,9 @@ export default function Footer({
                 <span className="text-brand-dark">{content.brand_suffix}</span>
               </span>
             </Link>
-            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">{content.footer_about}</p>
+            <p className="mt-4 max-w-sm text-sm leading-relaxed text-muted">
+              {content.footer_about}
+            </p>
             <div className="mt-5 flex items-center gap-3">
               {socialLinks.map((icon) => (
                 <a
@@ -101,13 +98,13 @@ export default function Footer({
         </div>
       </div>
 
-      <Link
+      {/* <Link
         to="/contact-us"
         className="fixed bottom-5 right-5 z-50 inline-flex items-center gap-2 rounded-full bg-brand px-4 py-3 text-sm font-semibold text-on-brand shadow-lg shadow-brand/40 transition hover:-translate-y-1 hover:bg-brand-dark"
       >
         <MessageCircle className="h-4 w-4" />
         {content.chat_label}
-      </Link>
+      </Link> */}
     </footer>
   )
 }

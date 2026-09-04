@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Check, Loader2 } from 'lucide-react'
-import { createCheckoutSession } from '../api'
+import { createCheckoutSession } from '../services'
 import { useSiteData } from '../context/SiteDataContext'
 
 const BULK_QTY_OPTIONS = [1, 5, 10, 25, 100]
@@ -152,7 +152,10 @@ export default function Pricing({ plans = [], content, showHeader = true }) {
             {estimate.price} — enough for {estimate.credits.toLocaleString()} technology exports (1
             credit each). Bulk starts at <span className="font-semibold">$29 / technology</span>.
           </p>
-          <Link to="/pricing" className="mt-4 inline-flex text-sm font-semibold text-brand hover:underline">
+          <Link
+            to="/pricing"
+            className="mt-4 inline-flex text-sm font-semibold text-brand hover:underline"
+          >
             Compare all plans →
           </Link>
         </div>

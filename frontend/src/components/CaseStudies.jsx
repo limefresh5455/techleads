@@ -14,10 +14,7 @@ export default function CaseStudies({ content, caseStudies = [] }) {
 
         <div className="mt-10 grid gap-5 text-left md:grid-cols-3">
           {caseStudies.map((study) => (
-            <article
-              key={study.id}
-              className="rounded-2xl border border-border bg-surface p-6"
-            >
+            <article key={study.id} className="rounded-2xl border border-border bg-surface p-6">
               <div className="flex items-center justify-between gap-3">
                 <h3 className="font-bold text-ink">{study.company}</h3>
                 <span className="rounded-full bg-brand/10 px-2.5 py-1 text-xs font-semibold text-brand">

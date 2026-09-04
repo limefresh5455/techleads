@@ -1,24 +1,15 @@
 import { Link } from 'react-router-dom'
 import { Coins, Zap } from 'lucide-react'
 
-export default function CreditsPanel({
-  results,
-  onExport,
-  exporting,
-  selectedTechCount = 0,
-}) {
+export default function CreditsPanel({ results, onExport, exporting, selectedTechCount = 0 }) {
   const credits = results?.user_credits ?? 0
   const freeLimit = results?.free_limit ?? 10
   const totalFiltered = results?.total_filtered ?? 0
   const accessible = results?.accessible_records ?? freeLimit
   const exportCost = Math.max(0, selectedTechCount)
   const previewOnly = selectedTechCount === 0
-  const exportRecords = previewOnly
-    ? Math.min(accessible, freeLimit, totalFiltered)
-    : totalFiltered
-  const canExport = previewOnly
-    ? exportRecords > 0
-    : exportRecords > 0 && credits >= exportCost
+  const exportRecords = previewOnly ? Math.min(accessible, freeLimit, totalFiltered) : totalFiltered
+  const canExport = previewOnly ? exportRecords > 0 : exportRecords > 0 && credits >= exportCost
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 shadow-sm">

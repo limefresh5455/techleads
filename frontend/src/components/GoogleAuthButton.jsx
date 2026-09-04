@@ -17,7 +17,10 @@ export function getGoogleAuthUrl(redirectPath = '/dashboard') {
   return `${resolveApiBase()}/api/auth/google?${params.toString()}`
 }
 
-export default function GoogleAuthButton({ label = 'Continue with Google', redirect = '/dashboard' }) {
+export default function GoogleAuthButton({
+  label = 'Continue with Google',
+  redirect = '/dashboard',
+}) {
   return (
     <button
       type="button"

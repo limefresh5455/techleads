@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
-import { fetchLanding, fetchMe } from '../api'
+import { fetchLanding, fetchMe } from '../services'
 
 const empty = {
   content: null,
@@ -69,7 +69,7 @@ export function SiteDataProvider({ children }) {
             })
           }
         })
-        .catch(err => console.error("Failed to fetch user profile", err))
+        .catch((err) => console.error('Failed to fetch user profile', err))
     }
   }, [refreshData])
 
@@ -77,7 +77,7 @@ export function SiteDataProvider({ children }) {
     localStorage.setItem('tl_token', payload.token)
     localStorage.setItem('tl_user', JSON.stringify(payload.user))
     setUser(payload.user)
-    
+
     fetchMe()
       .then((meData) => {
         if (meData) {
@@ -88,7 +88,7 @@ export function SiteDataProvider({ children }) {
           })
         }
       })
-      .catch(err => console.error("Failed to fetch user profile after login", err))
+      .catch((err) => console.error('Failed to fetch user profile after login', err))
   }, [])
 
   const updateUserCredits = useCallback((credits) => {
@@ -115,8 +115,7 @@ export function SiteDataProvider({ children }) {
   }, [])
 
   const value = useMemo(
-    () => ({ data, loading, error, user, setAuth, updateUser, updateUserCredits, logout, refreshData }),
-    [
+    () => ({
       data,
       loading,
       error,
@@ -126,7 +125,8 @@ export function SiteDataProvider({ children }) {
       updateUserCredits,
       logout,
       refreshData,
-    ]
+    }),
+    [data, loading, error, user, setAuth, updateUser, updateUserCredits, logout, refreshData]
   )
 
   return <SiteDataContext.Provider value={value}>{children}</SiteDataContext.Provider>
