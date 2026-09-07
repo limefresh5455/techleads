@@ -68,6 +68,7 @@ export default function LoginPage() {
                 <Link
                   tabIndex={-1}
                   to="/forgot-password"
+                  state={{ from: '/login' }}
                   className="text-xs font-medium text-brand hover:underline"
                 >
                   Forgot password?

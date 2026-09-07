@@ -1,10 +1,12 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { sendOtp, verifyOtp, resetPassword } from '../../services'
 
 export default function ForgotPasswordPage() {
   const navigate = useNavigate()
+  const location = useLocation()
+  const from = location.state?.from || '/login'
 
   const [step, setStep] = useState(1)
   const [email, setEmail] = useState('')
@@ -66,7 +68,7 @@ export default function ForgotPasswordPage() {
       await resetPassword({ email, new_password: password })
       setSuccess('Password has been reset successfully. Redirecting to login...')
       setTimeout(() => {
-        navigate('/login')
+        navigate(from)
       }, 2500)
     } catch (err) {
       setError(err.message || 'Failed to reset password')
@@ -79,7 +81,7 @@ export default function ForgotPasswordPage() {
     <section className="bg-gradient-to-b from-hero to-page py-12 md:py-16 min-h-[80vh] flex flex-col justify-center">
       <div className="mx-auto w-full max-w-md px-4">
         <Link
-          to="/login"
+          to={from}
           className="mb-6 inline-flex items-center text-sm font-medium text-muted hover:text-ink"
         >
           <ArrowLeft className="mr-2 h-4 w-4" />

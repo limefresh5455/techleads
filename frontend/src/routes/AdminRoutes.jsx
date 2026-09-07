@@ -23,9 +23,12 @@ import {
   AdminProfilePage,
 } from '../pages'
 
+import { ForgotPasswordPage } from '../pages'
+
 export default function AdminRoutes() {
   return (
     <Routes>
+      <Route path="forgot-password" element={<ForgotPasswordPage />} />
       <Route element={<AdminRoute />}>
         <Route index element={<AdminDashboardPage />} />
         <Route path="profile" element={<AdminProfilePage />} />

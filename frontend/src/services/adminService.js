@@ -59,8 +59,6 @@ export const adminUsers = {
 }
 
 export const adminImports = {
-  importTechnologies: () => apiClient.post('/api/technologies/import-techleads'),
-  importWebsites: () => apiClient.post('/api/websites/import-techleads'),
   uploadCsv: async (file) => {
     const formData = new FormData()
     formData.append('file', file)

@@ -1,7 +1,7 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { login } from '../../services'
 import { useSiteData } from '../../context/SiteDataContext'
-
 export default function AdminLoginPage() {
   const { setAuth } = useSiteData()
   const [form, setForm] = useState({ email: '', password: '' })
@@ -58,6 +58,16 @@ export default function AdminLoginPage() {
                 onChange={(e) => setForm({ ...form, password: e.target.value })}
               />
             </label>
+          </div>
+
+          <div className="flex items-center justify-between">
+            <Link
+              to="/admin/forgot-password"
+              state={{ from: '/admin' }}
+              className="text-sm font-medium text-brand hover:text-brand-dark"
+            >
+              Forgot password?
+            </Link>
           </div>
 
           <div>

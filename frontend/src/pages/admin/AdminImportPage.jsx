@@ -3,41 +3,9 @@ import { Database, FileUp, Globe, Cpu, Loader2, CheckCircle2, AlertCircle } from
 import { adminImports } from '../../services'
 
 export default function AdminImportPage() {
-  const [techLoading, setTechLoading] = useState(false)
-  const [techStatus, setTechStatus] = useState(null)
-
-  const [webLoading, setWebLoading] = useState(false)
-  const [webStatus, setWebStatus] = useState(null)
-
   const [csvFile, setCsvFile] = useState(null)
   const [csvLoading, setCsvLoading] = useState(false)
   const [csvStatus, setCsvStatus] = useState(null)
-
-  const handleImportTech = async () => {
-    setTechLoading(true)
-    setTechStatus(null)
-    try {
-      await adminImports.importTechnologies()
-      setTechStatus({ type: 'success', message: 'Technology import started in the background.' })
-    } catch (err) {
-      setTechStatus({ type: 'error', message: err.message || 'Failed to start import' })
-    } finally {
-      setTechLoading(false)
-    }
-  }
-
-  const handleImportWeb = async () => {
-    setWebLoading(true)
-    setWebStatus(null)
-    try {
-      await adminImports.importWebsites()
-      setWebStatus({ type: 'success', message: 'Websites import started in the background.' })
-    } catch (err) {
-      setWebStatus({ type: 'error', message: err.message || 'Failed to start import' })
-    } finally {
-      setWebLoading(false)
-    }
-  }
 
   const handleCsvUpload = async (e) => {
     e.preventDefault()
@@ -66,80 +34,6 @@ export default function AdminImportPage() {
           <Database className="text-brand-dark shrink-0" />
           <span className="whitespace-nowrap">Data Imports</span>
         </h1>
-      </div>
-
-      <div className="grid md:grid-cols-2 gap-6">
-        {/* Import Technologies */}
-        <div className="bg-surface border border-border rounded-xl p-6 flex flex-col space-y-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-brand/10 text-brand rounded-lg">
-              <Cpu size={24} className="text-brand-dark" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-ink">Import Technologies</h2>
-              <p className="text-sm text-muted">Fetch and update latest technologies.</p>
-            </div>
-          </div>
-
-          {techStatus && (
-            <div
-              className={`p-3 rounded-lg text-sm flex gap-2 items-start ${techStatus.type === 'success' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}
-            >
-              {techStatus.type === 'success' ? (
-                <CheckCircle2 size={18} className="shrink-0" />
-              ) : (
-                <AlertCircle size={18} className="shrink-0" />
-              )}
-              <span>{techStatus.message}</span>
-            </div>
-          )}
-
-          <button
-            onClick={handleImportTech}
-            disabled={techLoading}
-            className="mt-auto flex items-center justify-center gap-2 w-full bg-brand text-on-brand px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors disabled:opacity-50"
-          >
-            {techLoading ? (
-              <Loader2 size={16} className="animate-spin" />
-            ) : (
-              'Start Technology Import'
-            )}
-          </button>
-        </div>
-
-        {/* Import Websites */}
-        <div className="bg-surface border border-border rounded-xl p-6 flex flex-col space-y-4">
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-3 bg-brand/10 text-brand rounded-lg">
-              <Globe size={24} className="text-brand-dark" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold text-ink">Import Websites</h2>
-              <p className="text-sm text-muted">Fetch and update latest websites.</p>
-            </div>
-          </div>
-
-          {webStatus && (
-            <div
-              className={`p-3 rounded-lg text-sm flex gap-2 items-start ${webStatus.type === 'success' ? 'bg-green-500/10 text-green-600' : 'bg-red-500/10 text-red-600'}`}
-            >
-              {webStatus.type === 'success' ? (
-                <CheckCircle2 size={18} className="shrink-0" />
-              ) : (
-                <AlertCircle size={18} className="shrink-0" />
-              )}
-              <span>{webStatus.message}</span>
-            </div>
-          )}
-
-          <button
-            onClick={handleImportWeb}
-            disabled={webLoading}
-            className="mt-auto flex items-center justify-center gap-2 w-full bg-brand text-on-brand px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand/90 transition-colors disabled:opacity-50"
-          >
-            {webLoading ? <Loader2 size={16} className="animate-spin" /> : 'Start Website Import'}
-          </button>
-        </div>
       </div>
 
       {/* CSV Upload */}
