@@ -23,73 +23,139 @@ TECH_COLORS = {
 }
 
 
-def detect_and_store(db: Session, raw_url: str, *, use_techleads_api: bool | None = None) -> Website:
+import threading
+from datetime import timedelta
+
+# In-memory lock to prevent simultaneous duplicate processing of the same domain
+_PROCESSING_DOMAINS_LOCK = threading.Lock()
+_PROCESSING_DOMAINS: set[str] = set()
+
+def detect_and_store(db: Session, raw_url: str, *, use_techleads_api: bool | None = None, force_refresh: bool = False) -> Website:
     started = time.perf_counter()
     url = normalize_url(raw_url)
     domain = extract_domain(url)
 
-    crawl = crawl_url(url)
-    signals = extract_signals(crawl.html, crawl.headers, crawl.final_url)
-    signals["final_url"] = crawl.final_url
+    # 1. Check database cache first (unless forced)
+    if not force_refresh:
+        existing = db.query(Website).filter(Website.domain == domain).first()
+        if existing and existing.enriched_json and existing.last_crawled_at:
+            # If crawled within the last 7 days, reuse it.
+            # Assuming last_crawled_at is a naive datetime in UTC or aware.
+            now = datetime.now(timezone.utc).replace(tzinfo=None)
+            crawled_at = existing.last_crawled_at.replace(tzinfo=None) if existing.last_crawled_at else datetime.min
+            if now - crawled_at < timedelta(days=7):
+                existing._crawl_ms = 0
+                return existing
 
-    # Optional TechLeads.fyi API lookup (1 credit) — authoritative tech stack
-    cfg = Settings()
-    api_enabled = cfg.techleads_api_enabled if use_techleads_api is None else use_techleads_api
-    api_techs: list[str] = []
-    if api_enabled and cfg.techleads_api_key.strip():
-        try:
-            lookup = lookup_website(url)
-            if not lookup.get("error"):
-                signals = merge_lookup_into_signals(signals, lookup)
-                api_techs = tech_names_from_lookup(lookup)
-                page_meta = lookup.get("page_meta") or {}
-                if isinstance(page_meta, dict) and page_meta.get("final_url"):
-                    crawl.final_url = str(page_meta["final_url"])
-        except Exception as exc:  # noqa: BLE001
-            signals["techleads_used"] = False
-            signals["techleads_error"] = str(exc)
+    # 2. Prevent duplicate simultaneous processing
+    is_duplicate_run = False
+    with _PROCESSING_DOMAINS_LOCK:
+        if domain in _PROCESSING_DOMAINS:
+            is_duplicate_run = True
+        else:
+            _PROCESSING_DOMAINS.add(domain)
+            setattr(threading.current_thread(), f"_processing_{domain}", True)
 
-    enriched = enrich_with_llm(domain, signals)
+    try:
+        if is_duplicate_run:
+            # Wait for the other thread to finish processing this domain
+            max_wait = 60 # 60 seconds max
+            for _ in range(max_wait * 2):
+                with _PROCESSING_DOMAINS_LOCK:
+                    if domain not in _PROCESSING_DOMAINS:
+                        break
+                time.sleep(0.5)
+            # Re-check db
+            existing = db.query(Website).filter(Website.domain == domain).first()
+            if existing:
+                existing._crawl_ms = 0
+                return existing
 
-    # Prefer TechLeads.fyi detected technologies when present
-    if api_techs:
-        extras = list(enriched.get("technologies") or [])
-        enriched["technologies"] = list(dict.fromkeys(api_techs + extras))[:20]
-        if signals.get("techleads_meta"):
-            enriched["techleads_meta"] = signals["techleads_meta"]
-        if signals.get("technology_spend"):
-            enriched["technology_spend"] = signals["technology_spend"]
-        page_meta = signals.get("techleads_page_meta") or {}
-        if isinstance(page_meta, dict):
-            if page_meta.get("title") and not enriched.get("title"):
-                enriched["title"] = str(page_meta["title"])[:200]
-            if page_meta.get("description") and not enriched.get("description"):
-                enriched["description"] = str(page_meta["description"])
+        t0 = time.perf_counter()
+        crawl = crawl_url(url)
+        t1 = time.perf_counter()
+        scrape_time = t1 - t0
 
-    website = db.query(Website).filter(Website.domain == domain).first()
-    if not website:
-        website = Website(domain=domain)
-        db.add(website)
+        signals = extract_signals(crawl.html, crawl.headers, crawl.final_url)
+        signals["final_url"] = crawl.final_url
+        t2 = time.perf_counter()
+        process_time = t2 - t1
 
-    _apply_enrichment_to_website(website, crawl.final_url, signals, enriched)
-    db.flush()
-
-    db.query(WebsiteTechnology).filter(WebsiteTechnology.website_id == website.id).delete()
-
-    tech_names = list(
-        dict.fromkeys(
-            (enriched.get("technologies") or [])
-            + signals.get("rule_based_technologies", [])
+        # Optional TechLeads.fyi API lookup (1 credit) — authoritative tech stack
+        cfg = Settings()
+        api_enabled = cfg.techleads_api_enabled if use_techleads_api is None else use_techleads_api
+        api_techs: list[str] = []
+        if api_enabled and cfg.techleads_api_key.strip():
+            try:
+                lookup = lookup_website(url)
+                if not lookup.get("error"):
+                    signals = merge_lookup_into_signals(signals, lookup)
+                    api_techs = tech_names_from_lookup(lookup)
+                    page_meta = lookup.get("page_meta") or {}
+                    if isinstance(page_meta, dict) and page_meta.get("final_url"):
+                        crawl.final_url = str(page_meta["final_url"])
+            except Exception as exc:  # noqa: BLE001
+                signals["techleads_used"] = False
+                signals["techleads_error"] = str(exc)
+    
+        t3 = time.perf_counter()
+        enriched = enrich_with_llm(domain, signals)
+        t4 = time.perf_counter()
+        openrouter_time = t4 - t3
+    
+        # Prefer TechLeads.fyi detected technologies when present
+        if api_techs:
+            extras = list(enriched.get("technologies") or [])
+            enriched["technologies"] = list(dict.fromkeys(api_techs + extras))[:20]
+            if signals.get("techleads_meta"):
+                enriched["techleads_meta"] = signals["techleads_meta"]
+            if signals.get("technology_spend"):
+                enriched["technology_spend"] = signals["technology_spend"]
+            page_meta = signals.get("techleads_page_meta") or {}
+            if isinstance(page_meta, dict):
+                if page_meta.get("title") and not enriched.get("title"):
+                    enriched["title"] = str(page_meta["title"])[:200]
+                if page_meta.get("description") and not enriched.get("description"):
+                    enriched["description"] = str(page_meta["description"])
+    
+        website = db.query(Website).filter(Website.domain == domain).first()
+        if not website:
+            website = Website(domain=domain)
+            db.add(website)
+    
+        _apply_enrichment_to_website(website, crawl.final_url, signals, enriched)
+        db.flush()
+    
+        db.query(WebsiteTechnology).filter(WebsiteTechnology.website_id == website.id).delete()
+    
+        tech_names = list(
+            dict.fromkeys(
+                (enriched.get("technologies") or [])
+                + signals.get("rule_based_technologies", [])
+            )
         )
-    )
-    for order, name in enumerate(tech_names):
-        tech = _get_or_create_technology(db, name, order)
-        db.add(WebsiteTechnology(website_id=website.id, technology_id=tech.id))
-
-    db.commit()
-    db.refresh(website)
-    website._crawl_ms = int((time.perf_counter() - started) * 1000)  # type: ignore[attr-defined]
-    return website
+        for order, name in enumerate(tech_names):
+            tech = _get_or_create_technology(db, name, order)
+            db.add(WebsiteTechnology(website_id=website.id, technology_id=tech.id))
+    
+        db.commit()
+        db.refresh(website)
+        
+        t5 = time.perf_counter()
+        db_time = t5 - t4
+        total_time = t5 - started
+        
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.info(f"[Enrichment] domain={domain} scrape={scrape_time:.2f}s processing={process_time:.2f}s openrouter={openrouter_time:.2f}s db={db_time:.2f}s total={total_time:.2f}s")
+        
+        website._crawl_ms = int(total_time * 1000)  # type: ignore[attr-defined]
+        return website
+    finally:
+        with _PROCESSING_DOMAINS_LOCK:
+            if domain in _PROCESSING_DOMAINS and hasattr(threading.current_thread(), f"_processing_{domain}"):
+                _PROCESSING_DOMAINS.remove(domain)
+                delattr(threading.current_thread(), f"_processing_{domain}")
 
 
 def refresh_website(db: Session, website: Website, *, use_techleads_api: bool = False) -> Website:

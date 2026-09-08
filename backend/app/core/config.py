@@ -22,6 +22,10 @@ class Settings(BaseSettings):
     openrouter_timeout_seconds: int = 90
     openrouter_http_referer: str = "https://techleads.ai"
     openrouter_app_title: str = "TechLeads.Ai"
+    openrouter_max_concurrency: int = 3
+    openrouter_max_retries: int = 3
+    openrouter_initial_retry_delay: float = 2.0
+    openrouter_max_retry_delay: float = 16.0
     # Stripe credit purchases
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""

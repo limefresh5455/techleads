@@ -61,6 +61,15 @@ def extract_signals(html: str, headers: dict[str, str], url: str) -> dict[str, A
         for src in (tag.get("href") or tag.get("src") or "" for tag in soup.find_all(["script", "link"]))
         if src.strip()
     ][:80]
+    
+    # Remove script and style elements before getting text
+    for script_or_style in soup(["script", "style", "noscript", "svg", "nav", "footer"]):
+        script_or_style.decompose()
+        
+    # Get clean text
+    visible_text = soup.get_text(separator=" ", strip=True)
+    # Compress multiple spaces
+    visible_text = re.sub(r'\s+', ' ', visible_text)[:5000]
 
     social_links = {
         "facebook": _first_href(soup, r"facebook\.com"),
@@ -85,6 +94,7 @@ def extract_signals(html: str, headers: dict[str, str], url: str) -> dict[str, A
         "title": title,
         "meta_description": meta_description,
         "generator": generator,
+        "visible_text": visible_text,
         "script_and_link_sources": script_srcs[:40],
         "response_headers": {k: headers[k] for k in list(headers)[:20]},
         "rule_based_technologies": detected,

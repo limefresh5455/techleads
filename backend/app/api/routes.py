@@ -1082,9 +1082,17 @@ def detect_website(payload: DetectRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/v1/enrich", response_model=list[DetectResponse])
-def enrich_websites(payload: EnrichRequest, db: Session = Depends(get_db)):
+def enrich_websites(payload: EnrichRequest):
+    from concurrent.futures import ThreadPoolExecutor, as_completed
+    from app.core.database import SessionLocal
+    from app.core.config import Settings
+    
+    cfg = Settings()
+    max_workers = getattr(cfg, 'openrouter_max_concurrency', 3)
     results: list[DetectResponse] = []
-    for raw_url in payload.urls[:50]:
+    
+    def process_url(raw_url: str):
+        db = SessionLocal()
         try:
             website = detect_and_store(db, raw_url)
             website = (
@@ -1095,9 +1103,20 @@ def enrich_websites(payload: EnrichRequest, db: Session = Depends(get_db)):
                 .filter(Website.id == website.id)
                 .first()
             )
-            results.append(_detect_response(website))
-        except Exception:
-            continue
+            return _detect_response(website)
+        except Exception as e:
+            print(f"Error enriching {raw_url}: {e}")
+            return None
+        finally:
+            db.close()
+
+    with ThreadPoolExecutor(max_workers=max_workers) as executor:
+        future_to_url = {executor.submit(process_url, url): url for url in payload.urls[:50]}
+        for future in as_completed(future_to_url):
+            res = future.result()
+            if res:
+                results.append(res)
+                
     if not results:
         raise HTTPException(status_code=400, detail="No URLs could be enriched")
     return results

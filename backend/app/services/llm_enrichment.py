@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import logging
 import re
+import time
+import threading
 from typing import Any
 
 import httpx
@@ -17,6 +19,19 @@ logger = logging.getLogger(__name__)
 def _settings() -> Settings:
     """Re-read .env so key/model updates apply without a full process restart."""
     return Settings()
+
+
+_openrouter_semaphore: threading.Semaphore | None = None
+_semaphore_lock = threading.Lock()
+
+def get_openrouter_semaphore() -> threading.Semaphore:
+    global _openrouter_semaphore
+    if _openrouter_semaphore is None:
+        with _semaphore_lock:
+            if _openrouter_semaphore is None:
+                cfg = _settings()
+                _openrouter_semaphore = threading.Semaphore(getattr(cfg, 'openrouter_max_concurrency', 3))
+    return _openrouter_semaphore
 
 ENRICHMENT_SCHEMA = """
 Return ONLY valid JSON with this shape:
@@ -97,9 +112,18 @@ def enrich_with_openrouter(domain: str, signals: dict[str, Any]) -> dict[str, An
         )
 
     prompt = build_prompt(domain, signals)
-    models = [cfg.openrouter_model, *OPENROUTER_MODEL_FALLBACKS]
-    seen: set[str] = set()
+    models = [cfg.openrouter_model]
+    
+    # Filter out empty or duplicate models while preserving order
+    unique_models = []
+    seen_m = set()
+    for m in models:
+        if m and m not in seen_m:
+            unique_models.append(m)
+            seen_m.add(m)
+            
     last_error = ""
+    error_category = "unknown"
 
     headers = {
         "Authorization": f"Bearer {api_key}",
@@ -109,11 +133,16 @@ def enrich_with_openrouter(domain: str, signals: dict[str, Any]) -> dict[str, An
     }
 
     timeout = httpx.Timeout(cfg.openrouter_timeout_seconds)
+    
+    # We will use a shared HTTP client for connection pooling if possible, but for simplicity here we keep it scoped.
+    # Note: openrouter_max_retries controls retries PER error that allows retry (429, 5xx)
+    max_retries = getattr(cfg, 'openrouter_max_retries', 3)
+    initial_delay = getattr(cfg, 'openrouter_initial_retry_delay', 2.0)
+    max_delay = getattr(cfg, 'openrouter_max_retry_delay', 16.0)
 
-    for model_name in models:
-        if not model_name or model_name in seen:
-            continue
-        seen.add(model_name)
+    model_idx = 0
+    while model_idx < len(unique_models):
+        model_name = unique_models[model_idx]
         payload = {
             "model": model_name,
             "temperature": 0.2,
@@ -129,38 +158,120 @@ def enrich_with_openrouter(domain: str, signals: dict[str, Any]) -> dict[str, An
                 {"role": "user", "content": prompt},
             ],
         }
-        try:
-            with httpx.Client(timeout=timeout) as client:
-                response = client.post(OPENROUTER_URL, headers=headers, json=payload)
-            if response.status_code >= 400:
-                last_error = f"{model_name}: HTTP {response.status_code} {response.text[:300]}"
-                logger.warning("OpenRouter enrichment failed for %s: %s", domain, last_error)
-                continue
+        
+        attempt = 0
+        
+        while attempt <= max_retries:
+            try:
+                semaphore = get_openrouter_semaphore()
+                with semaphore:
+                    with httpx.Client(timeout=timeout) as client:
+                        response = client.post(OPENROUTER_URL, headers=headers, json=payload)
+                    
+                status = response.status_code
+                
+                if status < 400:
+                    body = response.json()
+                    text = _extract_openrouter_text(body)
+                    if not text:
+                        last_error = f"{model_name}: empty response"
+                        error_category = "empty_response"
+                        logger.warning(f"[OpenRouter] domain={domain} model={model_name} status=200 category={error_category} retry={attempt}/{max_retries} next_retry=None")
+                        break # break retry loop, try next model
+                        
+                    data = parse_json_response(text, domain, signals)
+                    used_model = (
+                        body.get("model")
+                        or (body.get("choices") or [{}])[0].get("model")
+                        or model_name
+                    )
+                    data["llm_model"] = used_model
+                    data["llm_provider"] = "openrouter"
+                    logger.info(f"[OpenRouter] domain={domain} model={used_model} status=200 category=success")
+                    return with_meta(data, llm_used=True, llm_error="")
 
-            body = response.json()
-            text = _extract_openrouter_text(body)
-            if not text:
-                last_error = f"{model_name}: empty response"
-                continue
+                # Handle errors
+                last_error = f"{model_name}: HTTP {status} {response.text[:300]}"
+                
+                if status == 429:
+                    error_category = "rate_limited"
+                    if attempt < max_retries:
+                        retry_after = response.headers.get("Retry-After")
+                        if retry_after and retry_after.isdigit():
+                            delay = float(retry_after)
+                        else:
+                            delay = min(initial_delay * (2 ** attempt), max_delay)
+                        logger.warning(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt+1}/{max_retries} next_retry={delay}s")
+                        time.sleep(delay)
+                        attempt += 1
+                        continue # retry same model
+                    else:
+                        logger.error(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt}/{max_retries} next_retry=None (Max retries reached)")
+                        # Do NOT fall back. Stop completely.
+                        return with_meta(
+                            fallback_enrichment(domain, signals),
+                            llm_used=False,
+                            llm_error=last_error,
+                            llm_error_category="rate_limited"
+                        )
+                        
+                elif status == 402:
+                    error_category = "credits_required"
+                    logger.error(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt}/{max_retries} next_retry=None")
+                    # Do NOT fall back. Stop completely.
+                    return with_meta(
+                        fallback_enrichment(domain, signals),
+                        llm_used=False,
+                        llm_error=last_error,
+                        llm_error_category="credits_required"
+                    )
+                    
+                elif status == 404:
+                    error_category = "model_unavailable"
+                    logger.warning(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt}/{max_retries} next_retry=None")
+                    # Skip to next model immediately, no retry
+                    break
+                    
+                elif status >= 500:
+                    error_category = "server_error"
+                    if attempt < max_retries:
+                        delay = min(initial_delay * (2 ** attempt), max_delay)
+                        logger.warning(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt+1}/{max_retries} next_retry={delay}s")
+                        time.sleep(delay)
+                        attempt += 1
+                        continue
+                    else:
+                        break
+                        
+                else:
+                    error_category = "client_error"
+                    # 400, 403, etc - no point retrying exactly the same request
+                    logger.warning(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt}/{max_retries} next_retry=None")
+                    break
 
-            data = parse_json_response(text, domain, signals)
-            used_model = (
-                body.get("model")
-                or (body.get("choices") or [{}])[0].get("model")
-                or model_name
-            )
-            data["llm_model"] = used_model
-            data["llm_provider"] = "openrouter"
-            return with_meta(data, llm_used=True, llm_error="")
-        except Exception as exc:
-            last_error = f"{model_name}: {exc}"
-            logger.warning("OpenRouter enrichment failed for %s with %s", domain, last_error)
-
+            except Exception as exc:
+                last_error = f"{model_name}: {exc}"
+                error_category = "network_error"
+                if attempt < max_retries:
+                    delay = min(initial_delay * (2 ** attempt), max_delay)
+                    logger.warning(f"[OpenRouter] domain={domain} model={model_name} status=Exception category={error_category} error={exc} retry={attempt+1}/{max_retries} next_retry={delay}s")
+                    time.sleep(delay)
+                    attempt += 1
+                    continue
+                else:
+                    break
+                    
+        # End of retry loop for current model
+        model_idx += 1
+        
+    # If all models failed or we broke out
     return with_meta(
         fallback_enrichment(domain, signals),
         llm_used=False,
-        llm_error=last_error or "openai/gpt-oss-120b enrichment failed",
+        llm_error=last_error or "OpenRouter enrichment failed for all models",
+        llm_error_category=error_category
     )
+
 
 
 def build_prompt(domain: str, signals: dict[str, Any]) -> str:
@@ -178,9 +289,11 @@ def build_prompt(domain: str, signals: dict[str, Any]) -> str:
     )
 
 
-def with_meta(data: dict[str, Any], *, llm_used: bool, llm_error: str) -> dict[str, Any]:
+def with_meta(data: dict[str, Any], *, llm_used: bool, llm_error: str, llm_error_category: str = "") -> dict[str, Any]:
     data["llm_used"] = llm_used
     data["llm_error"] = llm_error
+    if llm_error_category:
+        data["llm_error_category"] = llm_error_category
     return data
 
 
@@ -344,7 +457,7 @@ def _extract_openrouter_text(body: dict[str, Any]) -> str:
 def _compact_signals(signals: dict[str, Any]) -> dict[str, Any]:
     """Trim bulky HTML-ish fields so free models stay within context."""
     compact = dict(signals)
-    for key in ("html_snippet", "body_text", "script_srcs", "link_hrefs"):
+    for key in ("html_snippet", "body_text", "script_srcs", "link_hrefs", "visible_text"):
         value = compact.get(key)
         if isinstance(value, str) and len(value) > 4000:
             compact[key] = value[:4000]
