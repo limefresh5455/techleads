@@ -97,14 +97,6 @@ export default function AdminDetectGroupsPage() {
     setFormData({ ...formData, tags: newTags })
   }
 
-  if (loading && groups.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-brand" />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
@@ -123,52 +115,58 @@ export default function AdminDetectGroupsPage() {
 
       {error && <div className="bg-red-500/10 text-red-600 p-4 rounded-lg text-sm">{error}</div>}
 
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-canvas border-b border-border">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-ink">Group Title</th>
-                <th className="px-6 py-4 font-semibold text-ink">Tags Count</th>
-                <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {groups.map((group) => (
-                <tr key={group.id} className="hover:bg-canvas/50 transition-colors">
-                  <td className="px-6 py-4 text-ink font-medium">{group.title}</td>
-                  <td className="px-6 py-4 text-muted">{group.tags?.length || 0}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleOpenEdit(group)}
-                        className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                        title="Edit"
-                      >
-                        <Edit size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(group.id)}
-                        className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {groups.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="p-8 text-center text-muted">
-                    No Detect Groups found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
         </div>
-      </div>
+      ) : (
+        <div className="bg-surface border border-border rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-canvas border-b border-border">
+                <tr>
+                  <th className="px-6 py-4 font-semibold text-ink">Group Title</th>
+                  <th className="px-6 py-4 font-semibold text-ink">Tags Count</th>
+                  <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {groups.map((group) => (
+                  <tr key={group.id} className="hover:bg-canvas/50 transition-colors">
+                    <td className="px-6 py-4 text-ink font-medium">{group.title}</td>
+                    <td className="px-6 py-4 text-muted">{group.tags?.length || 0}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleOpenEdit(group)}
+                          className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
+                          title="Edit"
+                        >
+                          <Edit size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(group.id)}
+                          className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {groups.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="p-8 text-center text-muted">
+                      No Detect Groups found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

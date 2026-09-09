@@ -10,6 +10,7 @@ import {
   DollarSign,
   UserCheck,
   ShieldAlert,
+  Loader2,
 } from 'lucide-react'
 import { adminDashboard } from '../../services'
 import {
@@ -47,9 +48,6 @@ export default function AdminDashboardPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-ink">Loading dashboard...</div>
-  if (!stats) return <div className="p-8 text-red-500">Failed to load dashboard stats.</div>
-
   const formatCurrency = (cents) => `$${(cents / 100).toFixed(2)}`
 
   return (
@@ -60,6 +58,15 @@ export default function AdminDashboardPage() {
           Dashboard
         </h1>
       </div>
+
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
+      ) : !stats ? (
+        <div className="p-8 text-red-500">Failed to load dashboard stats.</div>
+      ) : (
+        <>
 
       {/* Metrics Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
@@ -307,6 +314,8 @@ export default function AdminDashboardPage() {
           </div>
         </div>
       </div>
+        </>
+      )}
     </div>
   )
 }

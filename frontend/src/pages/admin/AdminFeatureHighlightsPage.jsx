@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, X, Sparkles } from 'lucide-react'
+import { Plus, Edit, Trash2, X, Sparkles, Loader2 } from 'lucide-react'
 import { adminFeatureHighlights } from '../../services'
 
 export default function AdminFeatureHighlightsPage() {
@@ -7,6 +7,7 @@ export default function AdminFeatureHighlightsPage() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingItem, setEditingItem] = useState(null)
+  const [saving, setSaving] = useState(false)
 
   const defaultForm = {
     title: '',
@@ -45,6 +46,7 @@ export default function AdminFeatureHighlightsPage() {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
       if (editingItem) {
         await adminFeatureHighlights.update(editingItem.id, formData)
@@ -55,6 +57,8 @@ export default function AdminFeatureHighlightsPage() {
       fetchHighlights()
     } catch (err) {
       alert('Error saving feature highlight')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -68,7 +72,6 @@ export default function AdminFeatureHighlightsPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-ink">Loading...</div>
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
@@ -87,51 +90,57 @@ export default function AdminFeatureHighlightsPage() {
         </button>
       </div>
 
-      <div className="bg-surface border border-border rounded-xl overflow-x-auto">
-        <table className="w-full text-left text-sm">
-          <thead className="bg-canvas border-b border-border text-muted">
-            <tr>
-              <th className="p-4 font-medium">Title</th>
-              <th className="p-4 font-medium">Variant</th>
-              <th className="p-4 font-medium">Icon</th>
-              <th className="p-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {highlights.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
+      ) : (
+        <div className="bg-surface border border-border rounded-xl overflow-x-auto">
+          <table className="w-full text-left text-sm">
+            <thead className="bg-canvas border-b border-border text-muted">
               <tr>
-                <td colSpan="4" className="p-8 text-center text-muted">
-                  No feature highlights found.
-                </td>
+                <th className="p-4 font-medium">Title</th>
+                <th className="p-4 font-medium">Variant</th>
+                <th className="p-4 font-medium">Icon</th>
+                <th className="p-4 font-medium text-right">Actions</th>
               </tr>
-            ) : (
-              highlights.map((item) => (
-                <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
-                  <td className="p-4 font-medium text-ink">{item.title}</td>
-                  <td className="p-4 text-muted capitalize">{item.variant}</td>
-                  <td className="p-4 text-muted">{item.icon}</td>
-                  <td className="p-4 flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => handleOpenModal(item)}
-                      className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                      title="Edit"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Delete"
-                    >
-                      <Trash2 size={16} />
-                    </button>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {highlights.length === 0 ? (
+                <tr>
+                  <td colSpan="4" className="p-8 text-center text-muted">
+                    No feature highlights found.
                   </td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                highlights.map((item) => (
+                  <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
+                    <td className="p-4 font-medium text-ink">{item.title}</td>
+                    <td className="p-4 text-muted capitalize">{item.variant}</td>
+                    <td className="p-4 text-muted">{item.icon}</td>
+                    <td className="p-4 flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => handleOpenModal(item)}
+                        className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
+                        title="Edit"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
@@ -215,9 +224,11 @@ export default function AdminFeatureHighlightsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-6 py-2 bg-brand text-ink rounded-lg font-medium hover:bg-brand/90 transition-colors"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-6 py-2 bg-brand text-ink rounded-lg font-medium hover:bg-brand/90 transition-colors disabled:opacity-50"
                 >
-                  Save
+                  {saving && <Loader2 size={16} className="animate-spin" />}
+                  {saving ? 'Saving...' : 'Save'}
                 </button>
               </div>
             </form>

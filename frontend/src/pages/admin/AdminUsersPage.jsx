@@ -137,8 +137,6 @@ export default function AdminUsersPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-ink">Loading...</div>
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-border">
@@ -157,85 +155,91 @@ export default function AdminUsersPage() {
         </button>
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-x-auto">
-        <table className="w-full text-left text-sm text-ink">
-          <thead className="bg-canvas border-b border-border">
-            <tr>
-              <th className="px-6 py-4 font-medium">Name</th>
-              <th className="px-6 py-4 font-medium">Email</th>
-              <th className="px-6 py-4 font-medium">Role</th>
-              <th className="px-6 py-4 font-medium">Credits</th>
-              <th className="px-6 py-4 font-medium">Joined</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {items.map((item) => (
-              <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
-                <td className="px-6 py-4 font-medium">
-                  <div className="flex items-center gap-3">
-                    {item.avatar_url ? (
-                      <img
-                        src={item.avatar_url}
-                        alt={item.name}
-                        className="w-8 h-8 rounded-full object-cover bg-surface shrink-0"
-                      />
-                    ) : (
-                      <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold text-xs shrink-0">
-                        {item.name ? item.name.charAt(0).toUpperCase() : '?'}
-                      </div>
-                    )}
-                    <span className="truncate">{item.name}</span>
-                  </div>
-                </td>
-                <td className="px-6 py-4">{item.email}</td>
-                <td className="px-6 py-4">
-                  <span
-                    className={`px-2 py-1 rounded-full text-xs font-medium ${item.role === 'admin' ? 'bg-brand/20 text-brand' : 'bg-canvas text-ink/70'}`}
-                  >
-                    {item.role}
-                  </span>
-                </td>
-                <td className="px-6 py-4">
-                  {item.role === 'admin' ? (
-                    <span className="text-muted italic text-xs">N/A</span>
-                  ) : (
-                    <span className="font-medium text-brand">{item.credits}</span>
-                  )}
-                </td>
-                <td className="px-6 py-4 text-ink/60">{formatDate(item.created_at)}</td>
-                <td className="px-6 py-4 text-right">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => openModal(item)}
-                      className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                    >
-                      <Edit size={16} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(item.id)}
-                      className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Delete User"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {items.length === 0 && (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
+      ) : (
+        <div className="bg-card rounded-xl border border-border overflow-x-auto">
+          <table className="w-full text-left text-sm text-ink">
+            <thead className="bg-canvas border-b border-border">
               <tr>
-                <td colSpan="6" className="px-6 py-8 text-center text-ink/60">
-                  No users found
-                </td>
+                <th className="px-6 py-4 font-medium">Name</th>
+                <th className="px-6 py-4 font-medium">Email</th>
+                <th className="px-6 py-4 font-medium">Role</th>
+                <th className="px-6 py-4 font-medium">Credits</th>
+                <th className="px-6 py-4 font-medium">Joined</th>
+                <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {items.map((item) => (
+                <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
+                  <td className="px-6 py-4 font-medium">
+                    <div className="flex items-center gap-3">
+                      {item.avatar_url ? (
+                        <img
+                          src={item.avatar_url}
+                          alt={item.name}
+                          className="w-8 h-8 rounded-full object-cover bg-surface shrink-0"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-brand/20 flex items-center justify-center text-brand font-bold text-xs shrink-0">
+                          {item.name ? item.name.charAt(0).toUpperCase() : '?'}
+                        </div>
+                      )}
+                      <span className="truncate">{item.name}</span>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">{item.email}</td>
+                  <td className="px-6 py-4">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${item.role === 'admin' ? 'bg-brand/20 text-brand' : 'bg-canvas text-ink/70'}`}
+                    >
+                      {item.role}
+                    </span>
+                  </td>
+                  <td className="px-6 py-4">
+                    {item.role === 'admin' ? (
+                      <span className="text-muted italic text-xs">N/A</span>
+                    ) : (
+                      <span className="font-medium text-brand">{item.credits}</span>
+                    )}
+                  </td>
+                  <td className="px-6 py-4 text-ink/60">{formatDate(item.created_at)}</td>
+                  <td className="px-6 py-4 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={() => openModal(item)}
+                        className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
+                      >
+                        <Edit size={16} />
+                      </button>
+                      <button
+                        onClick={() => handleDelete(item.id)}
+                        className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Delete User"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan="6" className="px-6 py-8 text-center text-ink/60">
+                    No users found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-card w-full max-w-2xl rounded-xl border border-border shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="text-xl font-bold text-ink flex items-center gap-2">

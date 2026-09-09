@@ -79,13 +79,6 @@ export default function AdminCustomDataBlocksPage() {
     }
   }
 
-  if (loading && items.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-full">
-        <Loader2 className="animate-spin text-brand" size={32} />
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6">
@@ -105,53 +98,59 @@ export default function AdminCustomDataBlocksPage() {
 
       {error && <div className="bg-red-500/10 text-red-600 p-4 rounded-lg text-sm">{error}</div>}
 
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-canvas border-b border-border">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-ink">Title</th>
-                <th className="px-6 py-4 font-semibold text-ink">Description</th>
-                <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {items.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
+      ) : (
+        <div className="bg-surface border border-border rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-canvas border-b border-border">
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-muted">
-                    No custom data blocks found. Click "Add Data Block" to create one.
-                  </td>
+                  <th className="px-6 py-4 font-semibold text-ink">Title</th>
+                  <th className="px-6 py-4 font-semibold text-ink">Description</th>
+                  <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
                 </tr>
-              ) : (
-                items.map((item) => (
-                  <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
-                    <td className="px-6 py-4 text-ink font-medium">{item.title}</td>
-                    <td className="px-6 py-4 text-muted max-w-xs truncate">{item.description}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleOpenEdit(item)}
-                          className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(item.id)}
-                          className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {items.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-muted">
+                      No custom data blocks found. Click "Add Data Block" to create one.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  items.map((item) => (
+                    <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
+                      <td className="px-6 py-4 text-ink font-medium">{item.title}</td>
+                      <td className="px-6 py-4 text-muted max-w-xs truncate">{item.description}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenEdit(item)}
+                            className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(item.id)}
+                            className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {/* Modal */}
       {isModalOpen && (

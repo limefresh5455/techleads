@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Trash2, MessageSquare, ExternalLink, X, Eye } from 'lucide-react'
+import { Trash2, MessageSquare, ExternalLink, X, Eye, Loader2 } from 'lucide-react'
 import { adminContactMessages } from '../../services'
 
 const formatDate = (dateString) => {
@@ -51,7 +51,6 @@ export default function AdminContactMessagesPage() {
     return text.substring(0, maxLength) + '...'
   }
 
-  if (loading) return <div className="p-8 text-ink">Loading...</div>
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
@@ -64,73 +63,79 @@ export default function AdminContactMessagesPage() {
         </div>
       </div>
 
-      <div className="bg-card rounded-xl border border-border overflow-x-auto">
-        <table className="w-full text-left text-sm text-ink">
-          <thead className="bg-canvas border-b border-border">
-            <tr>
-              <th className="px-6 py-4 font-medium">Date</th>
-              <th className="px-6 py-4 font-medium">Name</th>
-              <th className="px-6 py-4 font-medium">Email</th>
-              <th className="px-6 py-4 font-medium">Message</th>
-              <th className="px-6 py-4 font-medium text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-border">
-            {items.map((item) => (
-              <tr
-                key={item.id}
-                className="hover:bg-canvas/50 transition-colors group cursor-pointer"
-                onClick={() => setSelectedItem(item)}
-              >
-                <td className="px-6 py-4 text-ink/60 whitespace-nowrap align-top">
-                  {formatDate(item.created_at)}
-                </td>
-                <td className="px-6 py-4 font-medium align-top whitespace-nowrap">{item.name}</td>
-                <td className="px-6 py-4 align-top">
-                  <span className="text-brand">{item.email}</span>
-                </td>
-                <td className="px-6 py-4 text-ink/80 align-top max-w-[250px]">
-                  <p className="text-sm truncate">{truncateMessage(item.message)}</p>
-                </td>
-                <td className="px-6 py-4 text-right align-top">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        setSelectedItem(item)
-                      }}
-                      className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                      title="View Full Message"
-                    >
-                      <Eye size={16} />
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation()
-                        handleDelete(item.id)
-                      }}
-                      className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                      title="Delete Message"
-                    >
-                      <Trash2 size={16} />
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            ))}
-            {items.length === 0 && (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
+      ) : (
+        <div className="bg-card rounded-xl border border-border overflow-x-auto">
+          <table className="w-full text-left text-sm text-ink">
+            <thead className="bg-canvas border-b border-border">
               <tr>
-                <td colSpan="5" className="px-6 py-8 text-center text-ink/60">
-                  No messages found
-                </td>
+                <th className="px-6 py-4 font-medium">Date</th>
+                <th className="px-6 py-4 font-medium">Name</th>
+                <th className="px-6 py-4 font-medium">Email</th>
+                <th className="px-6 py-4 font-medium">Message</th>
+                <th className="px-6 py-4 font-medium text-right">Actions</th>
               </tr>
-            )}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y divide-border">
+              {items.map((item) => (
+                <tr
+                  key={item.id}
+                  className="hover:bg-canvas/50 transition-colors group cursor-pointer"
+                  onClick={() => setSelectedItem(item)}
+                >
+                  <td className="px-6 py-4 text-ink/60 whitespace-nowrap align-top">
+                    {formatDate(item.created_at)}
+                  </td>
+                  <td className="px-6 py-4 font-medium align-top whitespace-nowrap">{item.name}</td>
+                  <td className="px-6 py-4 align-top">
+                    <span className="text-brand">{item.email}</span>
+                  </td>
+                  <td className="px-6 py-4 text-ink/80 align-top max-w-[250px]">
+                    <p className="text-sm truncate">{truncateMessage(item.message)}</p>
+                  </td>
+                  <td className="px-6 py-4 text-right align-top">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setSelectedItem(item)
+                        }}
+                        className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
+                        title="View Full Message"
+                      >
+                        <Eye size={16} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          handleDelete(item.id)
+                        }}
+                        className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                        title="Delete Message"
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+              {items.length === 0 && (
+                <tr>
+                  <td colSpan="5" className="px-6 py-8 text-center text-ink/60">
+                    No messages found
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      )}
 
       {selectedItem && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
           <div className="bg-card w-full max-w-2xl rounded-xl border border-border shadow-2xl flex flex-col max-h-[90vh]">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="text-xl font-bold text-ink flex items-center gap-2">

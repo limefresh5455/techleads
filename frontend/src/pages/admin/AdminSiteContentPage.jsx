@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Save, LayoutTemplate, Globe, Zap, Search, Phone, Calculator } from 'lucide-react'
+import { Save, LayoutTemplate, Globe, Zap, Search, Phone, Calculator, Loader2 } from 'lucide-react'
 import { adminSiteContent } from '../../services'
 
 const groups = [
@@ -144,7 +144,6 @@ export default function AdminSiteContentPage() {
     setFormData((prev) => ({ ...prev, [key]: value }))
   }
 
-  if (loading) return <div className="p-8 text-ink">Loading...</div>
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
@@ -158,59 +157,66 @@ export default function AdminSiteContentPage() {
           disabled={saving}
           className="flex items-center justify-center gap-2 w-fit bg-brand text-on-brand px-6 py-2.5 rounded-lg text-sm font-semibold hover:bg-brand/90 disabled:opacity-50 transition-colors"
         >
-          <Save size={16} /> {saving ? 'Saving...' : 'Save Changes'}
+          {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+          <span>{saving ? 'Saving...' : 'Save Changes'}</span>
         </button>
       </div>
 
-      <div className="flex flex-col md:flex-row gap-8">
-        {/* Sidebar Tabs */}
-        <div className="w-full md:w-64 shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
-          {groups.map((g, idx) => {
-            const Icon = g.icon
-            const isActive = activeTab === idx
-            return (
-              <button
-                key={g.title}
-                onClick={() => setActiveTab(idx)}
-                className={`flex shrink-0 whitespace-nowrap items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-brand/10 text-brand' : 'text-ink/70 hover:bg-surface hover:text-ink'}`}
-              >
-                <Icon size={18} className={isActive ? 'text-brand' : 'text-muted'} />
-                {g.title}
-              </button>
-            )
-          })}
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
         </div>
+      ) : (
+        <div className="flex flex-col md:flex-row gap-8">
+          {/* Sidebar Tabs */}
+          <div className="w-full md:w-64 shrink-0 flex flex-row md:flex-col gap-2 overflow-x-auto pb-2 md:pb-0 hide-scrollbar">
+            {groups.map((g, idx) => {
+              const Icon = g.icon
+              const isActive = activeTab === idx
+              return (
+                <button
+                  key={g.title}
+                  onClick={() => setActiveTab(idx)}
+                  className={`flex shrink-0 whitespace-nowrap items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors ${isActive ? 'bg-brand/10 text-brand' : 'text-ink/70 hover:bg-surface hover:text-ink'}`}
+                >
+                  <Icon size={18} className={isActive ? 'text-brand' : 'text-muted'} />
+                  {g.title}
+                </button>
+              )
+            })}
+          </div>
 
-        {/* Content Area */}
-        <div className="flex-1 bg-surface border border-border rounded-xl p-6 md:p-8">
-          <h2 className="text-xl font-bold text-ink mb-6 flex items-center gap-2">
-            {groups[activeTab].title}
-          </h2>
+          {/* Content Area */}
+          <div className="flex-1 bg-surface border border-border rounded-xl p-6 md:p-8">
+            <h2 className="text-xl font-bold text-ink mb-6 flex items-center gap-2">
+              {groups[activeTab].title}
+            </h2>
 
-          <form className="space-y-6">
-            {groups[activeTab].fields.map((field) => (
-              <div key={field.key}>
-                <label className="block text-sm font-medium text-ink mb-1.5">{field.label}</label>
-                {field.type === 'textarea' ? (
-                  <textarea
-                    rows={field.rows || 3}
-                    value={formData[field.key] || ''}
-                    onChange={(e) => handleChange(field.key, e.target.value)}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-3 text-ink focus:outline-none focus:border-brand font-mono text-sm"
-                  />
-                ) : (
-                  <input
-                    type={field.type || 'text'}
-                    value={formData[field.key] || ''}
-                    onChange={(e) => handleChange(field.key, e.target.value)}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2.5 text-ink focus:outline-none focus:border-brand"
-                  />
-                )}
-              </div>
-            ))}
-          </form>
+            <form className="space-y-6">
+              {groups[activeTab].fields.map((field) => (
+                <div key={field.key}>
+                  <label className="block text-sm font-medium text-ink mb-1.5">{field.label}</label>
+                  {field.type === 'textarea' ? (
+                    <textarea
+                      rows={field.rows || 3}
+                      value={formData[field.key] || ''}
+                      onChange={(e) => handleChange(field.key, e.target.value)}
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-3 text-ink focus:outline-none focus:border-brand font-mono text-sm"
+                    />
+                  ) : (
+                    <input
+                      type={field.type || 'text'}
+                      value={formData[field.key] || ''}
+                      onChange={(e) => handleChange(field.key, e.target.value)}
+                      className="w-full bg-canvas border border-border rounded-lg px-4 py-2.5 text-ink focus:outline-none focus:border-brand"
+                    />
+                  )}
+                </div>
+              ))}
+            </form>
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, CheckCircle, Circle, X, CreditCard } from 'lucide-react'
+import { Plus, Edit, Trash2, CheckCircle, Circle, X, CreditCard, Loader2 } from 'lucide-react'
 import { adminPricingPlans } from '../../services'
 
 export default function AdminPlansPage() {
@@ -7,6 +7,7 @@ export default function AdminPlansPage() {
   const [loading, setLoading] = useState(true)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPlan, setEditingPlan] = useState(null)
+  const [saving, setSaving] = useState(false)
 
   const defaultForm = {
     name: '',
@@ -49,6 +50,7 @@ export default function AdminPlansPage() {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
       if (editingPlan) {
         await adminPricingPlans.update(editingPlan.id, formData)
@@ -60,6 +62,8 @@ export default function AdminPlansPage() {
     } catch (err) {
       console.error('Failed to save pricing plan:', err)
       alert(err.message)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -107,7 +111,9 @@ export default function AdminPlansPage() {
       </div>
 
       {loading ? (
-        <div className="text-muted">Loading...</div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -409,9 +415,11 @@ export default function AdminPlansPage() {
               <button
                 type="submit"
                 form="planForm"
-                className="px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90"
+                disabled={saving}
+                className="flex items-center gap-2 px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90 disabled:opacity-50"
               >
-                Save Plan
+                {saving && <Loader2 size={16} className="animate-spin" />}
+                {saving ? 'Saving...' : 'Save Plan'}
               </button>
             </div>
           </div>

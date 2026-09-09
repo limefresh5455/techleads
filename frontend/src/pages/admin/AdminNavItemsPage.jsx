@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Navigation, Plus, Edit, Trash2, X, Save } from 'lucide-react'
+import { Navigation, Plus, Edit, Trash2, X, Save, Loader2 } from 'lucide-react'
 import { adminNavItems } from '../../services'
 
 export default function AdminNavItemsPage() {
@@ -78,7 +78,6 @@ export default function AdminNavItemsPage() {
     }
   }
 
-  if (loading) return <div className="p-8 text-ink">Loading...</div>
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
@@ -95,53 +94,59 @@ export default function AdminNavItemsPage() {
         </button>
       </div>
 
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-canvas border-b border-border">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-ink">Label</th>
-                <th className="px-6 py-4 font-semibold text-ink">URL (href)</th>
-                <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {links.length === 0 ? (
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
+      ) : (
+        <div className="bg-surface border border-border rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-canvas border-b border-border">
                 <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-muted">
-                    No nav items found.
-                  </td>
+                  <th className="px-6 py-4 font-semibold text-ink">Label</th>
+                  <th className="px-6 py-4 font-semibold text-ink">URL (href)</th>
+                  <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
                 </tr>
-              ) : (
-                links.map((link) => (
-                  <tr key={link.id} className="hover:bg-canvas/50 transition-colors">
-                    <td className="px-6 py-4 text-ink font-medium">{link.label}</td>
-                    <td className="px-6 py-4 text-muted font-mono text-xs">{link.href}</td>
-                    <td className="px-6 py-4">
-                      <div className="flex items-center justify-end gap-2">
-                        <button
-                          onClick={() => handleOpenEdit(link)}
-                          className="p-2 text-ink/70 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                          title="Edit"
-                        >
-                          <Edit size={16} />
-                        </button>
-                        <button
-                          onClick={() => handleDelete(link.id)}
-                          className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {links.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} className="px-6 py-8 text-center text-muted">
+                      No nav items found.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
+                ) : (
+                  links.map((link) => (
+                    <tr key={link.id} className="hover:bg-canvas/50 transition-colors">
+                      <td className="px-6 py-4 text-ink font-medium">{link.label}</td>
+                      <td className="px-6 py-4 text-muted font-mono text-xs">{link.href}</td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center justify-end gap-2">
+                          <button
+                            onClick={() => handleOpenEdit(link)}
+                            className="p-2 text-ink/70 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Edit size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(link.id)}
+                            className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
         </div>
-      </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50">
@@ -202,8 +207,8 @@ export default function AdminNavItemsPage() {
                   disabled={saving}
                   className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg text-sm font-semibold text-on-brand bg-brand hover:bg-brand/90 disabled:opacity-50 transition-colors"
                 >
-                  <Save size={16} />
-                  {saving ? 'Saving...' : 'Save'}
+                  {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />}
+                  <span>{saving ? 'Saving...' : 'Save'}</span>
                 </button>
               </div>
             </form>

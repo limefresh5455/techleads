@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Trash2, GripVertical, Edit, X, LayoutTemplate } from 'lucide-react'
+import { Plus, Trash2, GripVertical, Edit, X, LayoutTemplate, Loader2 } from 'lucide-react'
 import { adminFooterColumns } from '../../services'
 
 export default function AdminFooterPage() {
@@ -8,6 +8,7 @@ export default function AdminFooterPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [formData, setFormData] = useState({ title: '', links: [] })
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     fetchColumns()
@@ -61,6 +62,7 @@ export default function AdminFooterPage() {
   const handleSave = async (e) => {
     e.preventDefault()
     if (!formData.title) return alert('Title is required')
+    setSaving(true)
     try {
       if (editingId === 'new') {
         await adminFooterColumns.create(formData)
@@ -72,6 +74,8 @@ export default function AdminFooterPage() {
     } catch (error) {
       console.error('Failed to save column', error)
       alert('Failed to save column. Check console for details.')
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -101,7 +105,9 @@ export default function AdminFooterPage() {
       </div>
 
       {loading ? (
-        <div className="text-muted">Loading...</div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -268,9 +274,11 @@ export default function AdminFooterPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90 disabled:opacity-50"
                 >
-                  Save Column
+                  {saving && <Loader2 size={16} className="animate-spin" />}
+                  {saving ? 'Saving...' : 'Save Column'}
                 </button>
               </div>
             </form>

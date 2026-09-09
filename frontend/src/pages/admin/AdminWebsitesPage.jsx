@@ -131,14 +131,6 @@ export default function AdminWebsitesPage() {
     })
   }
 
-  if (loading && items.length === 0) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <Loader2 className="h-8 w-8 animate-spin text-brand" />
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">
@@ -169,78 +161,84 @@ export default function AdminWebsitesPage() {
         </button>
       </form>
 
-      <div className="bg-surface border border-border rounded-xl overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-canvas border-b border-border">
-              <tr>
-                <th className="px-6 py-4 font-semibold text-ink">Domain</th>
-                <th className="px-6 py-4 font-semibold text-ink">Company</th>
-                <th className="px-6 py-4 font-semibold text-ink">Category</th>
-                <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-border">
-              {items.map((item) => (
-                <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
-                  <td className="px-6 py-4 text-ink font-medium">{item.domain}</td>
-                  <td className="px-6 py-4 text-muted">{item.company_name}</td>
-                  <td className="px-6 py-4 text-muted">{item.category_label}</td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-end gap-2">
-                      <button
-                        onClick={() => handleOpenView(item)}
-                        className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
-                        title="View Details"
-                      >
-                        <Eye size={16} />
-                      </button>
-                      <button
-                        onClick={() => handleDelete(item.id)}
-                        className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
-                        title="Delete"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {items.length === 0 && (
-                <tr>
-                  <td colSpan="4" className="p-8 text-center text-muted">
-                    No Websites found.
-                  </td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+      {loading ? (
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
         </div>
-
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-canvas">
-            <span className="text-sm text-muted">
-              Showing page {page} of {totalPages} ({total} total)
-            </span>
-            <div className="flex gap-2">
-              <button
-                disabled={page <= 1}
-                onClick={() => setPage((p) => p - 1)}
-                className="p-2 border border-border rounded-lg hover:bg-surface disabled:opacity-50 text-ink"
-              >
-                <ChevronLeft size={18} />
-              </button>
-              <button
-                disabled={page >= totalPages}
-                onClick={() => setPage((p) => p + 1)}
-                className="p-2 border border-border rounded-lg hover:bg-surface disabled:opacity-50 text-ink"
-              >
-                <ChevronRight size={18} />
-              </button>
-            </div>
+      ) : (
+        <div className="bg-surface border border-border rounded-xl overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead className="bg-canvas border-b border-border">
+                <tr>
+                  <th className="px-6 py-4 font-semibold text-ink">Domain</th>
+                  <th className="px-6 py-4 font-semibold text-ink">Company</th>
+                  <th className="px-6 py-4 font-semibold text-ink">Category</th>
+                  <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {items.map((item) => (
+                  <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
+                    <td className="px-6 py-4 text-ink font-medium">{item.domain}</td>
+                    <td className="px-6 py-4 text-muted">{item.company_name}</td>
+                    <td className="px-6 py-4 text-muted">{item.category_label}</td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-end gap-2">
+                        <button
+                          onClick={() => handleOpenView(item)}
+                          className="p-2 text-ink/60 hover:text-brand hover:bg-brand/10 rounded-lg transition-colors"
+                          title="View Details"
+                        >
+                          <Eye size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(item.id)}
+                          className="p-2 text-red-500/60 hover:text-red-500 hover:bg-red-500/10 rounded-lg transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {items.length === 0 && (
+                  <tr>
+                    <td colSpan="4" className="p-8 text-center text-muted">
+                      No Websites found.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
           </div>
-        )}
-      </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-6 py-4 border-t border-border bg-canvas">
+              <span className="text-sm text-muted">
+                Showing page {page} of {totalPages} ({total} total)
+              </span>
+              <div className="flex gap-2">
+                <button
+                  disabled={page <= 1}
+                  onClick={() => setPage((p) => p - 1)}
+                  className="p-2 border border-border rounded-lg hover:bg-surface disabled:opacity-50 text-ink"
+                >
+                  <ChevronLeft size={18} />
+                </button>
+                <button
+                  disabled={page >= totalPages}
+                  onClick={() => setPage((p) => p + 1)}
+                  className="p-2 border border-border rounded-lg hover:bg-surface disabled:opacity-50 text-ink"
+                >
+                  <ChevronRight size={18} />
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
 
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">

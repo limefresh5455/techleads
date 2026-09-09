@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, X, HelpCircle } from 'lucide-react'
+import { Plus, Edit, Trash2, X, HelpCircle, Loader2 } from 'lucide-react'
 import { adminFaqs } from '../../services'
 
 export default function AdminFaqsPage() {
@@ -8,6 +8,7 @@ export default function AdminFaqsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingFaq, setEditingFaq] = useState(null)
   const [formData, setFormData] = useState({ question: '', answer: '' })
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     loadFaqs()
@@ -32,6 +33,7 @@ export default function AdminFaqsPage() {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
       if (editingFaq) {
         await adminFaqs.update(editingFaq.id, formData)
@@ -43,6 +45,8 @@ export default function AdminFaqsPage() {
     } catch (err) {
       console.error('Failed to save FAQ:', err)
       alert(err.message)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -72,7 +76,9 @@ export default function AdminFaqsPage() {
       </div>
 
       {loading ? (
-        <div className="text-muted">Loading...</div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -170,9 +176,11 @@ export default function AdminFaqsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90 disabled:opacity-50"
                 >
-                  Save FAQ
+                  {saving && <Loader2 size={16} className="animate-spin" />}
+                  {saving ? 'Saving...' : 'Save FAQ'}
                 </button>
               </div>
             </form>

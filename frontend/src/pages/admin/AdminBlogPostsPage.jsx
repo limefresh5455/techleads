@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Plus, Edit, Trash2, X, FileText } from 'lucide-react'
+import { Plus, Edit, Trash2, X, FileText, Loader2 } from 'lucide-react'
 import { adminBlogPosts } from '../../services'
 
 export default function AdminBlogPostsPage() {
@@ -8,6 +8,7 @@ export default function AdminBlogPostsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [editingPost, setEditingPost] = useState(null)
   const [formData, setFormData] = useState({ title: '', slug: '', summary: '', category: 'Guides' })
+  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
     loadPosts()
@@ -32,6 +33,7 @@ export default function AdminBlogPostsPage() {
 
   const handleSave = async (e) => {
     e.preventDefault()
+    setSaving(true)
     try {
       if (editingPost) {
         await adminBlogPosts.update(editingPost.id, formData)
@@ -43,6 +45,8 @@ export default function AdminBlogPostsPage() {
     } catch (err) {
       console.error('Failed to save blog post:', err)
       alert(err.message)
+    } finally {
+      setSaving(false)
     }
   }
 
@@ -72,7 +76,9 @@ export default function AdminBlogPostsPage() {
       </div>
 
       {loading ? (
-        <div className="text-muted">Loading...</div>
+        <div className="flex items-center justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-brand" />
+        </div>
       ) : (
         <div className="bg-surface border border-border rounded-lg overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -195,9 +201,11 @@ export default function AdminBlogPostsPage() {
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90"
+                  disabled={saving}
+                  className="flex items-center gap-2 px-4 py-2 bg-brand text-on-brand rounded-lg text-sm font-semibold hover:bg-brand/90 disabled:opacity-50"
                 >
-                  Save Post
+                  {saving && <Loader2 size={16} className="animate-spin" />}
+                  {saving ? 'Saving...' : 'Save Post'}
                 </button>
               </div>
             </form>
