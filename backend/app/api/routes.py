@@ -1295,6 +1295,133 @@ def enrich_imported_websites(job_id: str, website_ids: list[int]):
         db.close()
 
 
+def process_csv_background(job_id: str, decoded_csv: str, tech_name: str, user_id: int):
+    """Background task to parse large CSV files and insert in batches."""
+    from app.core.database import SessionLocal
+    db = SessionLocal()
+    try:
+        reader = csv.DictReader(io.StringIO(decoded_csv, newline=''))
+        
+        tech_slug = slugify(tech_name)
+        technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
+        if not technology:
+            technology = Technology(name=tech_name, slug=tech_slug)
+            db.add(technology)
+            db.commit()
+            db.refresh(technology)
+            
+        import itertools
+        batch_size = 500
+        all_website_ids = set()
+        
+        def parse_float(val):
+            try:
+                clean_val = str(val).replace('$', '').replace(',', '').strip()
+                return float(clean_val) if clean_val else 0.0
+            except:
+                return 0.0
+
+        while True:
+            batch = list(itertools.islice(reader, batch_size))
+            if not batch:
+                break
+                
+            domains_in_batch = []
+            parsed_rows = {}
+            for row in batch:
+                domain = (row.get('Domain') or '').strip().lower()[:160]
+                if not domain: continue
+                domains_in_batch.append(domain)
+                parsed_rows[domain] = {
+                    "company_name": (row.get('Company Name') or '').strip()[:200],
+                    "title": (row.get('Title') or '').strip()[:200],
+                    "description": (row.get('Description') or '').strip(),
+                    "emails": (row.get('Emails') or '').strip(),
+                    "country": (row.get('Country') or '').strip()[:120],
+                    "industry": (row.get('Industry') or '').strip()[:120],
+                    "linkedin_url": (row.get('Linkedin') or '').strip()[:255],
+                    "twitter_url": (row.get('Twitter') or '').strip()[:255],
+                    "facebook_url": (row.get('Facebook') or '').strip()[:255],
+                    "instagram_url": (row.get('Instagram') or '').strip()[:255],
+                    "youtube_url": (row.get('Youtube') or '').strip()[:255],
+                    "github_url": (row.get('Github') or '').strip()[:255],
+                    "tiktok_url": (row.get('Tiktok') or '').strip()[:255],
+                    "tech_spend_monthly": parse_float(row.get('Technology Spend Monthly (USD)', '')),
+                    "tech_spend_annual": parse_float(row.get('Technology Spend Annual (USD)', '')),
+                }
+            
+            if not domains_in_batch:
+                continue
+                
+            existing_websites = db.query(Website).filter(Website.domain.in_(domains_in_batch)).all()
+            existing_website_map = {w.domain: w for w in existing_websites}
+            
+            new_websites_to_add = []
+            for domain, data in parsed_rows.items():
+                website = existing_website_map.get(domain)
+                if not website:
+                    new_website = Website(domain=domain, **data)
+                    new_websites_to_add.append(new_website)
+                else:
+                    for k, v in data.items():
+                        if v and not getattr(website, k):
+                            setattr(website, k, v)
+                            
+            if new_websites_to_add:
+                db.add_all(new_websites_to_add)
+                db.commit()
+                for w in new_websites_to_add:
+                    existing_website_map[w.domain] = w
+                    
+            batch_website_ids = [w.id for w in existing_website_map.values()]
+            all_website_ids.update(batch_website_ids)
+            
+            existing_links = db.query(WebsiteTechnology).filter(
+                WebsiteTechnology.technology_id == technology.id,
+                WebsiteTechnology.website_id.in_(batch_website_ids)
+            ).all()
+            
+            existing_linked_website_ids = {link.website_id for link in existing_links}
+            
+            new_links_to_add = []
+            for wid in batch_website_ids:
+                if wid not in existing_linked_website_ids:
+                    new_links_to_add.append(WebsiteTechnology(website_id=wid, technology_id=technology.id))
+                    
+            if new_links_to_add:
+                db.add_all(new_links_to_add)
+                db.commit()
+
+        technology.website_count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == technology.id).count()
+        db.commit()
+        
+        job = db.query(ImportJob).filter(ImportJob.id == job_id).first()
+        if job:
+            job.total_websites = len(all_website_ids)
+            db.commit()
+            
+        if all_website_ids:
+            # Trigger LLM enrichment for all these websites in the same background process
+            enrich_imported_websites(job_id, list(all_website_ids))
+        else:
+            if job:
+                job.status = "completed"
+                db.commit()
+
+    except Exception as exc:
+        print(f"Background CSV processing failed: {exc}")
+        job = db.query(ImportJob).filter(ImportJob.id == job_id).first()
+        if job:
+            import json
+            errors = json.loads(job.errors_json or "[]")
+            errors.append({"domain": "CSV_PROCESSING", "error": str(exc)})
+            job.errors_json = json.dumps(errors)
+            job.status = "failed"
+            db.commit()
+    finally:
+        db.close()
+
+
 @router.post("/import/csv")
 async def import_csv_data(
     background_tasks: BackgroundTasks,
@@ -1311,143 +1438,25 @@ async def import_csv_data(
     except UnicodeDecodeError:
         raise HTTPException(status_code=400, detail="Invalid file encoding. Please upload a UTF-8 encoded CSV.")
         
-    reader = csv.DictReader(io.StringIO(decoded, newline=''))
-    
-    stats = {
-        "technologies_created": 0,
-        "websites_created": 0,
-        "websites_updated": 0,
-        "links_created": 0
-    }
-    imported_website_ids = []
-
     import os
     tech_name = os.path.splitext(file.filename)[0].strip()
     
     if not tech_name:
         raise HTTPException(status_code=400, detail="Invalid file name.")
-
-    # Get or create Technology
-    tech_slug = slugify(tech_name)
-    technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
-    if not technology:
-        technology = Technology(name=tech_name, slug=tech_slug)
-        db.add(technology)
-        db.commit()
-        db.refresh(technology)
-        stats["technologies_created"] += 1
-    
-    import itertools
-    batch_size = 500
-    all_website_ids = set()
-    
-    def parse_float(val):
-        try:
-            clean_val = str(val).replace('$', '').replace(',', '').strip()
-            return float(clean_val) if clean_val else 0.0
-        except:
-            return 0.0
-
-    while True:
-        batch = list(itertools.islice(reader, batch_size))
-        if not batch:
-            break
-            
-        domains_in_batch = []
-        parsed_rows = {}
         
-        for row in batch:
-            domain = (row.get('Domain') or '').strip().lower()[:160]
-            if not domain: continue
-            domains_in_batch.append(domain)
-            parsed_rows[domain] = {
-                "company_name": (row.get('Company Name') or '').strip()[:200],
-                "title": (row.get('Title') or '').strip()[:200],
-                "description": (row.get('Description') or '').strip(),
-                "emails": (row.get('Emails') or '').strip(),
-                "country": (row.get('Country') or '').strip()[:120],
-                "industry": (row.get('Industry') or '').strip()[:120],
-                "linkedin_url": (row.get('Linkedin') or '').strip()[:255],
-                "twitter_url": (row.get('Twitter') or '').strip()[:255],
-                "facebook_url": (row.get('Facebook') or '').strip()[:255],
-                "instagram_url": (row.get('Instagram') or '').strip()[:255],
-                "youtube_url": (row.get('Youtube') or '').strip()[:255],
-                "github_url": (row.get('Github') or '').strip()[:255],
-                "tiktok_url": (row.get('Tiktok') or '').strip()[:255],
-                "tech_spend_monthly": parse_float(row.get('Technology Spend Monthly (USD)', '')),
-                "tech_spend_annual": parse_float(row.get('Technology Spend Annual (USD)', '')),
-            }
-        
-        if not domains_in_batch:
-            continue
-            
-        existing_websites = db.query(Website).filter(Website.domain.in_(domains_in_batch)).all()
-        existing_website_map = {w.domain: w for w in existing_websites}
-        
-        new_websites_to_add = []
-        for domain, data in parsed_rows.items():
-            website = existing_website_map.get(domain)
-            if not website:
-                new_website = Website(domain=domain, **data)
-                new_websites_to_add.append(new_website)
-            else:
-                updated = False
-                for k, v in data.items():
-                    if v and not getattr(website, k):
-                        setattr(website, k, v)
-                        updated = True
-                if updated:
-                    stats["websites_updated"] += 1
-                    
-        if new_websites_to_add:
-            db.add_all(new_websites_to_add)
-            db.commit()
-            stats["websites_created"] += len(new_websites_to_add)
-            
-            for w in new_websites_to_add:
-                existing_website_map[w.domain] = w
-                
-        batch_website_ids = [w.id for w in existing_website_map.values()]
-        all_website_ids.update(batch_website_ids)
-        
-        # Link technologies for this batch
-        existing_links = db.query(WebsiteTechnology).filter(
-            WebsiteTechnology.technology_id == technology.id,
-            WebsiteTechnology.website_id.in_(batch_website_ids)
-        ).all()
-        
-        existing_linked_website_ids = {link.website_id for link in existing_links}
-        
-        new_links_to_add = []
-        for wid in batch_website_ids:
-            if wid not in existing_linked_website_ids:
-                new_links_to_add.append(WebsiteTechnology(website_id=wid, technology_id=technology.id))
-                
-        if new_links_to_add:
-            db.add_all(new_links_to_add)
-            db.commit()
-            stats["links_created"] += len(new_links_to_add)
-            
-    # Update total count once at the end
-    technology.website_count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == technology.id).count()
+    job_id = str(uuid4())
+    job = ImportJob(
+        id=job_id,
+        user_id=user.id,
+        status="pending",
+        total_websites=0 # will be updated by background task
+    )
+    db.add(job)
     db.commit()
     
-    imported_website_ids = list(all_website_ids)
+    background_tasks.add_task(process_csv_background, job_id, decoded, tech_name, user.id)
     
-    job_id = None
-    if imported_website_ids:
-        job_id = str(uuid4())
-        job = ImportJob(
-            id=job_id,
-            user_id=user.id,
-            status="pending",
-            total_websites=len(set(imported_website_ids))
-        )
-        db.add(job)
-        db.commit()
-        background_tasks.add_task(enrich_imported_websites, job_id, list(set(imported_website_ids)))
-    
-    return {"message": "Import successful", "stats": stats, "job_id": job_id}
+    return {"message": "Import started in background", "stats": {}, "job_id": job_id}
 
 @router.get("/import/status/{job_id}")
 def get_import_status(job_id: str, db: Session = Depends(get_db)):
