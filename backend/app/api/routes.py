@@ -1337,95 +1337,102 @@ async def import_csv_data(
         db.refresh(technology)
         stats["technologies_created"] += 1
     
-    # Bulk operations
-    rows = list(reader)
-    if not rows:
-        return {"message": "Import successful", "stats": stats, "job_id": None}
-        
-    domains_in_csv = []
-    parsed_rows = {}
+    import itertools
+    batch_size = 500
+    all_website_ids = set()
     
     def parse_float(val):
         try:
-            clean_val = val.replace('$', '').replace(',', '').strip()
+            clean_val = str(val).replace('$', '').replace(',', '').strip()
             return float(clean_val) if clean_val else 0.0
         except:
             return 0.0
+
+    while True:
+        batch = list(itertools.islice(reader, batch_size))
+        if not batch:
+            break
             
-    for row in rows:
-        domain = (row.get('Domain') or '').strip().lower()[:160]
-        if not domain: continue
-        domains_in_csv.append(domain)
-        parsed_rows[domain] = {
-            "company_name": (row.get('Company Name') or '').strip()[:200],
-            "title": (row.get('Title') or '').strip()[:200],
-            "description": (row.get('Description') or '').strip(),
-            "emails": (row.get('Emails') or '').strip(),
-            "country": (row.get('Country') or '').strip()[:120],
-            "industry": (row.get('Industry') or '').strip()[:120],
-            "linkedin_url": (row.get('Linkedin') or '').strip()[:255],
-            "twitter_url": (row.get('Twitter') or '').strip()[:255],
-            "facebook_url": (row.get('Facebook') or '').strip()[:255],
-            "instagram_url": (row.get('Instagram') or '').strip()[:255],
-            "youtube_url": (row.get('Youtube') or '').strip()[:255],
-            "github_url": (row.get('Github') or '').strip()[:255],
-            "tiktok_url": (row.get('Tiktok') or '').strip()[:255],
-            "tech_spend_monthly": parse_float(row.get('Technology Spend Monthly (USD)', '')),
-            "tech_spend_annual": parse_float(row.get('Technology Spend Annual (USD)', '')),
-        }
-    
-    existing_websites = db.query(Website).filter(Website.domain.in_(domains_in_csv)).all()
-    existing_website_map = {w.domain: w for w in existing_websites}
-    
-    new_websites_to_add = []
-    
-    for domain, data in parsed_rows.items():
-        website = existing_website_map.get(domain)
-        if not website:
-            new_website = Website(domain=domain, **data)
-            new_websites_to_add.append(new_website)
-        else:
-            updated = False
-            for k, v in data.items():
-                if v and not getattr(website, k):
-                    setattr(website, k, v)
-                    updated = True
-            if updated:
-                stats["websites_updated"] += 1
+        domains_in_batch = []
+        parsed_rows = {}
+        
+        for row in batch:
+            domain = (row.get('Domain') or '').strip().lower()[:160]
+            if not domain: continue
+            domains_in_batch.append(domain)
+            parsed_rows[domain] = {
+                "company_name": (row.get('Company Name') or '').strip()[:200],
+                "title": (row.get('Title') or '').strip()[:200],
+                "description": (row.get('Description') or '').strip(),
+                "emails": (row.get('Emails') or '').strip(),
+                "country": (row.get('Country') or '').strip()[:120],
+                "industry": (row.get('Industry') or '').strip()[:120],
+                "linkedin_url": (row.get('Linkedin') or '').strip()[:255],
+                "twitter_url": (row.get('Twitter') or '').strip()[:255],
+                "facebook_url": (row.get('Facebook') or '').strip()[:255],
+                "instagram_url": (row.get('Instagram') or '').strip()[:255],
+                "youtube_url": (row.get('Youtube') or '').strip()[:255],
+                "github_url": (row.get('Github') or '').strip()[:255],
+                "tiktok_url": (row.get('Tiktok') or '').strip()[:255],
+                "tech_spend_monthly": parse_float(row.get('Technology Spend Monthly (USD)', '')),
+                "tech_spend_annual": parse_float(row.get('Technology Spend Annual (USD)', '')),
+            }
+        
+        if not domains_in_batch:
+            continue
+            
+        existing_websites = db.query(Website).filter(Website.domain.in_(domains_in_batch)).all()
+        existing_website_map = {w.domain: w for w in existing_websites}
+        
+        new_websites_to_add = []
+        for domain, data in parsed_rows.items():
+            website = existing_website_map.get(domain)
+            if not website:
+                new_website = Website(domain=domain, **data)
+                new_websites_to_add.append(new_website)
+            else:
+                updated = False
+                for k, v in data.items():
+                    if v and not getattr(website, k):
+                        setattr(website, k, v)
+                        updated = True
+                if updated:
+                    stats["websites_updated"] += 1
+                    
+        if new_websites_to_add:
+            db.add_all(new_websites_to_add)
+            db.commit()
+            stats["websites_created"] += len(new_websites_to_add)
+            
+            for w in new_websites_to_add:
+                existing_website_map[w.domain] = w
                 
-    if new_websites_to_add:
-        db.add_all(new_websites_to_add)
-        db.commit()
-        stats["websites_created"] = len(new_websites_to_add)
+        batch_website_ids = [w.id for w in existing_website_map.values()]
+        all_website_ids.update(batch_website_ids)
         
-        # Fetch the newly created ones to get their IDs
-        new_domains = [w.domain for w in new_websites_to_add]
-        newly_created = db.query(Website).filter(Website.domain.in_(new_domains)).all()
-        for w in newly_created:
-            existing_website_map[w.domain] = w
-            
-    all_website_ids = [w.id for w in existing_website_map.values()]
-    # Fetch all existing links for this specific technology (much faster than IN clause with 10k IDs)
-    existing_links = db.query(WebsiteTechnology).filter(
-        WebsiteTechnology.technology_id == technology.id
-    ).all()
-    
-    existing_linked_website_ids = {link.website_id for link in existing_links}
-    
-    new_links_to_add = []
-    for wid in all_website_ids:
-        if wid not in existing_linked_website_ids:
-            new_links_to_add.append(WebsiteTechnology(website_id=wid, technology_id=technology.id))
-            
-    if new_links_to_add:
-        db.add_all(new_links_to_add)
-        db.commit()
-        stats["links_created"] = len(new_links_to_add)
+        # Link technologies for this batch
+        existing_links = db.query(WebsiteTechnology).filter(
+            WebsiteTechnology.technology_id == technology.id,
+            WebsiteTechnology.website_id.in_(batch_website_ids)
+        ).all()
         
+        existing_linked_website_ids = {link.website_id for link in existing_links}
+        
+        new_links_to_add = []
+        for wid in batch_website_ids:
+            if wid not in existing_linked_website_ids:
+                new_links_to_add.append(WebsiteTechnology(website_id=wid, technology_id=technology.id))
+                
+        if new_links_to_add:
+            db.add_all(new_links_to_add)
+            db.commit()
+            stats["links_created"] += len(new_links_to_add)
+            
+    # Update total count once at the end
     technology.website_count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == technology.id).count()
     db.commit()
     
-    imported_website_ids = all_website_ids
+    imported_website_ids = list(all_website_ids)
     
     job_id = None
     if imported_website_ids:
