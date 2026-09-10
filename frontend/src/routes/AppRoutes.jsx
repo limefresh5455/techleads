@@ -11,7 +11,6 @@ import {
   PricingPage,
   CustomDataPage,
   TechnologiesPage,
-  CategoriesPage,
   ContactPage,
   LoginPage,
   SignupPage,
@@ -47,7 +46,7 @@ export default function AppRoutes() {
         <Route index element={<HomePage />} />
         <Route path="directory" element={<DirectoryPage />} />
         <Route path="technologies" element={<TechnologiesPage />} />
-        <Route path="categories" element={<CategoriesPage />} />
+
         <Route path="blog" element={<BlogPage />} />
         <Route path="pricing" element={<PricingPage />} />
         <Route path="custom-data" element={<CustomDataPage />} />

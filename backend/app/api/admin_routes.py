@@ -1,12 +1,12 @@
 from fastapi import APIRouter, Depends, HTTPException, status, File, UploadFile
 from sqlalchemy.orm import Session
-from sqlalchemy import func
+from sqlalchemy import func, text
 from typing import List
 
 from app.core.database import get_db
 from app.core.auth import get_current_user
 from app.models import (
-    User, SiteContent, NavItem, Technology, Category, PricingPlan, PlanFeature,
+    User, SiteContent, NavItem, Technology, PricingPlan, PlanFeature,
     FeatureHighlight, DashboardPreview, DetectGroup, DetectTag,
     FooterColumn, FooterLink, SocialLink, LegalLink, BlogPost, FaqItem, CustomDataBlock, ContactMessage,
     Website, WebsiteTechnology, CreditPurchase
@@ -15,7 +15,6 @@ from datetime import datetime, timedelta
 from app.schemas import (
     SiteContentOut, SiteContentUpdate,
     NavItemOut, NavItemCreate, NavItemUpdate,
-    CategoryOut, CategoryCreate, CategoryUpdate,
     TechnologyOut, TechnologyCreate, TechnologyUpdate,
     PricingPlanOut, PricingPlanCreate, PricingPlanUpdate,
     FeatureHighlightOut, FeatureHighlightCreate, FeatureHighlightUpdate,
@@ -28,7 +27,7 @@ from app.schemas import (
     FaqItemOut, FaqItemCreate, FaqItemUpdate,
     CustomDataBlockOut, CustomDataBlockCreate, CustomDataBlockUpdate,
     WebsiteAdminOut, WebsiteCreate, WebsiteUpdate,
-    PaginatedCategoryOut, PaginatedTechnologyOut, PaginatedWebsiteOut,
+    PaginatedTechnologyOut, PaginatedWebsiteOut,
     AdminDashboardFullOut
 )
 
@@ -46,7 +45,6 @@ def get_dashboard_stats(db: Session = Depends(get_db), admin: User = Depends(get
     total_admins = db.query(func.count(User.id)).filter(User.role == "admin").scalar() or 0
     total_websites = db.query(func.count(Website.id)).scalar() or 0
     total_technologies = db.query(func.count(Technology.id)).scalar() or 0
-    total_categories = db.query(func.count(Category.id)).scalar() or 0
     total_messages = db.query(func.count(ContactMessage.id)).scalar() or 0
 
     total_revenue = db.query(func.sum(CreditPurchase.amount_cents)).filter(CreditPurchase.status == "paid").scalar() or 0
@@ -109,7 +107,6 @@ def get_dashboard_stats(db: Session = Depends(get_db), admin: User = Depends(get
         "total_admins": total_admins,
         "total_websites": total_websites,
         "total_technologies": total_technologies,
-        "total_categories": total_categories,
         "total_messages": total_messages,
         "total_revenue": total_revenue,
         "active_plans": active_plans,
@@ -277,56 +274,7 @@ def delete_legal_link(item_id: int, db: Session = Depends(get_db), admin: User =
     db.commit()
     return {"ok": True}
 
-# --- Category ---
-@router.get("/categories", response_model=PaginatedCategoryOut)
-def get_categories(
-    page: int = 1, 
-    limit: int = 20, 
-    search: str = "", 
-    db: Session = Depends(get_db), 
-    admin: User = Depends(get_current_admin_user)
-):
-    query = db.query(Category)
-    if search:
-        query = query.filter(Category.name.ilike(f"%{search}%"))
-    
-    total = query.count()
-    items = query.order_by(Category.sort_order).offset((page - 1) * limit).limit(limit).all()
-    
-    return {
-        "items": items,
-        "total": total,
-        "page": page,
-        "limit": limit,
-        "total_pages": (total + limit - 1) // limit if total > 0 else 1
-    }
 
-@router.post("/categories", response_model=CategoryOut)
-def create_category(data: CategoryCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    item = Category(**data.dict())
-    if not item.sort_order:
-        max_order = db.query(func.coalesce(func.max(Category.sort_order), 0)).scalar()
-        item.sort_order = max_order + 1
-    db.add(item)
-    db.commit()
-    db.refresh(item)
-    return item
-
-@router.put("/categories/{item_id}", response_model=CategoryOut)
-def update_category(item_id: int, data: CategoryUpdate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    item = get_or_404(db, Category, item_id)
-    for k, v in data.dict(exclude_unset=True).items():
-        if v is not None: setattr(item, k, v)
-    db.commit()
-    db.refresh(item)
-    return item
-
-@router.delete("/categories/{item_id}")
-def delete_category(item_id: int, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
-    item = get_or_404(db, Category, item_id)
-    db.delete(item)
-    db.commit()
-    return {"ok": True}
 
 @router.get("/technologies", response_model=PaginatedTechnologyOut)
 def get_technologies(
@@ -382,6 +330,23 @@ def delete_technology(item_id: int, db: Session = Depends(get_db), admin: User =
 @router.get("/pricing-plans", response_model=List[PricingPlanOut])
 def get_pricing_plans(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
     return db.query(PricingPlan).order_by(PricingPlan.sort_order).all()
+
+@router.post("/reset-data")
+def reset_system_data(current_user: User = Depends(get_current_admin_user), db: Session = Depends(get_db)):
+    """Deletes all websites, technologies and their relations, resetting IDs."""
+    try:
+        # PostgreSQL syntax for truncating and resetting sequences
+        db.execute(text("TRUNCATE TABLE website_technologies, websites, technologies RESTART IDENTITY CASCADE;"))
+        db.commit()
+        return {"message": "All website and technology data has been reset successfully."}
+    except Exception as e:
+        db.rollback()
+        # Fallback to simple delete if not postgres
+        db.execute(text("DELETE FROM website_technologies;"))
+        db.execute(text("DELETE FROM websites;"))
+        db.execute(text("DELETE FROM technologies;"))
+        db.commit()
+        return {"message": "All website and technology data has been deleted (IDs may not be fully reset depending on DB dialect)."}
 
 @router.post("/pricing-plans", response_model=PricingPlanOut)
 def create_pricing_plan(data: PricingPlanCreate, db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):

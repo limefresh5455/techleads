@@ -2,7 +2,6 @@ from sqlalchemy.orm import Session
 
 from app.models import (
     BlogPost,
-    Category,
     DashboardPreview,
     DetectGroup,
     DetectTag,
@@ -388,23 +387,6 @@ def _seed_core(db: Session) -> None:
     if db.query(Technology).first():
         return
 
-    categories_data = [
-        ("E-commerce", "ecommerce", "shopping-bag", 142580, 0),
-        ("CMS", "cms", "layout", 98520, 1),
-        ("Analytics", "analytics", "bar-chart-3", 76410, 2),
-        ("Marketing", "marketing", "megaphone", 65320, 3),
-        ("Payment", "payment", "credit-card", 54110, 4),
-        ("CRM", "crm", "users", 43890, 5),
-        ("Frameworks", "frameworks", "code", 39200, 6),
-        ("Security", "security", "shield", 28750, 7),
-    ]
-    category_map: dict[str, Category] = {}
-    for name, slug, icon, count, order in categories_data:
-        cat = Category(name=name, slug=slug, icon=icon, item_count=count, sort_order=order)
-        db.add(cat)
-        category_map[slug] = cat
-    db.flush()
-
     technologies_data = [
         ("WordPress", "wordpress", "layout", "#21759B", 530000, 3.2, "cms", 0, True),
         ("Shopify", "shopify", "shopping-bag", "#96BF48", 100000, 8.1, "ecommerce", 1, True),
@@ -419,7 +401,7 @@ def _seed_core(db: Session) -> None:
         ("Google Analytics", "google-analytics", "bar-chart-3", "#F9AB00", 5620180, 4.5, "analytics", 10, False),
         ("Next.js", "nextjs", "code", "#000000", 984210, 14.2, "frameworks", 11, False),
     ]
-    for name, slug, icon, color, count, growth, cat_slug, order, popular in technologies_data:
+    for name, slug, icon, color, count, growth, order, popular in technologies_data:
         db.add(
             Technology(
                 name=name,
@@ -428,7 +410,6 @@ def _seed_core(db: Session) -> None:
                 icon_color=color,
                 website_count=count,
                 growth_percent=growth,
-                category_id=category_map[cat_slug].id,
                 is_featured=True,
                 is_popular=popular,
                 sort_order=order,
@@ -592,17 +573,16 @@ def _seed_site_content(db: Session) -> None:
 
 def _seed_dashboard(db: Session) -> None:
     rows = [
-        ("stripe.com", "Payments", "Stripe, React", "US", "2.1M", "Yes"),
-        ("shopify.com", "E-commerce", "Shopify, Ruby on Rails", "CA", "1.8M", "Yes"),
-        ("hubspot.com", "CRM", "HubSpot, React", "US", "980k", "No"),
-        ("vercel.com", "Hosting", "Next.js, React", "US", "740k", "No"),
-        ("notion.so", "Productivity", "React, Cloudflare", "US", "620k", "Yes"),
+        ("stripe.com", "Stripe, React", "US", "2.1M", "Yes"),
+        ("shopify.com", "Shopify, Ruby on Rails", "CA", "1.8M", "Yes"),
+        ("hubspot.com", "HubSpot, React", "US", "980k", "No"),
+        ("vercel.com", "Next.js, React", "US", "740k", "No"),
+        ("notion.so", "React, Cloudflare", "US", "620k", "Yes"),
     ]
-    for i, (domain, categories, technologies, country, traffic, ads) in enumerate(rows):
+    for i, (domain, technologies, country, traffic, ads) in enumerate(rows):
         db.add(
             DashboardPreview(
                 domain=domain,
-                categories=categories,
                 technologies=technologies,
                 country=country,
                 traffic=traffic,
@@ -612,15 +592,6 @@ def _seed_dashboard(db: Session) -> None:
         )
 
 
-def _upsert_category(db: Session, name: str, slug: str, icon: str, order: int) -> Category:
-    row = db.query(Category).filter(Category.slug == slug).first()
-    if row:
-        return row
-    row = Category(name=name, slug=slug, icon=icon, item_count=0, sort_order=order)
-    db.add(row)
-    db.flush()
-    return row
-
 
 def _upsert_technology(
     db: Session,
@@ -628,7 +599,6 @@ def _upsert_technology(
     slug: str,
     icon: str,
     color: str,
-    category: Category,
     order: int,
     popular: bool = False,
 ) -> Technology:
@@ -642,7 +612,6 @@ def _upsert_technology(
         icon_color=color,
         website_count=0,
         growth_percent=0.0,
-        category_id=category.id,
         is_featured=True,
         is_popular=popular,
         sort_order=order,
@@ -658,25 +627,6 @@ def _sync_websites(db: Session) -> None:
 
     db.query(WebsiteTechnology).delete()
     db.flush()
-
-    categories = {
-        slug: _upsert_category(db, name, slug, icon, order)
-        for name, slug, icon, order in [
-            ("CMS", "cms", "layout", 0),
-            ("Framework", "frameworks", "code", 1),
-            ("E-Commerce", "ecommerce", "shopping-bag", 2),
-            ("Analytics", "analytics", "bar-chart-3", 3),
-            ("Marketing", "marketing", "megaphone", 4),
-            ("Payment", "payment", "credit-card", 5),
-            ("Hosting", "hosting", "server", 6),
-            ("Chat", "chat", "message-circle", 7),
-            ("WP Plugin", "wp-plugin", "puzzle", 8),
-            ("Review", "review", "star", 9),
-            ("Booking", "booking", "calendar", 10),
-            ("Business", "business", "briefcase", 11),
-            ("Other", "other", "folder", 12),
-        ]
-    }
 
     tech_defs = [
         ("WordPress", "wordpress", "layout", "#21759B", "cms", 0, True),
@@ -703,7 +653,7 @@ def _sync_websites(db: Session) -> None:
     tech_map: dict[str, Technology] = {}
     for name, slug, icon, color, cat_slug, order, popular in tech_defs:
         tech_map[slug] = _upsert_technology(
-            db, name, slug, icon, color, categories[cat_slug], order, popular
+            db, name, slug, icon, color, order, popular
         )
 
     website_details = {
@@ -713,7 +663,6 @@ def _sync_websites(db: Session) -> None:
                 "The Commercial Spaceflight Federation is the leading voice for the commercial space "
                 "industry, promoting the development of commercial spaceflight and space exploration."
             ),
-            "category_label": "Uncategorized",
             "contact_info": "No contact information available",
             "extra": "Elementor,AstraTheme,YoastSEO,Beaver Builder,Gravity Forms,Cloudflare CDN",
             "facebook": "https://facebook.com",
@@ -756,17 +705,6 @@ def _sync_websites(db: Session) -> None:
 
     for i, (domain, rank, tech_slugs) in enumerate(websites):
         detail = website_details.get(domain, {})
-        primary_tech = tech_slugs[0] if tech_slugs else ""
-        category_label = {
-            "wordpress": "CMS",
-            "shopify": "E-Commerce",
-            "wix": "CMS",
-            "drupal": "CMS",
-            "magento": "E-Commerce",
-            "webflow": "CMS",
-            "squarespace": "CMS",
-        }.get(primary_tech, "Uncategorized")
-
         site = Website(
             domain=domain,
             rank=rank,
@@ -776,7 +714,6 @@ def _sync_websites(db: Session) -> None:
                 "description",
                 f"Website analysis for {domain}. Technology stack detected by TechLeads.Ai.",
             ),
-            category_label=detail.get("category_label", category_label),
             contact_info=detail.get("contact_info", "No contact information available"),
             facebook_url=detail.get("facebook", ""),
             twitter_url=detail.get("twitter", ""),

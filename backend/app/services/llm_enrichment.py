@@ -38,10 +38,10 @@ Return ONLY valid JSON with this shape:
 {
   "title": "string",
   "description": "string (2-4 sentences about the business and website)",
-  "category_label": "string (broad category, e.g. E-Commerce, SaaS, Agency, Blog, Media)",
-  "subcategory": "string (specific niche under that category, e.g. Fashion Retail, Marketing Automation, Web Design Agency)",
   "industry": "string",
   "company_type": "string (B2B, B2C, D2C, Marketplace, etc.)",
+  "category_label": "string",
+  "subcategory": "string or empty",
   "business_summary": "string (what the company does, who they serve)",
   "technologies": ["primary detected tech names"],
   "extra_technologies": ["additional widgets, plugins, integrations"],
@@ -70,49 +70,24 @@ Return ONLY valid JSON with this shape:
 
 # OpenRouter LLM enrichment — OpenAI gpt-oss-120b
 # https://openrouter.ai/openai/gpt-oss-120b
-OPENROUTER_MODEL_FALLBACKS = (
-    "openai/gpt-oss-120b",
-    "openai/gpt-oss-120b:free",
-    "openai/gpt-oss-20b",
-    "openrouter/free",
-)
-
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 
 
 def enrich_with_llm(domain: str, signals: dict[str, Any]) -> dict[str, Any]:
     """Enrich scraped site signals with OpenAI gpt-oss-120b via OpenRouter."""
-    cfg = _settings()
-    if not cfg.openrouter_api_key.strip():
-        return with_meta(
-            fallback_enrichment(domain, signals),
-            llm_used=False,
-            llm_error="OPENROUTER_API_KEY not set",
-        )
-
-    result = enrich_with_openrouter(domain, signals)
-    if result.get("llm_used"):
-        return result
-
-    return with_meta(
-        fallback_enrichment(domain, signals),
-        llm_used=False,
-        llm_error=str(result.get("llm_error") or "OpenRouter enrichment failed"),
-    )
+    return enrich_with_openrouter(domain, signals)
 
 
 def enrich_with_openrouter(domain: str, signals: dict[str, Any]) -> dict[str, Any]:
     cfg = _settings()
     api_key = cfg.openrouter_api_key.strip()
     if not api_key:
-        return with_meta(
-            fallback_enrichment(domain, signals),
-            llm_used=False,
-            llm_error="OPENROUTER_API_KEY not set",
-        )
+        raise RuntimeError("OPENROUTER_API_KEY not set")
 
     prompt = build_prompt(domain, signals)
     models = [cfg.openrouter_model]
+    if getattr(cfg, 'openrouter_model_fallbacks', None):
+        models.extend([m.strip() for m in cfg.openrouter_model_fallbacks.split(",") if m.strip()])
     
     # Filter out empty or duplicate models while preserving order
     unique_models = []
@@ -208,23 +183,13 @@ def enrich_with_openrouter(domain: str, signals: dict[str, Any]) -> dict[str, An
                     else:
                         logger.error(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt}/{max_retries} next_retry=None (Max retries reached)")
                         # Do NOT fall back. Stop completely.
-                        return with_meta(
-                            fallback_enrichment(domain, signals),
-                            llm_used=False,
-                            llm_error=last_error,
-                            llm_error_category="rate_limited"
-                        )
+                        raise RuntimeError(f"HTTP {status} rate_limited: {last_error}")
                         
                 elif status == 402:
                     error_category = "credits_required"
                     logger.error(f"[OpenRouter] domain={domain} model={model_name} status={status} category={error_category} retry={attempt}/{max_retries} next_retry=None")
                     # Do NOT fall back. Stop completely.
-                    return with_meta(
-                        fallback_enrichment(domain, signals),
-                        llm_used=False,
-                        llm_error=last_error,
-                        llm_error_category="credits_required"
-                    )
+                    raise RuntimeError(f"HTTP {status} credits_required: {last_error}")
                     
                 elif status == 404:
                     error_category = "model_unavailable"
@@ -265,12 +230,7 @@ def enrich_with_openrouter(domain: str, signals: dict[str, Any]) -> dict[str, An
         model_idx += 1
         
     # If all models failed or we broke out
-    return with_meta(
-        fallback_enrichment(domain, signals),
-        llm_used=False,
-        llm_error=last_error or "OpenRouter enrichment failed for all models",
-        llm_error_category=error_category
-    )
+    raise RuntimeError(last_error or "OpenRouter enrichment failed for all models")
 
 
 
@@ -308,86 +268,9 @@ def parse_json_response(text: str, domain: str, signals: dict[str, Any]) -> dict
         data = json.loads(cleaned)
         if isinstance(data, dict):
             return normalize_enrichment(data, domain, signals)
-    except json.JSONDecodeError:
-        pass
-    return fallback_enrichment(domain, signals)
-
-
-def fallback_enrichment(domain: str, signals: dict[str, Any]) -> dict[str, Any]:
-    technologies = list(dict.fromkeys(signals.get("rule_based_technologies", [])))
-    if signals.get("generator"):
-        technologies.insert(0, signals["generator"])
-
-    title = signals.get("title") or domain.split(".")[0].replace("-", " ").title()
-    description = (
-        signals.get("meta_description")
-        or f"Website technology profile for {domain}, analyzed by TechLeads.Ai."
-    )
-    emails = signals.get("emails") or []
-    socials = signals.get("social_links") or {}
-
-    category = "Uncategorized"
-    subcategory = ""
-    if any(t.lower() in {"shopify", "woocommerce", "magento"} for t in technologies):
-        category = "E-Commerce"
-        ecommerce = next(
-            (t for t in technologies if t.lower() in {"shopify", "woocommerce", "magento"}),
-            "Online Store",
-        )
-        subcategory = f"{ecommerce} Store"
-    elif any(t.lower() in {"wordpress", "drupal", "wix", "squarespace", "webflow"} for t in technologies):
-        category = "CMS"
-        cms = next(
-            (t for t in technologies if t.lower() in {"wordpress", "drupal", "wix", "squarespace", "webflow"}),
-            "Website",
-        )
-        subcategory = f"{cms} Site"
-
-    extras = ["Cloudflare CDN", "Open Graph", "Google Tag Manager"]
-    marketing = [t for t in technologies if t in {"HubSpot", "Klaviyo", "Mailchimp", "Intercom"}]
-    analytics = [t for t in technologies if "Analytics" in t or "Tag Manager" in t]
-
-    return {
-        "title": title,
-        "description": description,
-        "category_label": category,
-        "subcategory": subcategory,
-        "industry": category,
-        "company_type": "Unknown",
-        "business_summary": description,
-        "technologies": technologies[:8] or ["Unknown"],
-        "extra_technologies": extras,
-        "marketing_stack": marketing or ["Not detected"],
-        "analytics_tools": analytics or ["Not detected"],
-        "payment_providers": [t for t in technologies if t == "Stripe"] or [],
-        "cms_platform": next(
-            (t for t in technologies if t in {"WordPress", "Drupal", "Wix", "Squarespace", "Webflow"}),
-            "",
-        ),
-        "ecommerce_platform": next(
-            (t for t in technologies if t in {"Shopify", "WooCommerce", "Magento"}),
-            "",
-        ),
-        "hosting_cdn": "Cloudflare" if "Cloudflare" in technologies else "",
-        "key_features": ["Technology detection based on page signals"],
-        "target_audience": "Unknown",
-        "contact_info": emails[0] if emails else "No contact information available",
-        "phone": "",
-        "address": "",
-        "facebook_url": socials.get("facebook", ""),
-        "twitter_url": socials.get("twitter", ""),
-        "linkedin_url": socials.get("linkedin", ""),
-        "instagram_url": "",
-        "youtube_url": "",
-        "estimated_traffic_tier": "Unknown",
-        "confidence_score": 45,
-        "rank": 75,
-        "llm_insights": [
-            f"Detected {len(technologies)} technologies from crawl signals.",
-            "Add OPENROUTER_API_KEY and use openai/gpt-oss-120b for deeper AI enrichment.",
-        ],
-        "llm_provider": "rules",
-    }
+    except json.JSONDecodeError as e:
+        raise RuntimeError(f"LLM returned invalid JSON: {e}")
+    raise RuntimeError("LLM returned non-dictionary JSON")
 
 
 def as_str_list(value: Any, fallback: list[str]) -> list[str]:
@@ -399,39 +282,38 @@ def as_str_list(value: Any, fallback: list[str]) -> list[str]:
 
 
 def normalize_enrichment(data: dict[str, Any], domain: str, signals: dict[str, Any]) -> dict[str, Any]:
-    fallback = fallback_enrichment(domain, signals)
-    technologies = as_str_list(data.get("technologies"), fallback["technologies"])
+    technologies = as_str_list(data.get("technologies"), [])
 
     return {
-        "title": str(data.get("title") or fallback["title"])[:200],
-        "description": str(data.get("description") or fallback["description"])[:2000],
-        "category_label": str(data.get("category_label") or fallback["category_label"])[:120],
-        "subcategory": str(data.get("subcategory") or fallback.get("subcategory") or "")[:120],
-        "industry": str(data.get("industry") or fallback["industry"])[:120],
-        "company_type": str(data.get("company_type") or fallback["company_type"])[:80],
-        "business_summary": str(data.get("business_summary") or fallback["business_summary"])[:1500],
+        "title": str(data.get("title") or "")[:200],
+        "description": str(data.get("description") or "")[:2000],
+        "industry": str(data.get("industry") or "")[:120],
+        "company_type": str(data.get("company_type") or "")[:80],
+        "category_label": str(data.get("category_label") or "")[:120],
+        "subcategory": str(data.get("subcategory") or "")[:120],
+        "business_summary": str(data.get("business_summary") or "")[:1500],
         "technologies": technologies[:12],
-        "extra_technologies": as_str_list(data.get("extra_technologies"), fallback["extra_technologies"])[:20],
-        "marketing_stack": as_str_list(data.get("marketing_stack"), fallback["marketing_stack"])[:10],
-        "analytics_tools": as_str_list(data.get("analytics_tools"), fallback["analytics_tools"])[:10],
-        "payment_providers": as_str_list(data.get("payment_providers"), fallback["payment_providers"])[:8],
-        "cms_platform": str(data.get("cms_platform") or fallback["cms_platform"])[:120],
-        "ecommerce_platform": str(data.get("ecommerce_platform") or fallback["ecommerce_platform"])[:120],
-        "hosting_cdn": str(data.get("hosting_cdn") or fallback["hosting_cdn"])[:120],
-        "key_features": as_str_list(data.get("key_features"), fallback["key_features"])[:8],
-        "target_audience": str(data.get("target_audience") or fallback["target_audience"])[:300],
-        "contact_info": str(data.get("contact_info") or fallback["contact_info"])[:500],
-        "phone": str(data.get("phone") or fallback["phone"])[:80],
-        "address": str(data.get("address") or fallback["address"])[:300],
-        "facebook_url": str(data.get("facebook_url") or fallback["facebook_url"])[:255],
-        "twitter_url": str(data.get("twitter_url") or fallback["twitter_url"])[:255],
-        "linkedin_url": str(data.get("linkedin_url") or fallback["linkedin_url"])[:255],
-        "instagram_url": str(data.get("instagram_url") or fallback["instagram_url"])[:255],
-        "youtube_url": str(data.get("youtube_url") or fallback["youtube_url"])[:255],
-        "estimated_traffic_tier": str(data.get("estimated_traffic_tier") or fallback["estimated_traffic_tier"])[:40],
-        "confidence_score": max(0, min(100, int(data.get("confidence_score") or fallback["confidence_score"]))),
-        "rank": max(1, min(100, int(data.get("rank") or fallback["rank"]))),
-        "llm_insights": as_str_list(data.get("llm_insights"), fallback["llm_insights"])[:8],
+        "extra_technologies": as_str_list(data.get("extra_technologies"), [])[:20],
+        "marketing_stack": as_str_list(data.get("marketing_stack"), [])[:10],
+        "analytics_tools": as_str_list(data.get("analytics_tools"), [])[:10],
+        "payment_providers": as_str_list(data.get("payment_providers"), [])[:8],
+        "cms_platform": str(data.get("cms_platform") or "")[:120],
+        "ecommerce_platform": str(data.get("ecommerce_platform") or "")[:120],
+        "hosting_cdn": str(data.get("hosting_cdn") or "")[:120],
+        "key_features": as_str_list(data.get("key_features"), [])[:8],
+        "target_audience": str(data.get("target_audience") or "")[:300],
+        "contact_info": str(data.get("contact_info") or "")[:500],
+        "phone": str(data.get("phone") or "")[:80],
+        "address": str(data.get("address") or "")[:300],
+        "facebook_url": str(data.get("facebook_url") or "")[:255],
+        "twitter_url": str(data.get("twitter_url") or "")[:255],
+        "linkedin_url": str(data.get("linkedin_url") or "")[:255],
+        "instagram_url": str(data.get("instagram_url") or "")[:255],
+        "youtube_url": str(data.get("youtube_url") or "")[:255],
+        "estimated_traffic_tier": str(data.get("estimated_traffic_tier") or "")[:40],
+        "confidence_score": max(0, min(100, int(data.get("confidence_score") or 0))),
+        "rank": max(1, min(100, int(data.get("rank") or 1))),
+        "llm_insights": as_str_list(data.get("llm_insights"), [])[:8],
     }
 
 
@@ -466,102 +348,3 @@ def _compact_signals(signals: dict[str, Any]) -> dict[str, Any]:
     return compact
 
 
-_category_cache: dict[str, str] = {}
-
-def categorize_technology(tech_name: str, existing_categories: list[str]) -> str:
-    """Uses LLM to categorize a technology into one of the existing categories."""
-    if tech_name in _category_cache:
-        return _category_cache[tech_name]
-        
-    cfg = _settings()
-    api_key = cfg.openrouter_api_key.strip()
-    if not api_key or not existing_categories:
-        return "Other"
-        
-    standard_hints = [
-        "Ecommerce", "Frontend Framework", "Backend Framework", "Database", 
-        "Analytics", "CRM", "Marketing", "CMS", "Hosting", "Payment", 
-        "Security", "SEO", "Customer Support", "DevOps"
-    ]
-    
-    # Pre-defined mapping for common technologies to avoid API calls and ensure accuracy
-    common_mappings = {
-        "react": "Frontend Framework",
-        "vue.js": "Frontend Framework",
-        "vuejs": "Frontend Framework",
-        "next.js": "Frontend Framework",
-        "nextjs": "Frontend Framework",
-        "wordpress": "CMS",
-        "drupal": "CMS",
-        "joomla": "CMS",
-        "shopify": "Ecommerce",
-        "woocommerce": "Ecommerce",
-        "magento": "Ecommerce",
-        "easy-digital-downloads-v3": "Ecommerce",
-        "google-analytics": "Analytics",
-        "google-tag-manager": "Analytics",
-        "hotjar": "Analytics",
-        "cloudflare": "Security & CDN",
-        "aws": "Hosting",
-        "stripe": "Payment",
-        "paypal": "Payment",
-        "hubspot": "CRM",
-        "salesforce": "CRM",
-        "learndash": "Education / LMS",
-    }
-    
-    clean_tech = tech_name.strip().lower()
-    for key, val in common_mappings.items():
-        if key in clean_tech or clean_tech in key.replace("-", " "):
-            _category_cache[tech_name] = val
-            return val
-            
-    cat_hints = existing_categories if len(existing_categories) > 5 else standard_hints
-    
-    prompt = (
-        f"Categorize the software technology '{tech_name}'. "
-        f"Choose from these categories if possible: {', '.join(cat_hints)}. "
-        "If none fit, invent a short, accurate category name (1-3 words, e.g. 'Web Design', 'Ad Network'). "
-        "Respond with ONLY the exact category name. No extra text, no markdown."
-    )
-    
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json",
-        "HTTP-Referer": cfg.openrouter_http_referer,
-        "X-Title": cfg.openrouter_app_title,
-    }
-    
-    payload = {
-        "model": cfg.openrouter_model,
-        "temperature": 0.1,
-        "max_tokens": 15,
-        "messages": [
-            {
-                "role": "system",
-                "content": "You are a data classification assistant. Respond with ONLY the category name. No quotes, no intro."
-            },
-            {"role": "user", "content": prompt},
-        ],
-    }
-    
-    try:
-        with httpx.Client(timeout=httpx.Timeout(10.0)) as client:
-            response = client.post(OPENROUTER_URL, headers=headers, json=payload)
-        if response.status_code == 200:
-            body = response.json()
-            text = _extract_openrouter_text(body).strip()
-            # Clean up the response in case LLM added quotes
-            text = text.replace('"', '').replace("'", "").strip()
-            
-            # Basic validation
-            if text and len(text) < 40 and "\n" not in text:
-                # Title case it for consistency (e.g. "Frontend Framework")
-                final_cat = text.title()
-                _category_cache[tech_name] = final_cat
-                return final_cat
-    except Exception as e:
-        logger.warning("Categorization failed for %s: %s", tech_name, e)
-        
-    _category_cache[tech_name] = "Other"
-    return "Other"

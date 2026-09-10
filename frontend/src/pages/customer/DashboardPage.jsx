@@ -11,7 +11,6 @@ import {
 import { useSiteData } from '../../context/SiteDataContext'
 import { SiteDetailsPanel } from '../../components'
 import { CreditsPanel } from '../../components'
-import { CategoryModal } from '../../components'
 
 function TechBadge({ tech }) {
   return (
@@ -29,11 +28,9 @@ export default function DashboardPage() {
   const { data, updateUserCredits, refreshData } = useSiteData()
   const [searchParams, setSearchParams] = useSearchParams()
   const technologies = data.technologies || []
-  const categories = data.categories || []
 
   const [domainQuery, setDomainQuery] = useState('')
   const [techSearch, setTechSearch] = useState('')
-  const [selectedCategory, setSelectedCategory] = useState('all')
   const [selectedTechs, setSelectedTechs] = useState([])
   const [matchMode, setMatchMode] = useState('any')
   const [page, setPage] = useState(1)
@@ -54,39 +51,13 @@ export default function DashboardPage() {
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
   const [techRefreshTick, setTechRefreshTick] = useState(0)
 
-  const categoryOptions = useMemo(() => {
-    const seen = new Set()
-    const ranked = [...categories]
-      .filter((cat) => cat.slug && cat.slug !== 'all')
-      .sort((a, b) => {
-        const byOrder = (a.sort_order ?? 0) - (b.sort_order ?? 0)
-        if (byOrder !== 0) return byOrder
-        return (b.item_count || 0) - (a.item_count || 0)
-      })
-
-    const top = []
-    for (const cat of ranked) {
-      if (seen.has(cat.slug)) continue
-      seen.add(cat.slug)
-      top.push({ slug: cat.slug, name: cat.name })
-    }
-
-    // Keep current selection visible if it falls outside the top 15.
-    if (selectedCategory !== 'all' && !seen.has(selectedCategory)) {
-      const selected = categories.find((c) => c.slug === selectedCategory)
-      if (selected) top.push({ slug: selected.slug, name: selected.name })
-    }
-
-    return [{ slug: 'all', name: 'All' }, ...top]
-  }, [categories, selectedCategory])
-
   useEffect(() => {
     let cancelled = false
     const load = async () => {
       setIsFetchingTechs(true)
       try {
         const q = techSearch.trim()
-        const rows = await fetchTechnologies(q, selectedCategory, 0, 50)
+        const rows = await fetchTechnologies(q, 0, 50)
         if (!cancelled) {
           setRemoteTechs(rows)
           setTechOffset(rows.length)
@@ -107,14 +78,14 @@ export default function DashboardPage() {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [techSearch, selectedCategory, techRefreshTick])
+  }, [techSearch, techRefreshTick])
 
   const loadMoreTechs = useCallback(async () => {
     if (isFetchingTechs || !hasMoreTechs) return
     setIsFetchingTechs(true)
     try {
       const q = techSearch.trim()
-      const rows = await fetchTechnologies(q, selectedCategory, techOffset, 50)
+      const rows = await fetchTechnologies(q, techOffset, 50)
       setRemoteTechs((prev) => {
         const existingIds = new Set(prev.map((t) => t.id))
         const newRows = rows.filter((r) => !existingIds.has(r.id))
@@ -127,7 +98,7 @@ export default function DashboardPage() {
     } finally {
       setIsFetchingTechs(false)
     }
-  }, [techSearch, selectedCategory, techOffset, isFetchingTechs, hasMoreTechs])
+  }, [techSearch, techOffset, isFetchingTechs, hasMoreTechs])
 
   const filteredTechnologies = useMemo(() => {
     const list = [...remoteTechs]
@@ -283,7 +254,6 @@ export default function DashboardPage() {
     if (!slug) return
 
     setPage(1)
-    setSelectedCategory('all')
     setTechSearch(matched?.name || name)
     setSelectedTechs([slug])
     setMatchMode('any')
@@ -339,6 +309,7 @@ export default function DashboardPage() {
 
       const header = [
         'Domain',
+        'Company Name',
         'Title',
         'Rank',
         'Category',
@@ -442,28 +413,6 @@ export default function DashboardPage() {
     [selectedTechs, technologies]
   )
 
-  const filteredCategoryOptions = useMemo(() => {
-    const search = techSearch.trim().toLowerCase()
-    if (!search) return categoryOptions
-    return categoryOptions.filter(
-      (cat) => cat.name.toLowerCase().includes(search) || cat.slug === 'all'
-    )
-  }, [categoryOptions, techSearch])
-
-  const visibleCategories = useMemo(() => {
-    const sliced = filteredCategoryOptions.slice(0, 10)
-    if (selectedCategory !== 'all') {
-      const isVisible = sliced.some((c) => c.slug === selectedCategory)
-      if (!isVisible) {
-        const selectedObj = filteredCategoryOptions.find((c) => c.slug === selectedCategory)
-        if (selectedObj) {
-          sliced.push(selectedObj)
-        }
-      }
-    }
-    return sliced
-  }, [filteredCategoryOptions, selectedCategory])
-
   return (
     <div className="mx-auto max-w-[1400px] px-4 py-6 lg:px-6">
       <form onSubmit={onAnalyzeUrl} className="mb-6 flex max-w-2xl gap-2">
@@ -508,15 +457,13 @@ export default function DashboardPage() {
           </form>
 
           <div className="mt-5">
-            <p className="text-xs font-semibold uppercase tracking-wide text-muted">
-              Technologies & Categories
-            </p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-muted">Technologies</p>
             <div className="relative mt-2">
               <input
                 className={`w-full rounded-lg border border-border py-2 pl-3 text-sm outline-none focus:border-brand ${
                   techSearch ? 'pr-8' : 'pr-3'
                 }`}
-                placeholder="Search technologies or categories..."
+                placeholder="Search technologies..."
                 value={techSearch}
                 onChange={(e) => setTechSearch(e.target.value)}
               />
@@ -532,39 +479,12 @@ export default function DashboardPage() {
               )}
             </div>
             <div className="mt-3 flex flex-wrap gap-2">
-              {visibleCategories.map((cat) => (
-                <button
-                  key={cat.slug}
-                  type="button"
-                  onClick={() => setSelectedCategory(cat.slug)}
-                  className={`rounded-full border px-2.5 py-1 text-xs font-medium ${
-                    selectedCategory === cat.slug
-                      ? 'border-brand bg-brand text-on-brand'
-                      : 'border-border text-ink hover:bg-surface'
-                  }`}
-                >
-                  {cat.name}
-                </button>
-              ))}
-              {filteredCategoryOptions.length > 12 && (
-                <button
-                  type="button"
-                  onClick={() => setIsCategoryModalOpen(true)}
-                  className="rounded-full border border-brand bg-brand px-2.5 py-1 text-xs font-medium text-on-brand hover:opacity-90"
-                >
-                  View More
-                </button>
-              )}
-              {(domainQuery ||
-                techSearch ||
-                selectedCategory !== 'all' ||
-                selectedTechs.length > 0) && (
+              {(domainQuery || techSearch || selectedTechs.length > 0) && (
                 <button
                   type="button"
                   onClick={() => {
                     setDomainQuery('')
                     setTechSearch('')
-                    setSelectedCategory('all')
                     setSelectedTechs([])
                     setPage(1)
                   }}
@@ -791,14 +711,6 @@ export default function DashboardPage() {
           )}
         </aside>
       </div>
-
-      <CategoryModal
-        isOpen={isCategoryModalOpen}
-        onClose={() => setIsCategoryModalOpen(false)}
-        categoryOptions={filteredCategoryOptions}
-        selectedCategory={selectedCategory}
-        onSelectCategory={setSelectedCategory}
-      />
     </div>
   )
 }

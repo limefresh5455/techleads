@@ -1,5 +1,4 @@
 export { default as AdminBlogPostsPage } from './AdminBlogPostsPage'
-export { default as AdminCategoriesPage } from './AdminCategoriesPage'
 export { default as AdminContactMessagesPage } from './AdminContactMessagesPage'
 export { default as AdminCustomDataBlocksPage } from './AdminCustomDataBlocksPage'
 export { default as AdminDashboardPage } from './AdminDashboardPage'

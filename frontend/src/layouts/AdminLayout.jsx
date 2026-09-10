@@ -43,7 +43,6 @@ export default function AdminLayout() {
     { to: '/admin/contact-messages', icon: MessageSquare, label: 'Messages' },
     { to: '/admin/users', icon: Users, label: 'Users' },
     { to: '/admin/websites', icon: LinkIcon, label: 'Websites' },
-    { to: '/admin/categories', icon: Folder, label: 'Categories' },
     { to: '/admin/technologies', icon: Globe, label: 'Technologies' },
     { to: '/admin/import', icon: Database, label: 'Imports' },
     { to: '/admin/plans', icon: CreditCard, label: 'Plans' },

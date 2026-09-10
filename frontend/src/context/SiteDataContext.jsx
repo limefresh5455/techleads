@@ -6,7 +6,6 @@ const empty = {
   nav_items: [],
   technologies: [],
   popular_technologies: [],
-  categories: [],
   pricing_plans: [],
   feature_highlights: [],
   dashboard_previews: [],

@@ -21,11 +21,10 @@ from app.core.auth import (
     store_user_token,
 )
 from app.core.database import SessionLocal, get_db
-from app.services.llm_enrichment import categorize_technology
+from app.core.config import settings
 from app.core.security import hash_password, make_token, verify_password
 from app.models import (
     BlogPost,
-    Category,
     ContactMessage,
     CustomDataBlock,
     DashboardPreview,
@@ -51,7 +50,6 @@ from app.schemas import (
     AuthResponse,
     AuthUserOut,
     BlogPostOut,
-    CategoryOut,
     ChangePasswordRequest,
     CheckoutConfirmOut,
     CheckoutRequest,
@@ -153,7 +151,6 @@ def get_landing(db: Session = Depends(get_db)):
         .order_by(Technology.website_count.desc(), Technology.sort_order.asc())
         .all()
     )
-    categories = db.query(Category).order_by(Category.sort_order).all()
     pricing_plans = (
         db.query(PricingPlan)
         .options(joinedload(PricingPlan.features))
@@ -191,7 +188,6 @@ def get_landing(db: Session = Depends(get_db)):
         nav_items=nav_items,
         technologies=technologies,
         popular_technologies=popular_technologies,
-        categories=categories,
         pricing_plans=pricing_plans,
         feature_highlights=feature_highlights,
         dashboard_previews=dashboard_previews,
@@ -609,12 +605,7 @@ def list_technologies(
                 Technology.slug.ilike(f"%{token}%"),
             )
         )
-    if category.strip() and category.strip() != "all":
-        cat_slug = category.strip()
-        cat = db.query(Category).filter(Category.slug == cat_slug).first()
-        if cat:
-            query = query.filter(Technology.category_id == cat.id)
-            
+
     return (
         query.order_by(Technology.website_count.desc(), Technology.name.asc())
         .offset(offset)
@@ -723,10 +714,6 @@ def search_technologies(q: str = "", db: Session = Depends(get_db)):
         .all()
     )
 
-
-@router.get("/categories", response_model=list[CategoryOut])
-def list_categories(db: Session = Depends(get_db)):
-    return db.query(Category).order_by(Category.sort_order).all()
 
 
 @router.get("/dashboard/search", response_model=DashboardSearchOut)
@@ -1002,8 +989,6 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
         domain=row.domain,
         title=row.title or row.domain,
         description=row.description or enriched.get("description", ""),
-        category_label=row.category_label or enriched.get("category_label", "Uncategorized"),
-        subcategory=str(getattr(row, "subcategory", None) or enriched.get("subcategory") or ""),
         contact_info=row.contact_info or enriched.get("contact_info", "No contact information available"),
         rank=row.rank,
         technologies=[
@@ -1215,8 +1200,6 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
         domain=row.domain,
         title=row.title or row.domain,
         description=row.description or enriched.get("description", ""),
-        category_label=row.category_label or enriched.get("category_label", "Uncategorized"),
-        subcategory=str(getattr(row, "subcategory", None) or enriched.get("subcategory") or ""),
         contact_info=row.contact_info or enriched.get("contact_info", "No contact information available"),
         rank=row.rank,
         technologies=[
@@ -1273,6 +1256,7 @@ def enrich_imported_websites(job_id: str, website_ids: list[int]):
             job.status = "processing"
             db.commit()
 
+        import time
         for wid in website_ids:
             website = db.query(Website).filter(Website.id == wid).first()
             if website and not website.enriched_json:
@@ -1282,6 +1266,9 @@ def enrich_imported_websites(job_id: str, website_ids: list[int]):
                         job.processed_websites += 1
                 except Exception as e:
                     print(f"Error enriching website {website.domain}: {e}")
+                    if "429" in str(e) or "rate_limited" in str(e):
+                        print(f"Rate limited by LLM on {website.domain}. Sleeping for {settings.openrouter_429_sleep}s...")
+                        time.sleep(settings.openrouter_429_sleep)
                     if job:
                         job.failed_websites += 1
                         errors = json.loads(job.errors_json or "[]")
@@ -1290,6 +1277,9 @@ def enrich_imported_websites(job_id: str, website_ids: list[int]):
             
             if job:
                 db.commit()
+                
+            # Throttle to stay within free tier limits (max 10 requests/min)
+            time.sleep(settings.openrouter_background_delay)
 
         if job:
             job.status = "completed"
@@ -1324,7 +1314,6 @@ async def import_csv_data(
     reader = csv.DictReader(io.StringIO(decoded, newline=''))
     
     stats = {
-        "categories_created": 0,
         "technologies_created": 0,
         "websites_created": 0,
         "websites_updated": 0,
@@ -1342,130 +1331,101 @@ async def import_csv_data(
     tech_slug = slugify(tech_name)
     technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
     if not technology:
-        # Determine category using AI categorization
-        existing_categories = [c.name for c in db.query(Category).all()]
-        cat_name = categorize_technology(tech_name, existing_categories)
-        cat_slug = slugify(cat_name)
-        category = db.query(Category).filter(Category.slug == cat_slug).first()
-        if not category:
-            category = Category(name=cat_name, slug=cat_slug)
-            db.add(category)
-            db.commit()
-            db.refresh(category)
-            stats["categories_created"] += 1
-            
-        technology = Technology(name=tech_name, slug=tech_slug, category_id=category.id)
+        technology = Technology(name=tech_name, slug=tech_slug)
         db.add(technology)
         db.commit()
         db.refresh(technology)
         stats["technologies_created"] += 1
     
-    for row in reader:
-        domain = (row.get('Domain') or '').strip().lower()[:160]
-        if not domain:
-            continue
+    # Bulk operations
+    rows = list(reader)
+    if not rows:
+        return {"message": "Import successful", "stats": stats, "job_id": None}
+        
+    domains_in_csv = []
+    parsed_rows = {}
+    
+    def parse_float(val):
+        try:
+            clean_val = val.replace('$', '').replace(',', '').strip()
+            return float(clean_val) if clean_val else 0.0
+        except:
+            return 0.0
             
-        company_name = (row.get('Company Name') or '').strip()[:200]
-        title = (row.get('Title') or '').strip()[:200]
-        desc = (row.get('Description') or '').strip()
-        emails = (row.get('Emails') or '').strip()
-        country = (row.get('Country') or '').strip()[:120]
-        industry = (row.get('Industry') or '').strip()[:120]
-        linkedin_url = (row.get('Linkedin') or '').strip()[:255]
-        twitter_url = (row.get('Twitter') or '').strip()[:255]
-        facebook_url = (row.get('Facebook') or '').strip()[:255]
-        instagram_url = (row.get('Instagram') or '').strip()[:255]
-        youtube_url = (row.get('Youtube') or '').strip()[:255]
-        github_url = (row.get('Github') or '').strip()[:255]
-        tiktok_url = (row.get('Tiktok') or '').strip()[:255]
-        
-        def parse_float(val):
-            try:
-                # Remove dollar signs and commas
-                clean_val = val.replace('$', '').replace(',', '').strip()
-                return float(clean_val) if clean_val else 0.0
-            except:
-                return 0.0
-
-        tech_spend_monthly = parse_float(row.get('Technology Spend Monthly (USD)', ''))
-        tech_spend_annual = parse_float(row.get('Technology Spend Annual (USD)', ''))
-
-        # Website
-        website = db.query(Website).filter(Website.domain == domain).first()
-        
+    for row in rows:
+        domain = (row.get('Domain') or '').strip().lower()[:160]
+        if not domain: continue
+        domains_in_csv.append(domain)
+        parsed_rows[domain] = {
+            "company_name": (row.get('Company Name') or '').strip()[:200],
+            "title": (row.get('Title') or '').strip()[:200],
+            "description": (row.get('Description') or '').strip(),
+            "emails": (row.get('Emails') or '').strip(),
+            "country": (row.get('Country') or '').strip()[:120],
+            "industry": (row.get('Industry') or '').strip()[:120],
+            "linkedin_url": (row.get('Linkedin') or '').strip()[:255],
+            "twitter_url": (row.get('Twitter') or '').strip()[:255],
+            "facebook_url": (row.get('Facebook') or '').strip()[:255],
+            "instagram_url": (row.get('Instagram') or '').strip()[:255],
+            "youtube_url": (row.get('Youtube') or '').strip()[:255],
+            "github_url": (row.get('Github') or '').strip()[:255],
+            "tiktok_url": (row.get('Tiktok') or '').strip()[:255],
+            "tech_spend_monthly": parse_float(row.get('Technology Spend Monthly (USD)', '')),
+            "tech_spend_annual": parse_float(row.get('Technology Spend Annual (USD)', '')),
+        }
+    
+    existing_websites = db.query(Website).filter(Website.domain.in_(domains_in_csv)).all()
+    existing_website_map = {w.domain: w for w in existing_websites}
+    
+    new_websites_to_add = []
+    
+    for domain, data in parsed_rows.items():
+        website = existing_website_map.get(domain)
         if not website:
-            website = Website(
-                domain=domain,
-                company_name=company_name,
-                title=title,
-                description=desc,
-                emails=emails,
-                country=country,
-                industry=industry,
-                linkedin_url=linkedin_url,
-                twitter_url=twitter_url,
-                facebook_url=facebook_url,
-                instagram_url=instagram_url,
-                youtube_url=youtube_url,
-                github_url=github_url,
-                tiktok_url=tiktok_url,
-                tech_spend_monthly=tech_spend_monthly,
-                tech_spend_annual=tech_spend_annual,
-                category_label="Other Categories"
-            )
-            db.add(website)
-            db.commit()
-            db.refresh(website)
-            stats["websites_created"] += 1
+            new_website = Website(domain=domain, **data)
+            new_websites_to_add.append(new_website)
         else:
             updated = False
-            if company_name and not website.company_name: website.company_name = company_name; updated = True
-            if title and not website.title: website.title = title; updated = True
-            if desc and not website.description: website.description = desc; updated = True
-            if emails and not website.emails: website.emails = emails; updated = True
-            if country and not website.country: website.country = country; updated = True
-            if industry and not website.industry: website.industry = industry; updated = True
-            if linkedin_url and not website.linkedin_url: website.linkedin_url = linkedin_url; updated = True
-            if twitter_url and not website.twitter_url: website.twitter_url = twitter_url; updated = True
-            if facebook_url and not website.facebook_url: website.facebook_url = facebook_url; updated = True
-            if instagram_url and not website.instagram_url: website.instagram_url = instagram_url; updated = True
-            if youtube_url and not website.youtube_url: website.youtube_url = youtube_url; updated = True
-            if github_url and not website.github_url: website.github_url = github_url; updated = True
-            if tiktok_url and not website.tiktok_url: website.tiktok_url = tiktok_url; updated = True
-            if tech_spend_monthly and not website.tech_spend_monthly: website.tech_spend_monthly = tech_spend_monthly; updated = True
-            if tech_spend_annual and not website.tech_spend_annual: website.tech_spend_annual = tech_spend_annual; updated = True
-
+            for k, v in data.items():
+                if v and not getattr(website, k):
+                    setattr(website, k, v)
+                    updated = True
             if updated:
-                db.commit()
                 stats["websites_updated"] += 1
                 
-        # Link Website and Technology
-        link = db.query(WebsiteTechnology).filter(
-            WebsiteTechnology.website_id == website.id,
-            WebsiteTechnology.technology_id == technology.id
-        ).first()
-        if not link:
-            link = WebsiteTechnology(website_id=website.id, technology_id=technology.id)
-            db.add(link)
-            db.commit()
-            stats["links_created"] += 1
+    if new_websites_to_add:
+        db.add_all(new_websites_to_add)
+        db.commit()
+        stats["websites_created"] = len(new_websites_to_add)
+        
+        # Fetch the newly created ones to get their IDs
+        new_domains = [w.domain for w in new_websites_to_add]
+        newly_created = db.query(Website).filter(Website.domain.in_(new_domains)).all()
+        for w in newly_created:
+            existing_website_map[w.domain] = w
             
-        imported_website_ids.append(website.id)
+    all_website_ids = [w.id for w in existing_website_map.values()]
+    # Fetch all existing links for this specific technology (much faster than IN clause with 10k IDs)
+    existing_links = db.query(WebsiteTechnology).filter(
+        WebsiteTechnology.technology_id == technology.id
+    ).all()
+    
+    existing_linked_website_ids = {link.website_id for link in existing_links}
+    
+    new_links_to_add = []
+    for wid in all_website_ids:
+        if wid not in existing_linked_website_ids:
+            new_links_to_add.append(WebsiteTechnology(website_id=wid, technology_id=technology.id))
             
-    # Update counts
-    technologies = db.query(Technology).all()
-    for tech in technologies:
-        count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == tech.id).count()
-        if tech.website_count != count:
-            tech.website_count = count
-            
-    categories = db.query(Category).all()
-    for cat in categories:
-        count = db.query(Technology).filter(Technology.category_id == cat.id).count()
-        if cat.item_count != count:
-            cat.item_count = count
-            
+    if new_links_to_add:
+        db.add_all(new_links_to_add)
+        db.commit()
+        stats["links_created"] = len(new_links_to_add)
+        
+    technology.website_count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == technology.id).count()
     db.commit()
+    
+    imported_website_ids = all_website_ids
     
     job_id = None
     if imported_website_ids:

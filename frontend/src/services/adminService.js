@@ -21,7 +21,6 @@ export const adminFaqs = createCrud('faqs')
 export const adminBlogPosts = createCrud('blog-posts')
 export const adminSocialLinks = createCrud('social-links')
 export const adminLegalLinks = createCrud('legal-links')
-export const adminCategories = createCrud('categories')
 export const adminTechnologies = createCrud('technologies')
 export const adminPricingPlans = createCrud('pricing-plans')
 export const adminFeatureHighlights = createCrud('feature-highlights')
@@ -80,4 +79,5 @@ export const adminImports = {
 
 export const adminDashboard = {
   getStats: () => apiClient.get('/api/admin/dashboard-stats'),
+  resetData: () => apiClient.post('/api/admin/reset-data'),
 }

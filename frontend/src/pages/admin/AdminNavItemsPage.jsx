@@ -78,7 +78,6 @@ export default function AdminNavItemsPage() {
     }
   }
 
-
   return (
     <div className="space-y-6 max-w-7xl mx-auto w-full">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-border">

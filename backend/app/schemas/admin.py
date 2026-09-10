@@ -2,37 +2,7 @@ from pydantic import BaseModel, Field
 from typing import Optional, List
 from datetime import datetime
 
-class CategoryCreate(BaseModel):
-    name: str
-    slug: str
-    icon: str = "folder"
-    item_count: int = 0
-    sort_order: int = 0
 
-class CategoryUpdate(BaseModel):
-    name: Optional[str] = None
-    slug: Optional[str] = None
-    icon: Optional[str] = None
-    item_count: Optional[int] = None
-    sort_order: Optional[int] = None
-
-class CategoryOut(BaseModel):
-    id: int
-    name: str
-    slug: str
-    icon: str
-    item_count: int
-    sort_order: int
-
-    class Config:
-        from_attributes = True
-
-class PaginatedCategoryOut(BaseModel):
-    items: List[CategoryOut]
-    total: int
-    page: int
-    limit: int
-    total_pages: int
 
 class TechnologyCreate(BaseModel):
     name: str
@@ -41,7 +11,6 @@ class TechnologyCreate(BaseModel):
     icon_color: str = "#FF6B35"
     website_count: int = 0
     growth_percent: float = 0.0
-    category_id: Optional[int] = None
     is_featured: bool = True
     is_popular: bool = False
     sort_order: int = 0
@@ -53,7 +22,6 @@ class TechnologyUpdate(BaseModel):
     icon_color: Optional[str] = None
     website_count: Optional[int] = None
     growth_percent: Optional[float] = None
-    category_id: Optional[int] = None
     is_featured: Optional[bool] = None
     is_popular: Optional[bool] = None
     sort_order: Optional[int] = None
@@ -66,7 +34,6 @@ class TechnologyOut(BaseModel):
     icon_color: str
     website_count: int
     growth_percent: float
-    category_id: Optional[int]
     is_featured: bool
     is_popular: bool
     sort_order: int
@@ -143,7 +110,6 @@ class NavItemUpdate(BaseModel):
 
 class DashboardPreviewCreate(BaseModel):
     domain: str
-    categories: str = ""
     technologies: str = ""
     country: str = ""
     traffic: str
@@ -152,7 +118,6 @@ class DashboardPreviewCreate(BaseModel):
 
 class DashboardPreviewUpdate(BaseModel):
     domain: Optional[str] = None
-    categories: Optional[str] = None
     technologies: Optional[str] = None
     country: Optional[str] = None
     traffic: Optional[str] = None
@@ -295,7 +260,6 @@ class CustomDataBlockUpdate(BaseModel):
 class DashboardPreviewOut(BaseModel):
     id: int
     domain: str
-    categories: str
     technologies: str
     country: str
     traffic: str
@@ -363,7 +327,6 @@ class CustomDataBlockOut(BaseModel):
     id: int
     domain: str
     data: str
-    categories: str = ""
     sort_order: int = 0
     
     class Config:

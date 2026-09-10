@@ -17,7 +17,6 @@ import {
   AdminImportPage,
   AdminCustomDataBlocksPage,
   AdminDetectGroupsPage,
-  AdminCategoriesPage,
   AdminTechnologiesPage,
   AdminWebsitesPage,
   AdminProfilePage,
@@ -47,7 +46,7 @@ export default function AdminRoutes() {
         <Route path="import" element={<AdminImportPage />} />
         <Route path="custom-data-blocks" element={<AdminCustomDataBlocksPage />} />
         <Route path="detect-groups" element={<AdminDetectGroupsPage />} />
-        <Route path="categories" element={<AdminCategoriesPage />} />
+
         <Route path="technologies" element={<AdminTechnologiesPage />} />
         <Route path="websites" element={<AdminWebsitesPage />} />
       </Route>

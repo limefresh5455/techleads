@@ -26,6 +26,9 @@ class Settings(BaseSettings):
     openrouter_max_retries: int = 3
     openrouter_initial_retry_delay: float = 2.0
     openrouter_max_retry_delay: float = 16.0
+    openrouter_model_fallbacks: str = "openai/gpt-oss-120b:free,openrouter/free"
+    openrouter_background_delay: float = 6.0
+    openrouter_429_sleep: float = 60.0
     # Stripe credit purchases
     stripe_secret_key: str = ""
     stripe_webhook_secret: str = ""

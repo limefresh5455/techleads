@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react'
 import { Trash2, X, Loader2, Globe, Search, ChevronLeft, ChevronRight, Eye } from 'lucide-react'
-import { adminTechnologies, adminCategories } from '../../services'
+import { adminTechnologies } from '../../services'
 
 export default function AdminTechnologiesPage() {
   const [items, setItems] = useState([])
-  const [categories, setCategories] = useState([])
+
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -22,7 +22,7 @@ export default function AdminTechnologiesPage() {
     slug: '',
     icon: 'globe',
     icon_color: '#FF6B35',
-    category_id: '',
+
     is_featured: true,
     is_popular: false,
     sort_order: 0,
@@ -37,14 +37,10 @@ export default function AdminTechnologiesPage() {
   const fetchData = async () => {
     try {
       setLoading(true)
-      const [techData, catData] = await Promise.all([
-        adminTechnologies.getAll({ page, limit, search }),
-        adminCategories.getAll({ page: 1, limit: 1000 }),
-      ])
+      const techData = await adminTechnologies.getAll({ page, limit, search })
       setItems(techData.items || [])
       setTotal(techData.total || 0)
       setTotalPages(techData.total_pages || 1)
-      setCategories(catData.items || [])
     } catch (err) {
       setError(err.message)
     } finally {
@@ -64,7 +60,7 @@ export default function AdminTechnologiesPage() {
       slug: item.slug,
       icon: item.icon,
       icon_color: item.icon_color,
-      category_id: item.category_id || '',
+
       is_featured: item.is_featured,
       is_popular: item.is_popular,
       sort_order: item.sort_order,
@@ -125,14 +121,13 @@ export default function AdminTechnologiesPage() {
               <thead className="bg-canvas border-b border-border">
                 <tr>
                   <th className="px-6 py-4 font-semibold text-ink">Name</th>
-                  <th className="px-6 py-4 font-semibold text-ink">Category</th>
+
                   <th className="px-6 py-4 font-semibold text-ink">Sites</th>
                   <th className="px-6 py-4 font-semibold text-ink text-right">Actions</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
                 {items.map((item) => {
-                  const category = categories.find((c) => c.id === item.category_id)
                   return (
                     <tr key={item.id} className="hover:bg-canvas/50 transition-colors">
                       <td className="px-6 py-4 text-ink font-medium flex items-center gap-2">
@@ -142,7 +137,7 @@ export default function AdminTechnologiesPage() {
                         ></span>
                         {item.name}
                       </td>
-                      <td className="px-6 py-4 text-muted">{category ? category.name : 'None'}</td>
+
                       <td className="px-6 py-4 text-muted">{item.website_count}</td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2">
@@ -264,16 +259,6 @@ export default function AdminTechnologiesPage() {
                       className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
                     />
                   </div>
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-ink mb-1">Category</label>
-                  <input
-                    type="text"
-                    readOnly
-                    value={categories.find((c) => c.id === formData.category_id)?.name || 'None'}
-                    className="w-full bg-canvas border border-border rounded-lg px-4 py-2 text-ink focus:outline-none focus:border-brand opacity-80"
-                  />
                 </div>
 
                 <div className="flex gap-6 pt-2">

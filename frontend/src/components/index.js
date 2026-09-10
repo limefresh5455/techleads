@@ -1,7 +1,5 @@
 export { default as AdminRoute } from './AdminRoute'
 export { default as CaseStudies } from './CaseStudies'
-export { default as Categories } from './Categories'
-export { default as CategoryModal } from './CategoryModal'
 export { default as Contact } from './Contact'
 export { default as CreditsPanel } from './CreditsPanel'
 export { default as DashboardNavbar } from './DashboardNavbar'

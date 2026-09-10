@@ -6,11 +6,10 @@ from typing import Any
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.models import Category, Technology, Website, WebsiteTechnology
+from app.models import Technology, Website, WebsiteTechnology
 from app.services.crawler import crawl_url
 from app.services.llm_enrichment import enrich_with_llm
 from app.services.signals import extract_signals, signals_to_json
-from app.services.llm_enrichment import categorize_technology
 from app.services.techleads_api import lookup_website, merge_lookup_into_signals, tech_names_from_lookup
 from app.services.url_utils import extract_domain, normalize_url, slugify
 
@@ -126,6 +125,10 @@ def detect_and_store(db: Session, raw_url: str, *, use_techleads_api: bool | Non
         _apply_enrichment_to_website(website, crawl.final_url, signals, enriched)
         db.flush()
     
+        # Keep track of affected technologies to update counts
+        previous_links = db.query(WebsiteTechnology).filter(WebsiteTechnology.website_id == website.id).all()
+        affected_tech_ids = {link.technology_id for link in previous_links}
+        
         db.query(WebsiteTechnology).filter(WebsiteTechnology.website_id == website.id).delete()
     
         tech_names = list(
@@ -137,6 +140,15 @@ def detect_and_store(db: Session, raw_url: str, *, use_techleads_api: bool | Non
         for order, name in enumerate(tech_names):
             tech = _get_or_create_technology(db, name, order)
             db.add(WebsiteTechnology(website_id=website.id, technology_id=tech.id))
+            affected_tech_ids.add(tech.id)
+    
+        db.flush()
+        
+        # Sync counts for all affected technologies
+        for tech_id in affected_tech_ids:
+            tech = db.query(Technology).filter(Technology.id == tech_id).first()
+            if tech:
+                tech.website_count = db.query(WebsiteTechnology).filter(WebsiteTechnology.technology_id == tech_id).count()
     
         db.commit()
         db.refresh(website)
@@ -182,8 +194,6 @@ def _apply_enrichment_to_website(
     website.source_url = final_url
     website.title = str(enriched.get("title") or website.domain)[:200]
     website.description = str(enriched.get("description") or "")
-    website.category_label = str(enriched.get("category_label") or "Uncategorized")[:120]
-    website.subcategory = str(enriched.get("subcategory") or "")[:120]
     website.contact_info = str(enriched.get("contact_info") or "No contact information available")
     website.facebook_url = str(enriched.get("facebook_url") or "")[:255]
     website.twitter_url = str(enriched.get("twitter_url") or "")[:255]
@@ -199,6 +209,8 @@ def _apply_enrichment_to_website(
     # Dedicated AI detail columns
     website.industry = str(enriched.get("industry") or "")[:120]
     website.company_type = str(enriched.get("company_type") or "")[:80]
+    website.category_label = str(enriched.get("category_label") or "")[:120]
+    website.subcategory = str(enriched.get("subcategory") or "")[:120]
     website.business_summary = str(enriched.get("business_summary") or "")
     website.marketing_stack = _join_list(enriched.get("marketing_stack"))
     website.analytics_tools = _join_list(enriched.get("analytics_tools"))
@@ -235,31 +247,17 @@ def _get_or_create_technology(db: Session, name: str, order: int) -> Technology:
     if row:
         return row
 
-    existing_categories = [c.name for c in db.query(Category).all()]
-    cat_name = categorize_technology(clean, existing_categories)
-    cat_slug = slugify(cat_name)
-    category = db.query(Category).filter(Category.slug == cat_slug).first()
-    if not category:
-        category = Category(name=cat_name, slug=cat_slug, icon="folder", sort_order=99)
-        db.add(category)
-        db.flush()
-
     row = Technology(
         name=clean,
         slug=slug,
         icon="globe",
         icon_color=TECH_COLORS.get(slug, "#FFD23F"),
         website_count=1,
-        category_id=category.id if category else None,
         is_featured=True,
         is_popular=False,
         sort_order=1000 + order,
     )
     db.add(row)
     
-    # Increment item_count for the category since we added a new technology
-    if category:
-        category.item_count = (category.item_count or 0) + 1
-        
     db.flush()
     return row

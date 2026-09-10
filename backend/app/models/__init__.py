@@ -4,19 +4,6 @@ from sqlalchemy.orm import relationship
 from app.core.database import Base
 
 
-class Category(Base):
-    __tablename__ = "categories"
-
-    id = Column(Integer, primary_key=True, index=True)
-    name = Column(String(120), unique=True, nullable=False)
-    slug = Column(String(140), unique=True, nullable=False)
-    icon = Column(String(80), default="folder")
-    item_count = Column(Integer, default=0)
-    sort_order = Column(Integer, default=0)
-
-    technologies = relationship("Technology", back_populates="category")
-
-
 class Technology(Base):
     __tablename__ = "technologies"
 
@@ -27,12 +14,10 @@ class Technology(Base):
     icon_color = Column(String(40), default="#FF6B35")
     website_count = Column(Integer, default=0)
     growth_percent = Column(Float, default=0.0)
-    category_id = Column(Integer, ForeignKey("categories.id"), nullable=True)
     is_featured = Column(Boolean, default=True)
     is_popular = Column(Boolean, default=False)
     sort_order = Column(Integer, default=0)
 
-    category = relationship("Category", back_populates="technologies")
     websites = relationship("WebsiteTechnology", back_populates="technology")
 
 

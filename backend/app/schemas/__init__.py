@@ -2,16 +2,6 @@ from pydantic import BaseModel, EmailStr, Field
 from .admin import *
 
 
-class CategoryOut(BaseModel):
-    id: int
-    name: str
-    slug: str
-    icon: str
-    item_count: int
-
-    class Config:
-        from_attributes = True
-
 
 class TechnologyOut(BaseModel):
     id: int
@@ -21,7 +11,6 @@ class TechnologyOut(BaseModel):
     icon_color: str
     website_count: int
     growth_percent: float
-    category_id: int | None = None
     is_featured: bool
     is_popular: bool = False
 
@@ -81,7 +70,6 @@ class NavItemOut(BaseModel):
 class DashboardPreviewOut(BaseModel):
     id: int
     domain: str
-    categories: str = ""
     technologies: str = ""
     country: str = ""
     traffic: str
@@ -416,7 +404,6 @@ class LandingPayload(BaseModel):
     nav_items: list[NavItemOut]
     technologies: list[TechnologyOut]
     popular_technologies: list[TechnologyOut]
-    categories: list[CategoryOut]
     pricing_plans: list[PricingPlanOut]
     feature_highlights: list[FeatureHighlightOut]
     dashboard_previews: list[DashboardPreviewOut]
@@ -520,7 +507,6 @@ class AdminDashboardFullOut(BaseModel):
     total_technologies: int
     total_revenue: int
     active_plans: int
-    total_categories: int
     total_messages: int
     recent_signups: List[AdminRecentSignupOut]
     recent_messages: List[AdminRecentMessageOut]

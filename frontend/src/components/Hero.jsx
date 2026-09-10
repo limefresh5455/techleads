@@ -34,7 +34,6 @@ export default function Hero({ content, dashboardPreviews = [] }) {
               <thead className="bg-surface/80 text-xs uppercase tracking-wide text-muted">
                 <tr>
                   <th className="px-4 py-3 font-semibold">Website</th>
-                  <th className="px-4 py-3 font-semibold">Categories</th>
                   <th className="px-4 py-3 font-semibold">Technologies</th>
                   <th className="px-4 py-3 font-semibold">Country</th>
                   <th className="px-4 py-3 font-semibold">Traffic</th>
@@ -47,7 +46,6 @@ export default function Hero({ content, dashboardPreviews = [] }) {
                     className="border-t border-border/70 transition hover:bg-brand/5"
                   >
                     <td className="px-4 py-3 font-medium text-ink">{row.domain}</td>
-                    <td className="px-4 py-3 text-muted">{row.categories}</td>
                     <td className="px-4 py-3 text-muted">{row.technologies}</td>
                     <td className="px-4 py-3 text-muted">{row.country}</td>
                     <td className="px-4 py-3 text-emerald-600">{row.traffic}</td>
