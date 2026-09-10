@@ -1257,7 +1257,12 @@ def enrich_imported_websites(job_id: str, website_ids: list[int]):
             db.commit()
 
         import time
+        last_ping_time = time.time()
         for wid in website_ids:
+            if time.time() - last_ping_time > 240:
+                ping_keep_alive()
+                last_ping_time = time.time()
+                
             website = db.query(Website).filter(Website.id == wid).first()
             if website and not website.enriched_json:
                 try:
@@ -1295,10 +1300,20 @@ def enrich_imported_websites(job_id: str, website_ids: list[int]):
         db.close()
 
 
+def ping_keep_alive():
+    """Pings the public API to prevent Render from going to sleep during long tasks."""
+    try:
+        import requests
+        requests.get("https://techleads-in6n.onrender.com/api/landing", timeout=5)
+    except:
+        pass
+
 def process_csv_background(job_id: str, decoded_csv: str, tech_name: str, user_id: int):
     """Background task to parse large CSV files and insert in batches."""
     from app.core.database import SessionLocal
+    import time
     db = SessionLocal()
+    last_ping_time = time.time()
     try:
         reader = csv.DictReader(io.StringIO(decoded_csv, newline=''))
         
@@ -1322,6 +1337,10 @@ def process_csv_background(job_id: str, decoded_csv: str, tech_name: str, user_i
                 return 0.0
 
         while True:
+            if time.time() - last_ping_time > 240:
+                ping_keep_alive()
+                last_ping_time = time.time()
+                
             batch = list(itertools.islice(reader, batch_size))
             if not batch:
                 break
