@@ -1201,6 +1201,7 @@ def _website_detail_out(row: Website) -> DashboardWebsiteDetailOut:
         title=row.title or row.domain,
         description=row.description or enriched.get("description", ""),
         contact_info=row.contact_info or enriched.get("contact_info", "No contact information available"),
+        category_label=row.category_label or "Uncategorized",
         rank=row.rank,
         technologies=[
             DashboardTechOut(
