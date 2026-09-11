@@ -250,8 +250,13 @@ async def send_otp(payload: SendOTPRequest, db: Session = Depends(get_db)):
     
     email = payload.email.lower().strip()
     user = db.query(User).filter(User.email == email).first()
-    if not user:
-        raise HTTPException(status_code=404, detail="User not found.")
+    
+    if payload.is_signup:
+        if user:
+            raise HTTPException(status_code=400, detail="Email already registered.")
+    else:
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found.")
         
     otp = str(secrets.randbelow(1000000)).zfill(6)
     

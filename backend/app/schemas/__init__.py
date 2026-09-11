@@ -420,6 +420,7 @@ class LandingPayload(BaseModel):
 
 class SendOTPRequest(BaseModel):
     email: EmailStr
+    is_signup: bool = False
 
 
 class VerifyOTPRequest(BaseModel):

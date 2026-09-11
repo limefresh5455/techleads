@@ -23,7 +23,7 @@ export default function SignupPage() {
     setSendingOtp(true)
     setError('')
     try {
-      await sendOtp({ email: form.email })
+      await sendOtp({ email: form.email, is_signup: true })
       setOtpSent(true)
     } catch (err) {
       setError(err.message || 'Failed to send OTP')
