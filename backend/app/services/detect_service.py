@@ -173,7 +173,7 @@ def detect_and_store(db: Session, raw_url: str, *, use_techleads_api: bool | Non
 def refresh_website(db: Session, website: Website, *, use_techleads_api: bool = False) -> Website:
     """Re-crawl + enrich. TechLeads API off by default to avoid burning credits on list loads."""
     url = website.source_url or f"https://{website.domain}"
-    return detect_and_store(db, url, use_techleads_api=use_techleads_api)
+    return detect_and_store(db, url, use_techleads_api=use_techleads_api, force_refresh=True)
 
 
 def _apply_enrichment_to_website(

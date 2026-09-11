@@ -25,7 +25,7 @@ export function exportDashboard({ q = '', technologies = [], match = 'any' }) {
 }
 
 export function fetchWebsiteDetail(id, { refresh = false } = {}) {
-  const params = refresh ? '?refresh=true' : ''
+  const params = refresh ? `?refresh=true&t=${Date.now()}` : ''
   return apiClient.get(`/api/dashboard/websites/${id}${params}`)
 }
 

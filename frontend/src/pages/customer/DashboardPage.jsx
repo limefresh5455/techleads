@@ -153,7 +153,7 @@ export default function DashboardPage() {
     loadResults()
   }, [loadResults])
 
-  const loadSiteDetail = useCallback(async (id, { refresh = true } = {}) => {
+  const loadSiteDetail = useCallback(async (id, { refresh = false } = {}) => {
     setDetailLoading(true)
     if (refresh) setEnriching(true)
     setError('')
@@ -191,7 +191,7 @@ export default function DashboardPage() {
       setSiteDetail(null)
       return
     }
-    loadSiteDetail(selectedId, { refresh: true })
+    loadSiteDetail(selectedId, { refresh: false })
   }, [selectedId, loadSiteDetail])
 
   useEffect(() => {
