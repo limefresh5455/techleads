@@ -103,6 +103,22 @@ class ImportJob(Base):
     completed_at = Column(DateTime(timezone=True), nullable=True)
 
 
+class EnrichmentQueue(Base):
+    __tablename__ = "enrichment_queue"
+
+    id = Column(Integer, primary_key=True, index=True)
+    website_id = Column(Integer, ForeignKey("websites.id"), nullable=False, index=True)
+    job_id = Column(String(36), ForeignKey("import_jobs.id"), nullable=True)
+    status = Column(String(50), default="pending", index=True)  # pending, processing, completed, failed
+    retries = Column(Integer, default=0)
+    error_message = Column(Text, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=func.now())
+    updated_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
+
+    website = relationship("Website")
+    job = relationship("ImportJob")
+
+
 class PricingPlan(Base):
     __tablename__ = "pricing_plans"
 

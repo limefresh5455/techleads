@@ -1309,15 +1309,17 @@ def ping_keep_alive():
     except:
         pass
 
-def process_csv_background(job_id: str, decoded_csv: str, tech_name: str, user_id: int):
-    """Background task to parse large CSV files and insert in batches."""
+def process_csv_background(job_id: str, temp_file_path: str, tech_name: str, user_id: int):
+    """Background task to parse large CSV files from disk and insert in batches."""
     from app.core.database import SessionLocal
     import time
+    import os
     db = SessionLocal()
     last_ping_time = time.time()
     try:
-        reader = csv.DictReader(io.StringIO(decoded_csv, newline=''))
-        
+        f = open(temp_file_path, "r", encoding="utf-8-sig")
+        reader = csv.DictReader(f)
+            
         tech_slug = slugify(tech_name)
         technology = db.query(Technology).filter(Technology.slug == tech_slug).first()
         if not technology:
@@ -1421,13 +1423,18 @@ def process_csv_background(job_id: str, decoded_csv: str, tech_name: str, user_i
             db.commit()
             
         if all_website_ids:
-            # Trigger LLM enrichment for all these websites in the same background process
-            enrich_imported_websites(job_id, list(all_website_ids))
+            # Insert into EnrichmentQueue instead of enriching inline
+            from app.models import EnrichmentQueue
+            queue_items = [EnrichmentQueue(website_id=wid, job_id=job_id) for wid in all_website_ids]
+            db.add_all(queue_items)
+            db.commit()
+            
+            # Start worker if not already running (simplified for now, ideally an external script)
+            # We don't call enrich_imported_websites inline anymore
         else:
             if job:
                 job.status = "completed"
                 db.commit()
-
     except Exception as exc:
         print(f"Background CSV processing failed: {exc}")
         job = db.query(ImportJob).filter(ImportJob.id == job_id).first()
@@ -1440,6 +1447,14 @@ def process_csv_background(job_id: str, decoded_csv: str, tech_name: str, user_i
             db.commit()
     finally:
         db.close()
+        # Clean up temporary file
+        try:
+            if 'f' in locals() and f is not None:
+                f.close()
+            if os.path.exists(temp_file_path):
+                os.remove(temp_file_path)
+        except Exception:
+            pass
 
 
 @router.post("/import/csv")
@@ -1452,13 +1467,19 @@ async def import_csv_data(
     if not file.filename.endswith('.csv'):
         raise HTTPException(status_code=400, detail="Invalid file format. Please upload a CSV file.")
         
-    content = await file.read()
-    try:
-        decoded = content.decode('utf-8-sig')
-    except UnicodeDecodeError:
-        raise HTTPException(status_code=400, detail="Invalid file encoding. Please upload a UTF-8 encoded CSV.")
-        
     import os
+    import shutil
+    import tempfile
+    
+    # Save uploaded file to a temporary file in chunks
+    fd, temp_path = tempfile.mkstemp(suffix=".csv")
+    try:
+        with os.fdopen(fd, "wb") as f:
+            shutil.copyfileobj(file.file, f)
+    except Exception as e:
+        os.remove(temp_path)
+        raise HTTPException(status_code=500, detail="Failed to save uploaded file.")
+        
     tech_name = os.path.splitext(file.filename)[0].strip()
     
     if not tech_name:
@@ -1474,7 +1495,8 @@ async def import_csv_data(
     db.add(job)
     db.commit()
     
-    background_tasks.add_task(process_csv_background, job_id, decoded, tech_name, user.id)
+    # Pass temp_path to background task instead of full string
+    background_tasks.add_task(process_csv_background, job_id, temp_path, tech_name, user.id)
     
     return {"message": "Import started in background", "stats": {}, "job_id": job_id}
 

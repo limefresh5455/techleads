@@ -34,3 +34,25 @@ def on_startup():
         pass
     finally:
         db.close()
+        
+    # Start the automatic background worker thread
+    import threading
+    from app.worker import process_queue
+    import time
+
+    def run_worker_loop():
+        print("Starting automatic background worker thread...")
+        while True:
+            try:
+                processed_count = process_queue(batch_size=10)
+                if processed_count == 0:
+                    time.sleep(5)
+                else:
+                    time.sleep(1)
+            except Exception as e:
+                print(f"Worker thread error: {e}")
+                time.sleep(10)
+
+    # Daemon thread will stop automatically when FastAPI stops
+    worker_thread = threading.Thread(target=run_worker_loop, daemon=True)
+    worker_thread.start()
