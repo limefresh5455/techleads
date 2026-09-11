@@ -34,9 +34,27 @@ export default function AdminDashboardPage() {
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
   const [resetting, setResetting] = useState(false)
+  const [enrichmentStatus, setEnrichmentStatus] = useState(null)
 
   useEffect(() => {
     loadStats()
+  }, [])
+
+  useEffect(() => {
+    let interval
+    const fetchEnrichmentStatus = async () => {
+      try {
+        const data = await adminDashboard.getEnrichmentStatus()
+        setEnrichmentStatus(data)
+      } catch (err) {
+        console.error('Failed to load enrichment status', err)
+      }
+    }
+
+    fetchEnrichmentStatus() // initial fetch
+    interval = setInterval(fetchEnrichmentStatus, 3000) // poll every 3s
+
+    return () => clearInterval(interval)
   }, [])
 
   const loadStats = async () => {
@@ -80,14 +98,22 @@ export default function AdminDashboardPage() {
           <Home className="text-brand-dark" />
           Dashboard
         </h1>
-        <button
-          onClick={handleResetData}
-          disabled={resetting}
-          className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50"
-        >
-          {resetting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-          Delete all websites
-        </button>
+        <div className="flex items-center gap-4">
+          {enrichmentStatus && enrichmentStatus.is_active && (
+            <div className="bg-brand/10 border border-brand/30 rounded-lg px-3 py-1.5 shadow-sm flex items-center gap-2 animate-pulse">
+              <span className="text-sm font-semibold text-brand-dark">Enriching</span>
+              <Loader2 className="h-4 w-4 animate-spin text-brand" />
+            </div>
+          )}
+          <button
+            onClick={handleResetData}
+            disabled={resetting}
+            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 h-[40px]"
+          >
+            {resetting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+            Delete all websites
+          </button>
+        </div>
       </div>
 
       {loading ? (

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field
+﻿from pydantic import BaseModel, EmailStr, Field
 from .admin import *
 
 
@@ -513,3 +513,11 @@ class AdminDashboardFullOut(BaseModel):
     recent_messages: List[AdminRecentMessageOut]
     revenue_graph: List[RevenueGraphDataPoint]
     plan_distribution: List[PlanDistributionDataPoint]
+
+class AdminEnrichmentStatusOut(BaseModel):
+    total_pending: int
+    total_completed: int
+    total_failed: int
+    total_in_queue: int
+    is_active: bool
+

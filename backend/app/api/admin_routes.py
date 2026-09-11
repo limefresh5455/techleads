@@ -28,7 +28,7 @@ from app.schemas import (
     CustomDataBlockOut, CustomDataBlockCreate, CustomDataBlockUpdate,
     WebsiteAdminOut, WebsiteCreate, WebsiteUpdate,
     PaginatedTechnologyOut, PaginatedWebsiteOut,
-    AdminDashboardFullOut
+    AdminDashboardFullOut, AdminEnrichmentStatusOut
 )
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
@@ -37,6 +37,23 @@ def get_current_admin_user(user: User = Depends(get_current_user)) -> User:
     if user.role != "admin":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Admin privileges required")
     return user
+
+@router.get("/enrichment-status", response_model=AdminEnrichmentStatusOut)
+def get_enrichment_status(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):
+    from app.models import EnrichmentQueue
+    
+    total_pending = db.query(func.count(EnrichmentQueue.id)).filter(EnrichmentQueue.status == "pending").scalar() or 0
+    total_completed = db.query(func.count(EnrichmentQueue.id)).filter(EnrichmentQueue.status == "completed").scalar() or 0
+    total_failed = db.query(func.count(EnrichmentQueue.id)).filter(EnrichmentQueue.status == "failed").scalar() or 0
+    
+    return AdminEnrichmentStatusOut(
+        total_pending=total_pending,
+        total_completed=total_completed,
+        total_failed=total_failed,
+        total_in_queue=total_pending + total_completed + total_failed,
+        is_active=total_pending > 0
+    )
+
 
 @router.get("/dashboard-stats", response_model=AdminDashboardFullOut)
 def get_dashboard_stats(db: Session = Depends(get_db), admin: User = Depends(get_current_admin_user)):

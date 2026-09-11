@@ -79,5 +79,6 @@ export const adminImports = {
 
 export const adminDashboard = {
   getStats: () => apiClient.get('/api/admin/dashboard-stats'),
+  getEnrichmentStatus: () => apiClient.get('/api/admin/enrichment-status'),
   resetData: () => apiClient.post('/api/admin/reset-data'),
 }
