@@ -111,8 +111,8 @@ export default function AdminDashboardPage() {
                   <span className="text-red-600">{enrichmentStatus.total_failed}</span>
                 </div>
                 <div className="flex justify-between gap-2">
-                  <span className="text-muted font-medium">Pending</span>
-                  <span className="text-ink">{enrichmentStatus.total_pending}</span>
+                  <span className="text-muted font-medium">Total</span>
+                  <span className="text-ink">{stats?.total_websites || 0}</span>
                 </div>
               </div>
               <div className="flex items-center gap-2 border-l border-brand/20 pl-3">
