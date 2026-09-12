@@ -56,3 +56,17 @@ def on_startup():
     # Daemon thread will stop automatically when FastAPI stops
     worker_thread = threading.Thread(target=run_worker_loop, daemon=True)
     worker_thread.start()
+
+    # Start keep-alive ping thread
+    def run_keep_alive():
+        from app.api.routes import ping_keep_alive
+        print("Starting keep-alive ping thread...")
+        while True:
+            try:
+                ping_keep_alive()
+            except Exception as e:
+                print(f"Keep-alive thread error: {e}")
+            time.sleep(300)  # Sleep for 5 minutes (300 seconds)
+
+    keep_alive_thread = threading.Thread(target=run_keep_alive, daemon=True)
+    keep_alive_thread.start()
