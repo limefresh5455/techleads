@@ -66,7 +66,7 @@ def on_startup():
                 ping_keep_alive()
             except Exception as e:
                 print(f"Keep-alive thread error: {e}")
-            time.sleep(300)  # Sleep for 5 minutes (300 seconds)
+            time.sleep(300)
 
     keep_alive_thread = threading.Thread(target=run_keep_alive, daemon=True)
     keep_alive_thread.start()

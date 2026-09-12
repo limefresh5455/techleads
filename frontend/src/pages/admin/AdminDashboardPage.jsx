@@ -98,17 +98,33 @@ export default function AdminDashboardPage() {
           <Home className="text-brand-dark" />
           Dashboard
         </h1>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-4">
           {enrichmentStatus && enrichmentStatus.is_active && (
-            <div className="bg-brand/10 border border-brand/30 rounded-lg px-3 py-1.5 shadow-sm flex items-center gap-2 animate-pulse">
-              <span className="text-sm font-semibold text-brand-dark">Enriching</span>
-              <Loader2 className="h-4 w-4 animate-spin text-brand" />
+            <div className="bg-brand/10 border border-brand/30 rounded-lg px-3 py-1.5 shadow-sm flex items-center gap-3 animate-pulse">
+              <div className="flex flex-col text-[10px] uppercase font-bold tracking-wider leading-tight w-28">
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted font-medium">Completed</span>
+                  <span className="text-ink">{enrichmentStatus.total_completed}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted font-medium">Failed</span>
+                  <span className="text-red-600">{enrichmentStatus.total_failed}</span>
+                </div>
+                <div className="flex justify-between gap-2">
+                  <span className="text-muted font-medium">Pending</span>
+                  <span className="text-ink">{enrichmentStatus.total_pending}</span>
+                </div>
+              </div>
+              <div className="flex items-center gap-2 border-l border-brand/20 pl-3">
+                <span className="text-xs font-semibold text-brand-dark">Enriching</span>
+                <Loader2 className="h-4 w-4 animate-spin text-brand" />
+              </div>
             </div>
           )}
           <button
             onClick={handleResetData}
             disabled={resetting}
-            className="flex items-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 h-[40px]"
+            className="flex items-center justify-center gap-2 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition disabled:opacity-50 h-[40px] shrink-0"
           >
             {resetting ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
             Delete all websites
